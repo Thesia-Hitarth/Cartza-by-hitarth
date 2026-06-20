@@ -12,29 +12,22 @@ module.exports = {
     secret: process.env.JWT_SECRET,
     tokenLife: '7d'
   },
-  mailchimp: {
-    key: process.env.MAILCHIMP_KEY,
-    listKey: process.env.MAILCHIMP_LIST_KEY
-  },
-  mailgun: {
-    key: process.env.MAILGUN_KEY,
-    domain: process.env.MAILGUN_DOMAIN,
-    sender: process.env.MAILGUN_EMAIL_SENDER
-  },
   google: {
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     callbackURL: process.env.GOOGLE_CALLBACK_URL
   },
-  facebook: {
-    clientID: process.env.FACEBOOK_CLIENT_ID,
-    clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
-    callbackURL: process.env.FACEBOOK_CALLBACK_URL
+  smtp: {
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+    sender: process.env.SMTP_EMAIL_SENDER
   },
-  aws: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    region: process.env.AWS_REGION,
-    bucketName: process.env.AWS_BUCKET_NAME
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME,
+    apiKey: process.env.CLOUDINARY_API_KEY,
+    apiSecret: process.env.CLOUDINARY_API_SECRET,
+    folder: process.env.CLOUDINARY_FOLDER
   }
 };

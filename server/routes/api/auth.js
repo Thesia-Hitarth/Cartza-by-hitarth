@@ -9,8 +9,7 @@ const auth = require('../../middleware/auth');
 
 // Bring in Models & Helpers
 const User = require('../../models/user');
-const mailchimp = require('../../services/mailchimp');
-const mailgun = require('../../services/mailgun');
+const smtp = require('../../services/smtp');
 const keys = require('../../config/keys');
 const { EMAIL_PROVIDER, JWT_COOKIE } = require('../../constants');
 
@@ -107,13 +106,6 @@ router.post('/register', async (req, res) => {
     }
 
     let subscribed = false;
-    if (isSubscribed) {
-      const result = await mailchimp.subscribeToNewsletter(email);
-
-      if (result.status === 'subscribed') {
-        subscribed = true;
-      }
-    }
 
     const user = new User({
       email,
@@ -132,7 +124,7 @@ router.post('/register', async (req, res) => {
       id: registeredUser.id
     };
 
-    await mailgun.sendEmail(
+    await smtp.sendEmail(
       registeredUser.email,
       'signup',
       null,
@@ -186,7 +178,7 @@ router.post('/forgot', async (req, res) => {
 
     existingUser.save();
 
-    await mailgun.sendEmail(
+    await smtp.sendEmail(
       existingUser.email,
       'reset',
       req.headers.host,
@@ -233,7 +225,7 @@ router.post('/reset/:token', async (req, res) => {
 
     resetUser.save();
 
-    await mailgun.sendEmail(resetUser.email, 'reset-confirmation');
+    await smtp.sendEmail(resetUser.email, 'reset-confirmation');
 
     res.status(200).json({
       success: true,
@@ -280,7 +272,7 @@ router.post('/reset', auth, async (req, res) => {
     existingUser.password = hash;
     existingUser.save();
 
-    await mailgun.sendEmail(existingUser.email, 'reset-confirmation');
+    await smtp.sendEmail(existingUser.email, 'reset-confirmation');
 
     res.status(200).json({
       success: true,
@@ -322,28 +314,6 @@ router.get(
   }
 );
 
-router.get(
-  '/facebook',
-  passport.authenticate('facebook', {
-    session: false,
-    scope: ['public_profile', 'email']
-  })
-);
 
-router.get(
-  '/facebook/callback',
-  passport.authenticate('facebook', {
-    failureRedirect: `${keys.app.clientURL}/login`,
-    session: false
-  }),
-  (req, res) => {
-    const payload = {
-      id: req.user.id
-    };
-    const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
-    const jwtToken = `Bearer ${token}`;
-    res.redirect(`${keys.app.clientURL}/auth/success?token=${jwtToken}`);
-  }
-);
 
 module.exports = router;

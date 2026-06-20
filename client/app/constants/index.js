@@ -37,6 +37,5 @@ export const REVIEW_STATUS = {
 
 export const EMAIL_PROVIDER = {
   Email: 'Email',
-  Google: 'Google',
-  Facebook: 'Facebook'
+  Google: 'Google'
 };

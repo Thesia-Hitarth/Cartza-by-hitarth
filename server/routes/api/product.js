@@ -10,7 +10,7 @@ const Category = require('../../models/category');
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const checkAuth = require('../../utils/auth');
-const { s3Upload } = require('../../utils/storage');
+const { uploadImage } = require('../../utils/storage');
 const {
   getStoreProductsQuery,
   getStoreProductsWishListQuery
@@ -217,7 +217,7 @@ router.post(
         return res.status(400).json({ error: 'This sku is already in use.' });
       }
 
-      const { imageUrl, imageKey } = await s3Upload(image);
+      const { imageUrl, imageKey } = await uploadImage(image);
 
       const product = new Product({
         sku,

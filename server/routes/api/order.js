@@ -7,7 +7,7 @@ const Order = require('../../models/order');
 const Cart = require('../../models/cart');
 const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
-const mailgun = require('../../services/mailgun');
+const smtp = require('../../services/smtp');
 const store = require('../../utils/store');
 const { ROLES, CART_ITEM_STATUS } = require('../../constants');
 
@@ -35,12 +35,12 @@ router.post('/add', auth, async (req, res) => {
     const newOrder = {
       _id: orderDoc._id,
       created: orderDoc.created,
-      user: orderDoc.user,
+      user: req.user,
       total: orderDoc.total,
       products: cartDoc.products
     };
 
-    await mailgun.sendEmail(order.user.email, 'order-confirmation', newOrder);
+    await smtp.sendEmail(req.user.email, 'order-confirmation', newOrder);
 
     res.status(200).json({
       success: true,

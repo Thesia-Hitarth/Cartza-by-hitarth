@@ -1,48 +1,55 @@
-const Mailgun = require('mailgun-js');
-
+const nodemailer = require('nodemailer');
 const template = require('../config/template');
 const keys = require('../config/keys');
 
-const { key, domain, sender } = keys.mailgun;
+const { host, port, user, pass, sender } = keys.smtp;
 
-class MailgunService {
-  init() {
-    try {
-      return new Mailgun({
-        apiKey: key,
-        domain: domain
-      });
-    } catch (error) {
-      console.warn('Missing mailgun keys');
-    }
+let transporter;
+try {
+  if (host && port) {
+    transporter = nodemailer.createTransport({
+      host: host,
+      port: Number(port),
+      secure: Number(port) === 465,
+      auth: {
+        user: user,
+        pass: pass
+      }
+    });
+  } else {
+    console.warn('Missing SMTP configuration. Transporter not initialized.');
   }
+} catch (error) {
+  console.warn('SMTP transporter initialization failed:', error);
 }
 
-const mailgun = new MailgunService().init();
-
-exports.sendEmail = async (email, type, host, data) => {
+exports.sendEmail = async (email, type, hostParam, data) => {
   try {
-    const message = prepareTemplate(type, host, data);
+    const message = prepareTemplate(type, hostParam, data);
 
-    const config = {
+    const mailOptions = {
       from: `MERN Store! <${sender}>`,
       to: email,
       subject: message.subject,
       text: message.text
     };
 
-    return await mailgun.messages().send(config);
+    if (!transporter) {
+      throw new Error('SMTP transporter is not initialized');
+    }
+
+    return await transporter.sendMail(mailOptions);
   } catch (error) {
     return error;
   }
 };
 
-const prepareTemplate = (type, host, data) => {
+const prepareTemplate = (type, hostParam, data) => {
   let message;
 
   switch (type) {
     case 'reset':
-      message = template.resetEmail(host, data);
+      message = template.resetEmail(hostParam, data);
       break;
 
     case 'reset-confirmation':
@@ -54,7 +61,7 @@ const prepareTemplate = (type, host, data) => {
       break;
 
     case 'merchant-signup':
-      message = template.merchantSignup(host, data);
+      message = template.merchantSignup(hostParam, data);
       break;
 
     case 'merchant-welcome':
