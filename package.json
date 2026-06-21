@@ -1,7 +1,7 @@
 {
-  "name": "mern-ecommerce",
+  "name": "cartza-ecommerce",
   "version": "1.0.0",
-  "description": "MERN Ecommerce",
+  "description": "Cartza Ecommerce",
   "main": "server/index.js",
   "scripts": {
     "dev": "npm-run-all --parallel dev:*",

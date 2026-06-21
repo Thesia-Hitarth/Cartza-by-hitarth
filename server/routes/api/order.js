@@ -40,7 +40,7 @@ router.post('/add', auth, async (req, res) => {
       products: cartDoc.products
     };
 
-    await smtp.sendEmail(req.user.email, 'order-confirmation', newOrder);
+    await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
 
     res.status(200).json({
       success: true,

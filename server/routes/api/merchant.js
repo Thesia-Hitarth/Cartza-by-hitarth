@@ -11,6 +11,7 @@ const Brand = require('../../models/brand');
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const smtp = require('../../services/smtp');
+const keys = require('../../config/keys');
 
 // add merchant api
 router.post('/add', async (req, res) => {
@@ -164,7 +165,7 @@ router.put('/approve/:id', auth, async (req, res) => {
       merchantDoc.email,
       merchantDoc.name,
       merchantId,
-      req.headers.host
+      keys.app.clientURL
     );
 
     res.status(200).json({

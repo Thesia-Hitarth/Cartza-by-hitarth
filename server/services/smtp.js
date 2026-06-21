@@ -27,20 +27,27 @@ exports.sendEmail = async (email, type, hostParam, data) => {
   try {
     const message = prepareTemplate(type, hostParam, data);
 
+    if (!message) {
+      throw new Error(`Email template not found for type: ${type}`);
+    }
+
     const mailOptions = {
-      from: `MERN Store! <${sender}>`,
+      from: `CARTZA! <${sender}>`,
       to: email,
       subject: message.subject,
-      text: message.text
+      text: message.text,
+      html: message.html
     };
 
     if (!transporter) {
       throw new Error('SMTP transporter is not initialized');
     }
 
-    return await transporter.sendMail(mailOptions);
+    const info = await transporter.sendMail(mailOptions);
+    return { success: true, info };
   } catch (error) {
-    return error;
+    console.error(`[SMTP Error] Failed to send "${type}" email to ${email}:`, error);
+    return { success: false, error };
   }
 };
 

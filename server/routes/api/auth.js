@@ -181,7 +181,7 @@ router.post('/forgot', async (req, res) => {
     await smtp.sendEmail(
       existingUser.email,
       'reset',
-      req.headers.host,
+      keys.app.clientURL,
       resetToken
     );
 
