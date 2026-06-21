@@ -26,12 +26,15 @@ setupDB();
 require('./config/passport')(app);
 app.use(routes);
 
-const server = app.listen(port, () => {
-  console.log(
-    `${chalk.green('✓')} ${chalk.blue(
-      `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
-    )}`
-  );
-});
+if (!process.env.VERCEL) {
+  const server = app.listen(port, () => {
+    console.log(
+      `${chalk.green('✓')} ${chalk.blue(
+        `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
+      )}`
+    );
+  });
+  socket(server);
+}
 
-socket(server);
+module.exports = app;
