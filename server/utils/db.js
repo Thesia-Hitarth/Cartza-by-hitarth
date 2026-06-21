@@ -12,7 +12,7 @@ const setupDB = async () => {
     mongoose
       .connect(database.url, {
         useNewUrlParser: true,
-        useUnifiedTopology: true,
+        useUnifiedTopology: false,
         useFindAndModify: false
       })
       .then(() =>
