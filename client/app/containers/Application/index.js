@@ -7,8 +7,9 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, withRouter } from 'react-router-dom';
 import { Container } from 'reactstrap';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import actions from '../../actions';
 
@@ -54,6 +55,48 @@ class Application extends React.PureComponent {
     document.addEventListener('keydown', this.handleTabbing);
     document.addEventListener('mousedown', this.handleMouseDown);
     window.addEventListener('storage', this.handleStorage);
+
+    // Scroll trigger animations using IntersectionObserver
+    if ('IntersectionObserver' in window) {
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px',
+        threshold: 0.1
+      };
+      
+      const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            obs.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+
+      // Initial elements
+      const animatedElements = document.querySelectorAll('[data-animate]');
+      animatedElements.forEach(el => observer.observe(el));
+      
+      // Mutation observer to detect dynamically added components (e.g., product lists, categories)
+      this.mutationObserver = new MutationObserver(() => {
+        const newAnimatedElements = document.querySelectorAll('[data-animate]:not(.is-visible)');
+        newAnimatedElements.forEach(el => observer.observe(el));
+      });
+      this.mutationObserver.observe(document.body, { childList: true, subtree: true });
+    } else {
+      // Fallback
+      const animatedElements = document.querySelectorAll('[data-animate]');
+      animatedElements.forEach(el => el.classList.add('is-visible'));
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.mutationObserver) {
+      this.mutationObserver.disconnect();
+    }
+    document.removeEventListener('keydown', this.handleTabbing);
+    document.removeEventListener('mousedown', this.handleMouseDown);
+    window.removeEventListener('storage', this.handleStorage);
   }
 
   handleStorage(e) {
@@ -73,6 +116,14 @@ class Application extends React.PureComponent {
   }
 
   render() {
+    const { location } = this.props;
+
+    const pageVariants = {
+      initial: { opacity: 0, y: 8 },
+      enter: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } },
+      exit: { opacity: 0, transition: { duration: 0.15 } }
+    };
+
     return (
       <div className='application'>
         <Notification />
@@ -80,35 +131,45 @@ class Application extends React.PureComponent {
         <main className='main'>
           <Container>
             <div className='wrapper'>
-              <Switch>
-                <Route exact path='/' component={HomePage} />
-                <Route path='/shop' component={Shop} />
-                <Route path='/sell' component={Sell} />
-                <Route path='/contact' component={Contact} />
-                <Route path='/brands' component={BrandsPage} />
-                <Route path='/product/:slug' component={ProductPage} />
-                <Route path='/order/success/:id' component={OrderSuccess} />
-                <Route path='/order/:id' component={OrderPage} />
-                <Route path='/login' component={Login} />
-                <Route path='/register' component={Signup} />
-                <Route
-                  path='/merchant-signup/:token'
-                  component={MerchantSignup}
-                />
-                <Route path='/forgot-password' component={ForgotPassword} />
-                <Route
-                  path='/reset-password/:token'
-                  component={ResetPassword}
-                />
-                <Route path='/auth/success' component={AuthSuccess} />
-                <Route path='/support' component={Authentication(Support)} />
-                <Route
-                  path='/dashboard'
-                  component={Authentication(Dashboard)}
-                />
-                <Route path='/404' component={Page404} />
-                <Route path='*' component={Page404} />
-              </Switch>
+              <AnimatePresence exitBeforeEnter>
+                <motion.div
+                  key={location.pathname}
+                  variants={pageVariants}
+                  initial="initial"
+                  animate="enter"
+                  exit="exit"
+                >
+                  <Switch location={location}>
+                    <Route exact path='/' component={HomePage} />
+                    <Route path='/shop' component={Shop} />
+                    <Route path='/sell' component={Sell} />
+                    <Route path='/contact' component={Contact} />
+                    <Route path='/brands' component={BrandsPage} />
+                    <Route path='/product/:slug' component={ProductPage} />
+                    <Route path='/order/success/:id' component={OrderSuccess} />
+                    <Route path='/order/:id' component={OrderPage} />
+                    <Route path='/login' component={Login} />
+                    <Route path='/register' component={Signup} />
+                    <Route
+                      path='/merchant-signup/:token'
+                      component={MerchantSignup}
+                    />
+                    <Route path='/forgot-password' component={ForgotPassword} />
+                    <Route
+                      path='/reset-password/:token'
+                      component={ResetPassword}
+                    />
+                    <Route path='/auth/success' component={AuthSuccess} />
+                    <Route path='/support' component={Authentication(Support)} />
+                    <Route
+                      path='/dashboard'
+                      component={Authentication(Dashboard)}
+                    />
+                    <Route path='/404' component={Page404} />
+                    <Route path='*' component={Page404} />
+                  </Switch>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </Container>
         </main>
@@ -125,4 +186,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(Application);
+export default withRouter(connect(mapStateToProps, actions)(Application));

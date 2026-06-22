@@ -48,6 +48,7 @@ class Cart extends React.PureComponent {
               toggleCart={toggleCart}
               cartItems={cartItems}
               handleRemoveFromCart={handleRemoveFromCart}
+              updateCartItemQuantity={this.props.updateCartItemQuantity}
             />
           </div>
         ) : (

@@ -1,73 +1,73 @@
 // sass variables
 
 // Theme colors
-$theme-green: #00acac;
-$theme-gray: #f8f9fa;
-$theme-bright-gray: #eceef3;
-$theme-dark-gray: #cccccc;
-$theme-athens-gray: #f1f1f2;
-$theme-blue: #2979ff;
+$theme-green: var(--color-success);
+$theme-gray: var(--color-canvas);
+$theme-bright-gray: var(--color-border);
+$theme-dark-gray: var(--color-muted);
+$theme-athens-gray: var(--color-canvas);
+$theme-blue: var(--color-accent);
 $theme-purple: #727cb6;
-$theme-white: #f6f7f8;
-$theme-light-white: #f0f0f0;
-$theme-light-blue-white: #e8f0fe;
+$theme-white: var(--color-surface);
+$theme-light-white: var(--color-border);
+$theme-light-blue-white: var(--color-canvas);
 
-$theme-black: #323232;
-$theme-light-black: #24292e;
-$theme-orange: #e4853f;
-$theme-yellow: #ffdd57;
-$theme-light-yellow: #fbeeca;
-$theme-pink: #ff3860;
-$theme-light-blue: #4a68aa;
-$theme-bright-red: #fb0000;
+$theme-black: var(--color-ink);
+$theme-light-black: var(--color-dark-nav);
+$theme-orange: var(--color-accent-alt);
+$theme-yellow: var(--color-accent-alt);
+$theme-light-yellow: var(--color-canvas);
+$theme-pink: var(--color-accent);
+$theme-light-blue: var(--color-accent);
+$theme-bright-red: var(--color-accent);
 
-$primary-color: #2962ff;
-$primary-bg: #2962ff;
+$primary-color: var(--color-accent);
+$primary-bg: var(--color-accent);
 
-$secondary-color: #f8f9fa;
-$secondary-bg: #f8f9fa;
+$secondary-color: var(--color-canvas);
+$secondary-bg: var(--color-canvas);
 
-$danger-color: #dc3545;
-$danger-bg: #dc3545;
-$danger-hover-bg: #c3081a;
+$danger-color: var(--color-accent);
+$danger-bg: var(--color-accent);
+$danger-hover-bg: var(--color-accent);
 
 $dark-bg: $theme-black;
 $dark-hover-bg: $black;
 
-$default-color: #758696;
-$default-bg: #758696;
+$default-color: var(--color-muted);
+$default-bg: var(--color-muted);
 
 // standard colors
-$blue: #20a8d8;
+$blue: var(--color-accent);
 $indigo: #6610f2 !default;
 $purple: #6f42c1 !default;
-$pink: #e83e8c !default;
-$red: #ff5454;
-$white: #fff;
-$orange: #fabb3d;
-$yellow: #ffc107 !default;
-$green: #79c447;
-$gray: #808081;
+$pink: var(--color-accent);
+$red: var(--color-accent);
+$white: var(--color-surface);
+$orange: var(--color-accent-alt);
+$yellow: var(--color-accent-alt) !default;
+$green: var(--color-success);
+$gray: var(--color-muted);
 $teal: #20c997 !default;
-$cyan: #67c2ef;
-$black: #000;
+$cyan: var(--color-accent-alt);
+$black: var(--color-ink);
 
-$font-family: 'Poppins';
-$font-family-heading: 'Poppins';
-$font-family-body: 'Poppins';
-$font-size-x-small: 12px;
-$font-size-small: 13px;
-$font-size-medium: 14px;
-$font-size-large: 15px;
-$font-size-x-large: 16px;
-$font-size-xx-large: 18px;
-$font-size-huge: 20px;
-$font-size-x-huge: 24px;
-$font-size-heading-xsmall: 14px;
-$font-size-heading-small: 16px;
-$font-size-heading-medium: 18px;
-$font-size-heading-large: 20px;
-$font-size-heading-x-large: 24px;
+$font-family: var(--font-ui);
+$font-family-heading: var(--font-display);
+$font-family-body: var(--font-ui);
+$font-size-x-small: var(--text-xs);
+$font-size-small: var(--text-sm);
+$font-size-medium: var(--text-base);
+$font-size-large: var(--text-lg);
+$font-size-x-large: var(--text-lg);
+$font-size-xx-large: var(--text-xl);
+$font-size-huge: var(--text-2xl);
+$font-size-x-huge: var(--text-3xl);
+$font-size-heading-xsmall: var(--text-xs);
+$font-size-heading-small: var(--text-sm);
+$font-size-heading-medium: var(--text-base);
+$font-size-heading-large: var(--text-lg);
+$font-size-heading-x-large: var(--text-xl);
 $font-weight-thin: 200;
 $font-weight-light: 300;
 $font-weight-normal: 400;

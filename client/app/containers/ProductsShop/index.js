@@ -33,6 +33,7 @@ class ProductsShop extends React.PureComponent {
             products={products}
             authenticated={authenticated}
             updateWishlist={updateWishlist}
+            handleAddToCart={this.props.handleAddToCart}
           />
         )}
         {!isLoading && !displayProducts && (

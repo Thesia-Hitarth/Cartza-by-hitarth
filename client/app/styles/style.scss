@@ -1,6 +1,12 @@
+// Tailwind CSS directives (with preflight disabled in tailwind.config.js)
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Cartza Theme */
 
 // Import utilities
+@import 'core/utils/tokens';
 @import 'core/utils/fonts';
 @import 'core/utils/reset';
 

@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import { BagIcon } from '../Icon';
+import { ShoppingBag } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import Button from '../Button';
 
 const CartIcon = props => {
@@ -14,7 +14,7 @@ const CartIcon = props => {
 
   const Icon = (
     <span className='cart-icon'>
-      <BagIcon />
+      <ShoppingBag size={22} strokeWidth={1.5} />
       {cartItems.length > 0 && (
         <span className='cart-badge'>
           {cartItems.length >= 99 ? '99+' : cartItems.length}

@@ -37,6 +37,7 @@ class CategoryShop extends React.PureComponent {
             products={products}
             authenticated={authenticated}
             updateWishlist={updateWishlist}
+            handleAddToCart={this.props.handleAddToCart}
           />
         )}
         {!isLoading && products && products.length <= 0 && (

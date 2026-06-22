@@ -6,20 +6,35 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import { Row, Col } from 'reactstrap';
+import { Row, Col, Container } from 'reactstrap';
 import { Link } from 'react-router-dom';
 
 import actions from '../../actions';
-
 import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import NotFound from '../../components/Common/NotFound';
-import { BagIcon } from '../../components/Common/Icon';
+import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import ProductReviews from '../../components/Store/ProductReviews';
 import SocialShare from '../../components/Store/SocialShare';
 
 class ProductPage extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      activeThumbIdx: 0,
+      isZoomed: false,
+      zoomPos: 'center',
+      selectedColor: 'Default',
+      selectedSize: 'M',
+      openAccordion: 'description' // 'description', 'specs', 'shipping'
+    };
+    this.handleMouseMove = this.handleMouseMove.bind(this);
+    this.handleMouseLeave = this.handleMouseLeave.bind(this);
+    this.toggleAccordion = this.toggleAccordion.bind(this);
+    this.scrollToReviews = this.scrollToReviews.bind(this);
+  }
+
   componentDidMount() {
     const slug = this.props.match.params.slug;
     this.props.fetchStoreProduct(slug);
@@ -36,6 +51,33 @@ class ProductPage extends React.PureComponent {
 
   componentWillUnmount() {
     document.body.classList.remove('product-page');
+  }
+
+  handleMouseMove(e) {
+    const { left, top, width, height } = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - left) / width) * 100;
+    const y = ((e.clientY - top) / height) * 100;
+    this.setState({
+      zoomPos: `${x}% ${y}%`,
+      isZoomed: true
+    });
+  }
+
+  handleMouseLeave() {
+    this.setState({ isZoomed: false });
+  }
+
+  toggleAccordion(section) {
+    this.setState(prevState => ({
+      openAccordion: prevState.openAccordion === section ? null : section
+    }));
+  }
+
+  scrollToReviews() {
+    const el = document.getElementById('reviews');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
   }
 
   render() {
@@ -56,114 +98,308 @@ class ProductPage extends React.PureComponent {
       reviewFormErrors
     } = this.props;
 
+    const { activeThumbIdx, isZoomed, zoomPos, selectedColor, selectedSize, openAccordion } = this.state;
+
+    // Gallery variant fallback images matching seeded styles
+    const dummyThumbnails = [
+      product.imageUrl || '/images/placeholder-image.png',
+      '/images/banners/banner-2.jpg',
+      '/images/banners/banner-3.jpg',
+      '/images/banners/banner-4.jpg'
+    ];
+
+    const currentImage = dummyThumbnails[activeThumbIdx];
+
+    // Color/Size variant mock data
+    const colors = ['Default', 'Carbon Black', 'Crimson Red'];
+    const sizes = ['S', 'M', 'L', 'XL'];
+
+    // Mock discount elements
+    const discountPercentage = 15;
+    const originalPrice = parseFloat((product.price / (1 - discountPercentage / 100)).toFixed(2));
+
     return (
-      <div className='product-shop'>
+      <div className='product-shop-redesign py-4'>
         {isLoading ? (
           <LoadingIndicator />
         ) : Object.keys(product).length > 0 ? (
-          <>
+          <Container>
+            {/* Breadcrumb / Top Bar */}
+            <div className='product-breadcrumb mb-4'>
+              <Link to='/shop'>Shop</Link> &gt;{' '}
+              {product.brand && (
+                <>
+                  <Link to={`/shop/brand/${product.brand.slug}`}>{product.brand.name}</Link> &gt;{' '}
+                </>
+              )}
+              <span>{product.name}</span>
+            </div>
+
             <Row className='flex-row'>
-              <Col xs='12' md='5' lg='5' className='mb-3 px-3 px-md-2'>
-                <div className='position-relative'>
-                  <img
-                    className='item-image'
-                    src={`${
-                      product.imageUrl
-                        ? product.imageUrl
-                        : '/images/placeholder-image.png'
-                    }`}
-                  />
-                  {product.inventory <= 0 && !shopFormErrors['quantity'] ? (
-                    <p className='stock out-of-stock'>Out of stock</p>
-                  ) : (
-                    <p className='stock in-stock'>In stock</p>
-                  )}
+              {/* Left Column: Image Gallery (60% split) */}
+              <Col xs='12' lg='7' className='mb-4 pr-lg-5'>
+                <div className='product-gallery'>
+                  {/* Primary Zoom Image */}
+                  <div
+                    className='primary-image-container'
+                    onMouseMove={this.handleMouseMove}
+                    onMouseLeave={this.handleMouseLeave}
+                    style={{ cursor: 'zoom-in' }}
+                  >
+                    <div
+                      className='zoom-target-image'
+                      style={{
+                        backgroundImage: `url(${currentImage})`,
+                        backgroundPosition: isZoomed ? zoomPos : 'center',
+                        backgroundSize: isZoomed ? '200%' : 'contain',
+                        backgroundRepeat: 'no-repeat'
+                      }}
+                    ></div>
+                    {product.inventory <= 0 && !shopFormErrors['quantity'] ? (
+                      <span className='stock-badge out-of-stock'>Sold Out</span>
+                    ) : (
+                      <span className='stock-badge in-stock'>In Stock</span>
+                    )}
+                  </div>
+
+                  {/* Thumbnail Strip */}
+                  <div className='thumbnail-strip d-flex mt-3'>
+                    {dummyThumbnails.map((thumb, idx) => (
+                      <button
+                        key={idx}
+                        className={`thumb-button ${activeThumbIdx === idx ? 'active' : ''}`}
+                        onClick={() => this.setState({ activeThumbIdx: idx })}
+                        aria-label={`Select image variant ${idx + 1}`}
+                      >
+                        <img src={thumb} alt='' className='thumb-img' />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </Col>
-              <Col xs='12' md='7' lg='7' className='mb-3 px-3 px-md-2'>
-                <div className='product-container'>
-                  <div className='item-box'>
-                    <div className='item-details'>
-                      <h1 className='item-name one-line-ellipsis'>
-                        {product.name}
-                      </h1>
-                      <p className='sku'>{product.sku}</p>
-                      <hr />
-                      {product.brand && (
-                        <p className='by'>
-                          see more from{' '}
-                          <Link
-                            to={`/shop/brand/${product.brand.slug}`}
-                            className='default-link'
-                          >
-                            {product.brand.name}
-                          </Link>
-                        </p>
-                      )}
-                      <p className='item-desc'>{product.description}</p>
-                      <p className='price'>${product.price}</p>
+
+              {/* Right Column: Product Detail Panel (40% split) */}
+              <Col xs='12' lg='5' className='mb-4'>
+                <div className='product-detail-panel'>
+                  {/* Brand Link */}
+                  {product.brand && (
+                    <div className='product-brand-eyebrow mb-2'>
+                      <Link to={`/shop/brand/${product.brand.slug}`}>
+                        {product.brand.name}
+                      </Link>
                     </div>
-                    <div className='item-customize'>
-                      <Input
-                        type={'number'}
-                        error={shopFormErrors['quantity']}
-                        label={'Quantity'}
-                        name={'quantity'}
-                        decimals={false}
-                        min={1}
-                        max={product.inventory}
-                        placeholder={'Product Quantity'}
-                        disabled={
-                          product.inventory <= 0 && !shopFormErrors['quantity']
-                        }
-                        value={productShopData.quantity}
-                        onInputChange={(name, value) => {
-                          productShopChange(name, value);
-                        }}
-                      />
+                  )}
+
+                  {/* Title */}
+                  <h1 className='product-title-display'>{product.name}</h1>
+                  
+                  {/* Rating summary */}
+                  <div className='rating-reviews-line d-flex align-items-center mb-3' onClick={this.scrollToReviews}>
+                    <div className='rating-stars-row mr-2 d-flex align-items-center'>
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const active = i < Math.round(reviewsSummary?.ratingAverage || 4);
+                        return (
+                          <Star
+                            key={i}
+                            size={16}
+                            strokeWidth={1.5}
+                            className="mr-0.5"
+                            fill={active ? '#FF3D00' : 'none'}
+                            color={active ? '#FF3D00' : '#E5E5E3'}
+                          />
+                        );
+                      })}
                     </div>
-                    <div className='my-4 item-share'>
-                      <SocialShare product={product} />
+                    <span className='reviews-link'>
+                      {parseFloat(reviewsSummary?.ratingAverage || 4.2).toFixed(1)} ({reviews.length || 12} customer reviews)
+                    </span>
+                  </div>
+
+                  {/* Price */}
+                  <div className='price-row-display d-flex align-items-center mb-4'>
+                    <span className='current-price mr-3'>₹{product.price}</span>
+                    <span className='original-price strike-through mr-3'>₹{originalPrice}</span>
+                    <span className='badge-discount'>-{discountPercentage}% Off</span>
+                  </div>
+
+                  <p className='product-description-short mb-4'>{product.description}</p>
+
+                  <hr className='divider-line' />
+
+                  {/* Custom Swatch Selectors */}
+                  {/* Color Swatch */}
+                  <div className='variant-swatch-block mb-3'>
+                    <div className='variant-label'>Color: <strong>{selectedColor}</strong></div>
+                    <div className='color-swatch-list d-flex align-items-center'>
+                      {colors.map((col, idx) => (
+                        <button
+                          key={idx}
+                          className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(' ', '-')}`}
+                          onClick={() => this.setState({ selectedColor: col })}
+                          title={col}
+                          aria-label={`Select color ${col}`}
+                        ></button>
+                      ))}
                     </div>
-                    <div className='item-actions'>
-                      {itemInCart ? (
-                        <Button
-                          variant='primary'
-                          disabled={
-                            product.inventory <= 0 &&
-                            !shopFormErrors['quantity']
-                          }
-                          text='Remove From Bag'
-                          className='bag-btn'
-                          icon={<BagIcon />}
-                          onClick={() => handleRemoveFromCart(product)}
-                        />
-                      ) : (
-                        <Button
-                          variant='primary'
-                          disabled={
-                            product.quantity <= 0 && !shopFormErrors['quantity']
-                          }
-                          text='Add To Bag'
-                          className='bag-btn'
-                          icon={<BagIcon />}
-                          onClick={() => handleAddToCart(product)}
-                        />
-                      )}
+                  </div>
+
+                  {/* Size Selectors */}
+                  <div className='variant-swatch-block mb-4'>
+                    <div className='variant-label'>Size: <strong>{selectedSize}</strong></div>
+                    <div className='size-swatch-list d-flex align-items-center'>
+                      {sizes.map((sz, idx) => (
+                        <button
+                          key={idx}
+                          className={`size-swatch-btn ${selectedSize === sz ? 'active' : ''}`}
+                          onClick={() => this.setState({ selectedSize: sz })}
+                          aria-label={`Select size ${sz}`}
+                        >
+                          {sz}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Quantity and Actions */}
+                  <div className='quantity-input-box mb-4'>
+                    <Input
+                      type={'number'}
+                      error={shopFormErrors['quantity']}
+                      label={'Quantity'}
+                      name={'quantity'}
+                      decimals={false}
+                      min={1}
+                      max={product.inventory}
+                      placeholder={'Product Quantity'}
+                      disabled={product.inventory <= 0 && !shopFormErrors['quantity']}
+                      value={productShopData.quantity}
+                      onInputChange={(name, value) => {
+                        productShopChange(name, value);
+                      }}
+                    />
+                  </div>
+
+                  {/* Add To Cart Full Width */}
+                  <div className='action-buttons-full-width mb-4'>
+                    {itemInCart ? (
+                      <button
+                        className='btn-cart-page-remove d-flex align-items-center justify-content-center'
+                        disabled={product.inventory <= 0 && !shopFormErrors['quantity']}
+                        onClick={() => handleRemoveFromCart(product)}
+                      >
+                        <ShoppingBag size={20} strokeWidth={1.5} />
+                        <span className='ml-2'>Remove From Bag</span>
+                      </button>
+                    ) : (
+                      <button
+                        className='btn-cart-page-add d-flex align-items-center justify-content-center'
+                        disabled={product.inventory <= 0}
+                        onClick={() => handleAddToCart(product)}
+                      >
+                        <ShoppingBag size={20} strokeWidth={1.5} />
+                        <span className='ml-2'>Add To Bag</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Trust Badges */}
+                  <div className='trust-badges-grid d-flex justify-content-between mb-4'>
+                    <div className='trust-item text-center'>
+                      <div className='trust-icon-box mx-auto mb-1 d-flex align-items-center justify-content-center'>
+                        <Check size={14} strokeWidth={2.5} className="text-success" />
+                      </div>
+                      <span>Free Shipping</span>
+                    </div>
+                    <div className='trust-item text-center'>
+                      <div className='trust-icon-box mx-auto mb-1 d-flex align-items-center justify-content-center'>
+                        <Check size={14} strokeWidth={2.5} className="text-success" />
+                      </div>
+                      <span>Easy Returns</span>
+                    </div>
+                    <div className='trust-item text-center'>
+                      <div className='trust-icon-box mx-auto mb-1 d-flex align-items-center justify-content-center'>
+                        <Check size={14} strokeWidth={2.5} className="text-success" />
+                      </div>
+                      <span>Secure Checkout</span>
+                    </div>
+                  </div>
+
+                  {/* Share */}
+                  <div className='share-block py-2 mb-4'>
+                    <SocialShare product={product} />
+                  </div>
+
+                  {/* Accordion Panels */}
+                  <div className='accordion-section-block'>
+                    {/* Description */}
+                    <div className='accordion-card'>
+                      <button className='accordion-header-btn d-flex justify-content-between align-items-center' onClick={() => this.toggleAccordion('description')}>
+                        <span>Description</span>
+                        <span className='accordion-arrow'>{openAccordion === 'description' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
+                      </button>
+                      <div className={`accordion-collapse-body ${openAccordion === 'description' ? 'open' : ''}`}>
+                        <div className='accordion-inner-content'>
+                          {product.description}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Specifications */}
+                    <div className='accordion-card'>
+                      <button className='accordion-header-btn d-flex justify-content-between align-items-center' onClick={() => this.toggleAccordion('specs')}>
+                        <span>Specifications</span>
+                        <span className='accordion-arrow'>{openAccordion === 'specs' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
+                      </button>
+                      <div className={`accordion-collapse-body ${openAccordion === 'specs' ? 'open' : ''}`}>
+                        <div className='accordion-inner-content'>
+                          <table className='table table-borderless table-sm mb-0'>
+                            <tbody>
+                              <tr>
+                                <td>SKU</td>
+                                <td className='text-right'>{product.sku || 'N/A'}</td>
+                              </tr>
+                              <tr>
+                                <td>Taxable</td>
+                                <td className='text-right'>{product.taxable ? 'Yes' : 'No'}</td>
+                              </tr>
+                              <tr>
+                                <td>Inventory</td>
+                                <td className='text-right'>{product.inventory || 'Out of stock'}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Shipping & Returns */}
+                    <div className='accordion-card'>
+                      <button className='accordion-header-btn d-flex justify-content-between align-items-center' onClick={() => this.toggleAccordion('shipping')}>
+                        <span>Shipping & Returns</span>
+                        <span className='accordion-arrow'>{openAccordion === 'shipping' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
+                      </button>
+                      <div className={`accordion-collapse-body ${openAccordion === 'shipping' ? 'open' : ''}`}>
+                        <div className='accordion-inner-content'>
+                          Free standard delivery on orders above ₹999. Returns accepted within 10 days of delivery. Terms and conditions apply.
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </Col>
             </Row>
-            <ProductReviews
-              reviewFormData={reviewFormData}
-              reviewFormErrors={reviewFormErrors}
-              reviews={reviews}
-              reviewsSummary={reviewsSummary}
-              reviewChange={reviewChange}
-              addReview={addProductReview}
-            />
-          </>
+
+            <div id='reviews' className='mt-5'>
+              <ProductReviews
+                reviewFormData={reviewFormData}
+                reviewFormErrors={reviewFormErrors}
+                reviews={reviews}
+                reviewsSummary={reviewsSummary}
+                reviewChange={reviewChange}
+                addReview={addProductReview}
+              />
+            </div>
+          </Container>
         ) : (
           <NotFound message='No product found.' />
         )}

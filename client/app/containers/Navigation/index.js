@@ -5,9 +5,8 @@
  */
 
 import React from 'react';
-
 import { connect } from 'react-redux';
-import { Link, NavLink as ActiveLink, withRouter } from 'react-router-dom';
+import { Link, NavLink, withRouter } from 'react-router-dom';
 import Autosuggest from 'react-autosuggest';
 import AutosuggestHighlightMatch from 'autosuggest-highlight/match';
 import AutosuggestHighlightParse from 'autosuggest-highlight/parse';
@@ -15,11 +14,6 @@ import {
   Container,
   Row,
   Col,
-  Navbar,
-  Nav,
-  NavItem,
-  NavLink,
-  UncontrolledDropdown,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
@@ -27,18 +21,36 @@ import {
 } from 'reactstrap';
 
 import actions from '../../actions';
-
-import Button from '../../components/Common/Button';
 import CartIcon from '../../components/Common/CartIcon';
-import { BarsIcon } from '../../components/Common/Icon';
-import MiniBrand from '../../components/Store//MiniBrand';
+import { Heart, Search, User, X } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import Menu from '../NavigationMenu';
 import Cart from '../Cart';
 
 class Navigation extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      showAnnouncement: localStorage.getItem('cartza_announcement_dismissed') !== 'true',
+      isDropdownOpen: false
+    };
+    this.dismissAnnouncement = this.dismissAnnouncement.bind(this);
+    this.toggleDropdown = this.toggleDropdown.bind(this);
+  }
+
   componentDidMount() {
     this.props.fetchStoreBrands();
     this.props.fetchStoreCategories();
+  }
+
+  dismissAnnouncement() {
+    this.setState({ showAnnouncement: false });
+    localStorage.setItem('cartza_announcement_dismissed', 'true');
+  }
+
+  toggleDropdown() {
+    this.setState(prevState => ({
+      isDropdownOpen: !prevState.isDropdownOpen
+    }));
   }
 
   toggleBrand() {
@@ -55,7 +67,7 @@ class Navigation extends React.PureComponent {
     return suggestion.name;
   }
 
-  renderSuggestion(suggestion, { query, isHighlighted }) {
+  renderSuggestion(suggestion, { query }) {
     const BoldName = (suggestion, query) => {
       const matches = AutosuggestHighlightMatch(suggestion.name, query);
       const parts = AutosuggestHighlightParse(suggestion.name, matches);
@@ -77,28 +89,16 @@ class Navigation extends React.PureComponent {
     };
 
     return (
-      <Link to={`/product/${suggestion.slug}`}>
-        <div className='d-flex'>
+      <Link to={`/product/${suggestion.slug}`} className="search-suggestion-link">
+        <div className='d-flex align-items-center suggestion-item'>
           <img
-            className='item-image'
-            src={`${suggestion.imageUrl
-                ? suggestion.imageUrl
-                : '/images/placeholder-image.png'
-              }`}
+            className='item-image mr-3'
+            src={`${suggestion.imageUrl ? suggestion.imageUrl : '/images/placeholder-image.png'}`}
+            alt={suggestion.name}
           />
-          <div>
-            <Container>
-              <Row>
-                <Col>
-                  <span className='name'>{BoldName(suggestion, query)}</span>
-                </Col>
-              </Row>
-              <Row>
-                <Col>
-                  <span className='price'>${suggestion.price}</span>
-                </Col>
-              </Row>
-            </Container>
+          <div className="suggestion-details">
+            <span className='name'>{BoldName(suggestion, query)}</span>
+            <span className='price d-block'>₹{suggestion.price}</span>
           </div>
         </div>
       </Link>
@@ -127,7 +127,7 @@ class Navigation extends React.PureComponent {
     } = this.props;
 
     const inputProps = {
-      placeholder: 'Search Products',
+      placeholder: 'Search Products...',
       value: searchValue,
       onChange: (_, { newValue }) => {
         onSearch(newValue);
@@ -136,170 +136,154 @@ class Navigation extends React.PureComponent {
 
     return (
       <header className='header fixed-mobile-header'>
-        <div className='header-info'>
+        {/* Tier 1: Announcement Bar */}
+        {this.state.showAnnouncement && (
+          <div className='announcement-bar'>
+            <div className='announcement-ticker'>
+              <span>Free Delivery on Orders Above ₹999 · Use Code CARTZA10 for 10% Off</span>
+            </div>
+            <button className='announcement-close' onClick={this.dismissAnnouncement} aria-label='Dismiss announcement'>
+              <X size={14} strokeWidth={1.5} />
+            </button>
+          </div>
+        )}
+
+        {/* Tier 2: Main Nav */}
+        <div className='main-nav-wrapper'>
           <Container>
-            <Row>
-              <Col md='4' className='text-center d-none d-md-block'>
-                <i className='fa fa-truck' />
-                <span>Free Shipping</span>
-              </Col>
-              <Col md='4' className='text-center d-none d-md-block'>
-                <i className='fa fa-credit-card' />
-                <span>Payment Methods</span>
-              </Col>
-              <Col md='4' className='text-center d-none d-md-block'>
-                <i className='fa fa-phone' />
-                <span>Call us 951-999-9999</span>
-              </Col>
-              <Col xs='12' className='text-center d-block d-md-none'>
-                <i className='fa fa-phone' />
-                <span> Need advice? Call us 951-999-9999</span>
-              </Col>
-            </Row>
-          </Container>
-        </div>
-        <Container>
-          <Row className='align-items-center top-header'>
-            <Col
-              xs={{ size: 12, order: 1 }}
-              sm={{ size: 12, order: 1 }}
-              md={{ size: 3, order: 1 }}
-              lg={{ size: 3, order: 1 }}
-              className='pr-0'
-            >
-              <div className='brand'>
-                {categories && categories.length > 0 && (
-                  <Button
-                    borderless
-                    variant='empty'
-                    className='d-none d-md-block'
-                    ariaLabel='open the menu'
-                    icon={<BarsIcon />}
-                    onClick={() => this.toggleMenu()}
-                  />
-                )}
-                <Link to='/'>
-                  <h1 className='logo'>CARTZA</h1>
+            <div className='main-nav-inner d-flex align-items-center justify-content-between'>
+              {/* Left Logo / Branding */}
+              <div className='nav-left d-flex align-items-center'>
+                {/* Mobile Hamburger menu */}
+                <button
+                  className={`mobile-hamburger d-lg-none ${isMenuOpen ? 'open' : ''}`}
+                  onClick={() => this.toggleMenu()}
+                  aria-label='Toggle menu'
+                >
+                  <span className='hamburger-line'></span>
+                  <span className='hamburger-line'></span>
+                  <span className='hamburger-line'></span>
+                </button>
+
+                <Link to='/' className='brand-link'>
+                  <span className='logo-text'>CARTZA</span>
+                  <span className='logo-underline'></span>
                 </Link>
               </div>
-            </Col>
-            <Col
-              xs={{ size: 12, order: 4 }}
-              sm={{ size: 12, order: 4 }}
-              md={{ size: 12, order: 4 }}
-              lg={{ size: 5, order: 2 }}
-              className='pt-2 pt-lg-0'
-            >
-              <Autosuggest
-                suggestions={suggestions}
-                onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                onSuggestionsClearRequested={onSuggestionsClearRequested}
-                getSuggestionValue={this.getSuggestionValue}
-                renderSuggestion={this.renderSuggestion}
-                inputProps={inputProps}
-                onSuggestionSelected={(_, item) => {
-                  history.push(`/product/${item.suggestion.slug}`);
-                }}
-              />
-            </Col>
-            <Col
-              xs={{ size: 12, order: 2 }}
-              sm={{ size: 12, order: 2 }}
-              md={{ size: 4, order: 1 }}
-              lg={{ size: 5, order: 3 }}
-              className='desktop-hidden'
-            >
-              <div className='header-links'>
-                <Button
-                  borderless
-                  variant='empty'
-                  ariaLabel='open the menu'
-                  icon={<BarsIcon />}
-                  onClick={() => this.toggleMenu()}
-                />
-                <CartIcon cartItems={cartItems} onClick={toggleCart} />
+
+              {/* Center Search Bar */}
+              <div className='nav-center d-none d-lg-block'>
+                <div className='search-input-wrapper'>
+                  <span className='search-icon-left'>
+                    <Search size={18} strokeWidth={1.5} />
+                  </span>
+                  <Autosuggest
+                    suggestions={suggestions}
+                    onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+                    onSuggestionsClearRequested={onSuggestionsClearRequested}
+                    getSuggestionValue={this.getSuggestionValue}
+                    renderSuggestion={this.renderSuggestion}
+                    inputProps={inputProps}
+                    onSuggestionSelected={(_, item) => {
+                      history.push(`/product/${item.suggestion.slug}`);
+                    }}
+                  />
+                  {searchValue && (
+                    <button className='search-clear-btn' onClick={() => onSearch('')} aria-label='Clear search'>
+                      <X size={16} strokeWidth={1.5} />
+                    </button>
+                  )}
+                </div>
               </div>
-            </Col>
-            <Col
-              xs={{ size: 12, order: 2 }}
-              sm={{ size: 12, order: 2 }}
-              md={{ size: 9, order: 1 }}
-              lg={{ size: 4, order: 3 }}
-            // className='px-0'
-            >
-              <Navbar color='light' light expand='md' className='mt-1 mt-md-0'>
-                <CartIcon
-                  className='d-none d-md-block'
-                  cartItems={cartItems}
-                  onClick={toggleCart}
+
+              {/* Right Controls & Icons */}
+              <div className='nav-right d-flex align-items-center'>
+                <div className='nav-icon-row d-flex align-items-center'>
+                  {/* Search Icon for Mobile */}
+                  <button className='nav-icon-btn d-lg-none mobile-search-trigger' aria-label='Search'>
+                    <Search size={22} strokeWidth={1.5} />
+                  </button>
+
+                  {/* Wishlist Icon */}
+                  <Link to='/dashboard' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist'>
+                    <Heart className='nav-icon' size={22} strokeWidth={1.5} />
+                  </Link>
+
+                  {/* Account / User Menu Dropdown */}
+                  <Dropdown isOpen={this.state.isDropdownOpen} toggle={this.toggleDropdown} className='account-dropdown-nav'>
+                    <DropdownToggle className='nav-icon-btn d-flex align-items-center' tag="button" aria-label='Account menu'>
+                      <User className='nav-icon' size={22} strokeWidth={1.5} />
+                    </DropdownToggle>
+                    <DropdownMenu right>
+                      {authenticated ? (
+                        <>
+                          <div className='dropdown-user-greeting px-3 py-2'>
+                            <strong>Hello, {user.firstName || 'User'}</strong>
+                          </div>
+                          <DropdownItem divider />
+                          <DropdownItem onClick={() => history.push('/dashboard')}>Dashboard</DropdownItem>
+                          <DropdownItem onClick={signOut}>Sign Out</DropdownItem>
+                        </>
+                      ) : (
+                        <>
+                          <DropdownItem onClick={() => history.push('/login')}>Login</DropdownItem>
+                          <DropdownItem onClick={() => history.push('/register')}>Sign Up</DropdownItem>
+                        </>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
+
+                  {/* Cart Icon */}
+                  <CartIcon cartItems={cartItems} onClick={toggleCart} className='nav-cart-icon-btn' />
+                </div>
+              </div>
+            </div>
+
+            {/* Mobile-only Search Bar (Visible when collapsed on mobile) */}
+            <div className='mobile-search-bar d-lg-none py-2'>
+              <div className='search-input-wrapper'>
+                <span className='search-icon-left'>
+                  <Search size={16} strokeWidth={1.5} />
+                </span>
+                <Autosuggest
+                  suggestions={suggestions}
+                  onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+                  onSuggestionsClearRequested={onSuggestionsClearRequested}
+                  getSuggestionValue={this.getSuggestionValue}
+                  renderSuggestion={this.renderSuggestion}
+                  inputProps={{ ...inputProps, placeholder: 'Search...' }}
+                  onSuggestionSelected={(_, item) => {
+                    history.push(`/product/${item.suggestion.slug}`);
+                  }}
                 />
-                <Nav navbar>
-                  {brands && brands.length > 0 && (
-                    <Dropdown
-                      nav
-                      inNavbar
-                      toggle={() => this.toggleBrand()}
-                      isOpen={isBrandOpen}
-                    >
-                      <DropdownToggle nav>
-                        Brands
-                        <span className='fa fa-chevron-down dropdown-caret'></span>
-                      </DropdownToggle>
-                      <DropdownMenu right className='nav-brand-dropdown'>
-                        <div className='mini-brand'>
-                          <MiniBrand
-                            brands={brands}
-                            toggleBrand={() => this.toggleBrand()}
-                          />
-                        </div>
-                      </DropdownMenu>
-                    </Dropdown>
-                  )}
-                  <NavItem>
-                    <NavLink
-                      tag={ActiveLink}
-                      to='/shop'
-                      activeClassName='active'
-                    >
-                      Shop
-                    </NavLink>
-                  </NavItem>
-                  {authenticated ? (
-                    <UncontrolledDropdown nav inNavbar>
-                      <DropdownToggle nav>
-                        {user.firstName ? user.firstName : 'Welcome'}
-                        <span className='fa fa-chevron-down dropdown-caret'></span>
-                      </DropdownToggle>
-                      <DropdownMenu right>
-                        <DropdownItem
-                          onClick={() => history.push('/dashboard')}
-                        >
-                          Dashboard
-                        </DropdownItem>
-                        <DropdownItem onClick={signOut}>Sign Out</DropdownItem>
-                      </DropdownMenu>
-                    </UncontrolledDropdown>
-                  ) : (
-                    <UncontrolledDropdown nav inNavbar>
-                      <DropdownToggle nav>
-                        Welcome!
-                        <span className='fa fa-chevron-down dropdown-caret'></span>
-                      </DropdownToggle>
-                      <DropdownMenu right>
-                        <DropdownItem onClick={() => history.push('/login')}>
-                          Login
-                        </DropdownItem>
-                        <DropdownItem onClick={() => history.push('/register')}>
-                          Sign Up
-                        </DropdownItem>
-                      </DropdownMenu>
-                    </UncontrolledDropdown>
-                  )}
-                </Nav>
-              </Navbar>
-            </Col>
-          </Row>
-        </Container>
+              </div>
+            </div>
+          </Container>
+        </div>
+
+        {/* Tier 3: Category Nav Strip */}
+        {categories && categories.length > 0 && (
+          <div className='category-nav-strip d-none d-md-block'>
+            <Container>
+              <div className='category-strip-inner d-flex align-items-center justify-content-center'>
+                <NavLink to='/shop' className='category-strip-item' activeClassName='active' exact>
+                  All Products
+                </NavLink>
+                {categories.map((link, index) => (
+                  <NavLink
+                    key={index}
+                    className='category-strip-item'
+                    to={'/shop/category/' + link.slug}
+                    activeClassName='active'
+                    exact
+                  >
+                    {link.name}
+                  </NavLink>
+                ))}
+              </div>
+            </Container>
+          </div>
+        )}
 
         {/* hidden cart drawer */}
         <div
@@ -310,27 +294,25 @@ class Navigation extends React.PureComponent {
             <Cart />
           </div>
           <div
-            className={
-              isCartOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'
-            }
+            className={isCartOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'}
             onClick={toggleCart}
           />
         </div>
 
-        {/* hidden menu drawer */}
+        {/* Full-screen Overlay Menu for Mobile */}
         <div
-          className={isMenuOpen ? 'mini-menu-open' : 'hidden-mini-menu'}
+          className={`mobile-full-screen-menu ${isMenuOpen ? 'open' : ''}`}
           aria-hidden={`${isMenuOpen ? false : true}`}
         >
-          <div className='mini-menu'>
+          <div className='menu-header-bar d-flex align-items-center justify-content-between px-4 py-3'>
+            <span className='logo-text text-white'>CARTZA</span>
+            <button className='menu-close-btn' onClick={() => this.toggleMenu()} aria-label='Close menu'>
+              <X size={24} strokeWidth={1.5} className="text-white" />
+            </button>
+          </div>
+          <div className='menu-body-overlay'>
             <Menu />
           </div>
-          <div
-            className={
-              isMenuOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'
-            }
-            onClick={toggleMenu}
-          />
         </div>
       </header>
     );

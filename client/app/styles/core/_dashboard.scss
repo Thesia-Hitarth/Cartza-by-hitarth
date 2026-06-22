@@ -1,90 +1,304 @@
-.panel-body {
-  // padding: 10px;
+/* Dashboard Redesign Styles */
 
-  @include media-breakpoint-down(sm) {
-    margin-top: 20px;
+.admin,
+.merchant,
+.customer {
+  margin-top: var(--space-4);
+  font-family: var(--font-ui);
+}
+
+.panel-body {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-5);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  min-height: 500px;
+  
+  @media (max-width: 767px) {
+    margin-top: var(--space-4);
+    padding: var(--space-4);
   }
 }
 
+/* Sidebar Custom Styling */
 .panel-sidebar {
-  .panel-title,
-  .menu-panel {
-    margin: 0;
-    padding: 10px 0px;
-    text-align: center;
-    border: $border-primary;
-    border-bottom: none;
-  }
-
-  .menu-panel {
-    &.collapse {
-      border-bottom: $border-primary;
-
-      &:hover {
-        background-color: $theme-gray;
-      }
-    }
-  }
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: var(--space-4);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 
   .panel-title {
-    @include media-breakpoint-down(sm) {
-      display: none;
-    }
-  }
-
-  .navbar {
-    padding: 0px;
+    font-family: var(--font-brand);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--color-muted) !important;
+    padding-bottom: var(--space-3);
+    margin-bottom: var(--space-3);
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
   }
 
   .menu-panel {
     display: none;
     width: 100%;
-    @include media-breakpoint-down(sm) {
+    height: 44px;
+    background-color: var(--color-ink);
+    color: var(--color-surface);
+    border: none;
+    border-radius: 6px;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: var(--space-3);
+
+    @media (max-width: 767px) {
       display: block;
-      cursor: pointer;
     }
+  }
 
-    &:hover {
-      background-color: transparent;
-    }
-
-    .btn-text {
-      font-size: $font-size-heading-xsmall !important;
-      font-weight: $font-weight-normal;
+  .navbar {
+    padding: 0;
+    width: 100%;
+    
+    .collapse {
+      width: 100%;
     }
   }
 
   .panel-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
     width: 100%;
-    text-align: center;
-    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
 
     li {
-      border-top: $border-primary;
-      border-right: $border-primary;
-      border-left: $border-primary;
-
-      &:hover {
-        a {
-          color: $font-custom-color !important;
-        }
-      }
-
-      &:last-child {
-        border-bottom: $border-primary;
-      }
+      border: none !important;
+      padding: 0;
+      width: 100%;
 
       a {
         display: block;
-        padding: 10px 0px;
+        padding: var(--space-3) var(--space-4);
+        border-radius: 8px;
+        font-family: var(--font-ui);
+        font-size: var(--text-base);
+        font-weight: 500;
+        color: var(--color-muted) !important;
         text-transform: capitalize;
-        color: $font-custom-color !important;
-        font-weight: $font-weight-normal;
+        transition: all 0.2s ease;
+        border-left: 0px solid transparent;
+
+        &:hover {
+          color: var(--color-ink) !important;
+          background-color: rgba(255, 61, 0, 0.04);
+        }
 
         &.active-link {
-          font-weight: $font-weight-medium;
-          background-color: $white;
+          background-color: rgba(255, 61, 0, 0.06);
+          color: var(--color-accent) !important;
+          border-left: 4px solid var(--color-accent);
+          border-top-left-radius: 0;
+          border-bottom-left-radius: 0;
+          font-weight: 600;
         }
+      }
+    }
+  }
+}
+
+/* Stats Cards Grid Layout */
+.stats-cards-grid {
+  .stats-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    opacity: 0;
+    transform: translateY(16px);
+    animation: statsFadeIn 0.5s ease forwards;
+    animation-delay: calc(var(--card-idx) * 80ms);
+
+    .stats-label {
+      font-family: var(--font-brand);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-muted);
+    }
+
+    .stats-number {
+      font-family: var(--font-ui);
+      font-size: var(--text-xl);
+      font-weight: 700;
+      color: var(--color-ink);
+    }
+
+    .stats-trend {
+      font-size: 12px;
+      font-weight: 600;
+      padding: var(--space-1) var(--space-2);
+      border-radius: 4px;
+
+      &.up {
+        color: var(--color-success);
+        background-color: rgba(22, 163, 74, 0.08);
+      }
+
+      &.down {
+        color: var(--color-accent);
+        background-color: rgba(255, 61, 0, 0.08);
+      }
+    }
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+      border-color: rgba(0, 0, 0, 0.15);
+    }
+  }
+}
+
+@keyframes statsFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Redesigned Form Fields Inside Dashboard */
+.account-details-form-box {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+
+  .info-panel-header {
+    border-bottom: 1px solid var(--color-border);
+    
+    .email-label {
+      font-family: var(--font-brand);
+      font-size: var(--text-xs);
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      letter-spacing: 0.05em;
+    }
+    
+    .user-email {
+      font-family: var(--font-ui);
+      font-size: var(--text-base);
+      color: var(--color-ink);
+    }
+  }
+
+  .btn-dashboard-save {
+    background-color: var(--color-ink);
+    color: var(--color-surface);
+    border: none;
+    border-radius: 6px;
+    height: 46px;
+    padding: 0 var(--space-6);
+    font-family: var(--font-ui);
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: var(--color-accent);
+      box-shadow: 0 4px 12px rgba(255, 61, 0, 0.2);
+    }
+  }
+}
+
+/* Custom Table Styles (Overrides for react-bootstrap-table-next) */
+.table-section {
+  font-family: var(--font-ui);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+
+  .react-bootstrap-table {
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: var(--color-surface);
+  }
+
+  table {
+    margin-bottom: 0;
+    
+    thead {
+      background-color: var(--color-canvas);
+      border-bottom: 1px solid var(--color-border);
+
+      th {
+        font-family: var(--font-brand);
+        font-size: var(--text-xs);
+        font-weight: 600;
+        text-transform: uppercase;
+        color: var(--color-ink);
+        letter-spacing: 0.05em;
+        border: none;
+        padding: var(--space-3) var(--space-4);
+        cursor: pointer;
+        
+        .sort-order {
+          margin-left: var(--space-1);
+          color: var(--color-muted);
+          transition: color 0.15s ease;
+        }
+
+        &:hover {
+          background-color: var(--color-border);
+          .sort-order { color: var(--color-ink); }
+        }
+      }
+    }
+
+    tbody {
+      tr {
+        border-bottom: 1px solid var(--color-border);
+        transition: background-color 0.15s ease;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        td {
+          padding: var(--space-3) var(--space-4);
+          vertical-align: middle;
+          border: none;
+        }
+
+        &:hover {
+          background-color: rgba(0, 0, 0, 0.02) !important;
+        }
+      }
+    }
+  }
+
+  /* CSV and search headers styling */
+  .search {
+    margin-bottom: var(--space-4);
+    input {
+      height: 40px;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      padding: 0 var(--space-3);
+      
+      &:focus {
+        border-color: var(--color-ink);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(13, 13, 13, 0.08);
       }
     }
   }

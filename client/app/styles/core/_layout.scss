@@ -7,19 +7,19 @@ html {
 }
 
 body {
-  background-color: $white;
-  color: $font-color !important;
-  font-family: $font-family-body;
-  font-size: $font-size-small;
-  font-weight: $font-weight-normal;
+  background-color: var(--color-canvas) !important;
+  color: var(--color-ink) !important;
+  font-family: var(--font-ui) !important;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-normal);
   height: 100%;
-  letter-spacing: $letter-spacing;
-  line-height: $line-height;
+  letter-spacing: var(--space-1);
+  line-height: var(--line-height);
   margin: 0;
   padding: 0;
   position: relative;
   text-rendering: optimizeLegibility;
-  // -webkit-font-smoothing: antialiased;
+  -webkit-font-smoothing: antialiased;
 }
 
 .application {
@@ -175,4 +175,54 @@ body.user-is-tabbing *:focus {
   outline: none;
   box-shadow: $outline-box-shadow;
   border-radius: $border-radius-default;
+}
+
+.container {
+  max-width: 1340px !important;
+  width: 100%;
+  padding-left: var(--space-5) !important; // 24px
+  padding-right: var(--space-5) !important;
+
+  @media (min-width: 768px) {
+    padding-left: var(--space-7) !important; // 48px
+    padding-right: var(--space-7) !important;
+  }
+
+  @media (min-width: 1024px) {
+    padding-left: var(--space-8) !important; // 64px
+    padding-right: var(--space-8) !important;
+  }
+}
+
+/* Scroll Trigger Reveal Animations */
+[data-animate="fade-up"] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: opacity, transform;
+}
+
+[data-animate="fade-up"].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Accessibility: Respect user-preferred reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+    transform: none !important;
+    clip-path: none !important;
+  }
+
+  [data-animate="fade-up"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
 }

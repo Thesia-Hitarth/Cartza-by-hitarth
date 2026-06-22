@@ -38,6 +38,7 @@ class BrandsShop extends React.PureComponent {
             products={products}
             authenticated={authenticated}
             updateWishlist={updateWishlist}
+            handleAddToCart={this.props.handleAddToCart}
           />
         ) : (
           <NotFound message='No products found.' />

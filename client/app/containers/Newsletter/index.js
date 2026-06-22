@@ -1,22 +1,17 @@
-/*
+/**
  *
  * Newsletter
  *
  */
 
 import React from 'react';
-
 import { connect } from 'react-redux';
 
 import actions from '../../actions';
 
-import Input from '../../components/Common/Input';
-import Button from '../../components/Common/Button';
-
 class Newsletter extends React.PureComponent {
   render() {
-    const { email, newsletterChange, subscribeToNewsletter, formErrors } =
-      this.props;
+    const { email, newsletterChange, subscribeToNewsletter, formErrors } = this.props;
 
     const handleSubmit = event => {
       event.preventDefault();
@@ -24,31 +19,34 @@ class Newsletter extends React.PureComponent {
     };
 
     return (
-      <div className='newsletter-form'>
-        <p>Sign Up for Our Newsletter</p>
-        <form onSubmit={handleSubmit}>
-          <div className='subscribe'>
-            <Input
-              type={'text'}
-              error={formErrors['email']}
-              name={'email'}
-              placeholder={'Please Enter Your Email'}
+      <div className='newsletter-form-redesign text-center py-2'>
+        <h2 className='newsletter-headline mb-3'>Get the Best Deals First.</h2>
+        
+        <form onSubmit={handleSubmit} className='newsletter-submit-form mx-auto'>
+          <div className='newsletter-input-row d-flex align-items-center'>
+            <input
+              type='email'
+              name='email'
+              className='newsletter-input'
+              placeholder='Enter your email address'
               value={email}
-              onInputChange={(name, value) => {
-                newsletterChange(name, value);
-              }}
-              inlineElement={SubscribeButton}
+              onChange={e => newsletterChange('email', e.target.value)}
+              required
             />
+            <button type='submit' className='btn-newsletter-subscribe'>
+              Subscribe
+            </button>
           </div>
         </form>
+        {formErrors['email'] && (
+          <p className='text-danger mt-2 font-weight-500' style={{ fontSize: '13px' }}>
+            {formErrors['email']}
+          </p>
+        )}
       </div>
     );
   }
 }
-
-const SubscribeButton = (
-  <Button type='submit' variant='primary' text='Subscribe' />
-);
 
 const mapStateToProps = state => {
   return {

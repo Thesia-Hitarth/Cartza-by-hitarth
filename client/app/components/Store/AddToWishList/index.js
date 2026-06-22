@@ -7,7 +7,7 @@
 import React from 'react';
 
 import Checkbox from '../../Common/Checkbox';
-import { HeartIcon } from '../../Common/Icon';
+import { Heart } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 const AddToWishList = props => {
   const { id, liked, enabled, updateWishlist } = props;
@@ -19,7 +19,7 @@ const AddToWishList = props => {
         name={'wishlist'}
         disabled={!enabled}
         checked={liked}
-        label={<HeartIcon />}
+        label={<Heart size={20} strokeWidth={1.5} fill={liked ? '#FF3D00' : 'none'} color={liked ? '#FF3D00' : '#6B7280'} />}
         onChange={(_, value) => {
           updateWishlist(value, id);
         }}

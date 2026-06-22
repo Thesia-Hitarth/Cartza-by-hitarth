@@ -5,78 +5,88 @@
  */
 
 import React from 'react';
-
 import { Link } from 'react-router-dom';
-import { Container, Row, Col } from 'reactstrap';
-
-import Button from '../../Common/Button';
+import { Plus, Minus, Trash2 } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 const CartList = props => {
-  const { cartItems, handleRemoveFromCart } = props;
+  const { cartItems, handleRemoveFromCart, updateCartItemQuantity, toggleCart } = props;
 
   const handleProductClick = () => {
-    props.toggleCart();
+    if (toggleCart) {
+      toggleCart();
+    }
   };
 
   return (
-    <div className='cart-list'>
-      {cartItems.map((item, index) => (
-        <div key={index} className='item-box'>
-          <div className='item-details'>
-            <Container>
-              <Row className='mb-2 align-items-center'>
-                <Col xs='10' className='pr-0'>
-                  <div className='d-flex align-items-center'>
-                    <img
-                      className='item-image mr-2'
-                      src={`${
-                        item.imageUrl
-                          ? item.imageUrl
-                          : '/images/placeholder-image.png'
-                      }`}
-                    />
+    <div className='cart-list-custom'>
+      {cartItems.map((item, index) => {
+        return (
+          <div key={item._id || index} className='cart-item-row d-flex align-items-center justify-content-between mb-4'>
+            {/* Left: Product Image */}
+            <div className='cart-item-img-box mr-3'>
+              <img
+                className='cart-item-img'
+                src={`${item.imageUrl ? item.imageUrl : '/images/placeholder-image.png'}`}
+                alt={item.name}
+              />
+            </div>
 
-                    <Link
-                      to={`/product/${item.slug}`}
-                      className='item-link one-line-ellipsis'
-                      onClick={handleProductClick}
-                    >
-                      <h2 className='item-name one-line-ellipsis'>
-                        {item.name}
-                      </h2>
-                    </Link>
-                  </div>
-                </Col>
-                <Col xs='2' className='text-right'>
-                  <Button
-                    borderless
-                    variant='empty'
-                    ariaLabel={`remove ${item.name} from cart`}
-                    icon={<i className='icon-trash' aria-hidden='true' />}
-                    onClick={() => handleRemoveFromCart(item)}
-                  />
-                </Col>
-              </Row>
-              <Row className='mb-2 align-items-center'>
-                <Col xs='9'>
-                  <p className='item-label'>price</p>
-                </Col>
-                <Col xs='3' className='text-right'>
-                  <p className='value price'>{` $${item?.totalPrice}`}</p>
-                </Col>
-              </Row>
-              <Row className='mb-2 align-items-center'>
-                <Col xs='9'>
-                  <p className='item-label'>quantity</p>
-                </Col>
-                <Col xs='3' className='text-right'>
-                  <p className='value quantity'>{` ${item.quantity}`}</p>
-                </Col>
-              </Row>
-            </Container>
+            {/* Middle: Details */}
+            <div className='cart-item-details flex-grow-1 mr-3'>
+              {item.brand && (
+                <div className='cart-item-brand'>{item.brand.name || item.brand}</div>
+              )}
+              <h4 className='cart-item-name-text mb-2'>
+                <Link to={`/product/${item.slug}`} onClick={handleProductClick}>
+                  {item.name}
+                </Link>
+              </h4>
+
+              {/* Quantity Stepper Pill */}
+              <div className='cart-item-stepper-pill d-flex align-items-center'>
+                <button
+                  className='stepper-btn minus'
+                  onClick={() => {
+                    if (updateCartItemQuantity && item.quantity > 1) {
+                      updateCartItemQuantity(item, item.quantity - 1);
+                    }
+                  }}
+                  disabled={item.quantity <= 1}
+                  aria-label="Decrease quantity"
+                >
+                  <Minus size={12} strokeWidth={2.5} />
+                </button>
+                <span className='stepper-value px-3'>{item.quantity}</span>
+                <button
+                  className='stepper-btn plus'
+                  onClick={() => {
+                    if (updateCartItemQuantity) {
+                      updateCartItemQuantity(item, item.quantity + 1);
+                    }
+                  }}
+                  aria-label="Increase quantity"
+                >
+                  <Plus size={12} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+
+            {/* Right: Pricing & Remove */}
+            <div className='cart-item-right-block text-right d-flex flex-column align-items-end justify-content-between h-100'>
+              <button
+                className='cart-item-remove-btn mb-2'
+                onClick={() => handleRemoveFromCart(item)}
+                aria-label={`Remove ${item.name} from cart`}
+              >
+                <Trash2 size={16} strokeWidth={1.5} />
+              </button>
+              <div className='cart-item-price-display'>
+                ₹{parseFloat(item.totalPrice || (item.price * item.quantity)).toFixed(2)}
+              </div>
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 };

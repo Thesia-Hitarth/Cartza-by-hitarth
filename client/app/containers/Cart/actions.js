@@ -30,10 +30,10 @@ import { toggleCart } from '../Navigation/actions';
 // Handle Add To Cart
 export const handleAddToCart = product => {
   return (dispatch, getState) => {
-    product.quantity = Number(getState().product.productShopData.quantity);
+    product.quantity = product.quantity ? Number(product.quantity) : Number(getState().product.productShopData.quantity || 1);
     product.totalPrice = product.quantity * product.price;
     product.totalPrice = parseFloat(product.totalPrice.toFixed(2));
-    const inventory = getState().product.storeProduct.inventory;
+    const inventory = product.inventory || product.quantity; // Fallback to quantity if inventory not set
 
     const result = calculatePurchaseQuantity(inventory);
 
@@ -215,4 +215,32 @@ const calculatePurchaseQuantity = inventory => {
   } else {
     return 50;
   }
+};
+
+export const updateCartItemQuantity = (product, quantity) => {
+  return (dispatch, getState) => {
+    if (quantity < 1) return;
+    const cartItems = getState().cart.cartItems;
+    const newCartItems = cartItems.map(item => {
+      if (item._id === product._id) {
+        return {
+          ...item,
+          quantity: quantity,
+          totalPrice: parseFloat((quantity * item.price).toFixed(2))
+        };
+      }
+      return item;
+    });
+
+    localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
+    dispatch({
+      type: HANDLE_CART,
+      payload: {
+        cartItems: newCartItems,
+        cartTotal: 0,
+        cartId: getState().cart.cartId
+      }
+    });
+    dispatch(calculateCartTotal());
+  };
 };
