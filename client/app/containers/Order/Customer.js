@@ -66,13 +66,7 @@ class Customer extends React.PureComponent {
 
     return (
       <div className='order-dashboard'>
-        <SubPage
-          title='Customer Orders'
-          actionTitle='My Orders'
-          handleAction={() =>
-            user.role === ROLES.Admin && history.push('/dashboard/orders')
-          }
-        >
+        <SubPage title='Customer Orders'>
           <OrderSearch
             onSearch={this.handleOrderSearch}
             onSearchSubmit={searchOrders}

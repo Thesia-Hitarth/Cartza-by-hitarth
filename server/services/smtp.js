@@ -83,6 +83,10 @@ const prepareTemplate = (type, hostParam, data) => {
       message = template.contactEmail();
       break;
 
+    case 'contact-reply':
+      message = template.contactReplyEmail(data.reply, data.message);
+      break;
+
     case 'merchant-application':
       message = template.merchantApplicationEmail();
       break;

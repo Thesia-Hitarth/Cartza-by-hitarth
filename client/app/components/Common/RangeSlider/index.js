@@ -16,7 +16,7 @@ const handle = props => {
   return (
     <SliderTooltip
       prefixCls='rc-slider-tooltip'
-      overlay={`$${value}`}
+      overlay={`₹${value}`}
       visible={dragging}
       placement='top'
       key={index}
@@ -85,7 +85,7 @@ class RangeSlider extends React.Component {
             defaultValue={defaultValue}
             marks={marks}
             handle={handle}
-            tipFormatter={value => `$${value}`}
+            tipFormatter={value => `₹${value}`}
             value={rangeValue}
             onChange={this.onRangeChange}
             onAfterChange={this.onAfterRangeChange}

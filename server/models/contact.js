@@ -14,6 +14,19 @@ const ContactSchema = new Schema({
     type: String,
     trim: true
   },
+  reply: {
+    type: String,
+    trim: true
+  },
+  status: {
+    type: String,
+    default: 'Pending',
+    enum: ['Pending', 'Resolved']
+  },
+  userRole: {
+    type: String,
+    default: 'Guest'
+  },
   updated: Date,
   created: {
     type: Date,

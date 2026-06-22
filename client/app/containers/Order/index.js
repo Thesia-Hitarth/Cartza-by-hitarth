@@ -22,13 +22,10 @@ class Order extends React.PureComponent {
     return (
       <div className='product-dashboard'>
         <Switch>
-          <Route exact path='/dashboard/orders' component={List} />
-          {user.role === ROLES.Admin && (
-            <Route
-              exact
-              path='/dashboard/orders/customers'
-              component={Customer}
-            />
+          {user.role === ROLES.Admin ? (
+            <Route exact path='/dashboard/orders' component={Customer} />
+          ) : (
+            <Route exact path='/dashboard/orders' component={List} />
           )}
           <Route path='*' component={Page404} />
         </Switch>

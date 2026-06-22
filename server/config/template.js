@@ -345,3 +345,25 @@ exports.orderConfirmationEmail = order => {
 
   return message;
 };
+
+exports.contactReplyEmail = (reply, originalMessage) => {
+  const message = {
+    subject: 'Solution to your Support Request',
+    text: `Hi,\n\nWe have a solution to your query:\n\n${reply}\n\nYour original message:\n"${originalMessage}"`,
+    html: buildHtmlTemplate(
+      'Support Ticket Solution',
+      `
+        <p>Hi,</p>
+        <p>We have processed your inquiry and have a solution to your query:</p>
+        <div style="background-color: #f1f5f9; border-left: 4px solid #ff3d00; padding: 16px; margin: 20px 0; border-radius: 8px;">
+          <p style="margin: 0; font-weight: 500; color: #0d0d0d;">${reply}</p>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size: 14px; color: #6b7280;"><strong>Your original message:</strong></p>
+        <p style="font-size: 14px; color: #6b7280; font-style: italic;">"${originalMessage}"</p>
+      `
+    )
+  };
+
+  return message;
+};
