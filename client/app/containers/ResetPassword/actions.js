@@ -80,16 +80,20 @@ export const resetAccountPassword = () => {
     try {
       const rules = {
         password: 'required|min:6',
-        confirmPassword: 'required|min:6'
+        newPassword: 'required|min:6',
+        confirmPassword: 'required|min:6|same:newPassword'
       };
 
       const user = getState().resetPassword.resetFormData;
 
       const { isValid, errors } = allFieldsValidation(user, rules, {
-        'required.password': 'Password is required.',
-        'min.password': 'Password must be at least 6 characters.',
+        'required.password': 'Old password is required.',
+        'min.password': 'Old password must be at least 6 characters.',
+        'required.newPassword': 'New password is required.',
+        'min.newPassword': 'New password must be at least 6 characters.',
         'required.confirmPassword': 'Confirm password is required.',
-        'min.confirmPassword': 'Confirm password must be at least 6 characters.'
+        'min.confirmPassword': 'Confirm password must be at least 6 characters.',
+        'same.confirmPassword': 'Confirm password and new password fields must match.'
       });
 
       if (!isValid) {
@@ -99,7 +103,12 @@ export const resetAccountPassword = () => {
         });
       }
 
-      const response = await axios.post(`${API_URL}/auth/reset`, user);
+      const payload = {
+        password: user.password,
+        confirmPassword: user.confirmPassword
+      };
+
+      const response = await axios.post(`${API_URL}/auth/reset`, payload);
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',

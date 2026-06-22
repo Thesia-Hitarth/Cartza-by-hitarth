@@ -51,7 +51,7 @@ const Input = props => {
           placeholder={placeholder}
           className={'textarea-text'}
         />
-        <span className='invalid-message'>{error && error[0]}</span>
+        <span className='invalid-message'>{error && (Array.isArray(error) ? error[0] : error)}</span>
       </div>
     );
   } else if (type === 'number') {
@@ -67,7 +67,7 @@ const Input = props => {
         {label && <label>{label}</label>}
         <input
           autoComplete={autoComplete}
-          step='step'
+          step={step}
           min={min || 0}
           max={max || null}
           pattern='[0-9]'
@@ -82,7 +82,7 @@ const Input = props => {
           placeholder={placeholder}
           className={'input-number'}
         />
-        <span className='invalid-message'>{error && error[0]}</span>
+        <span className='invalid-message'>{error && (Array.isArray(error) ? error[0] : error)}</span>
       </div>
     );
   } else if (type === 'stars') {
@@ -107,7 +107,7 @@ const Input = props => {
             onInputChange(name, value);
           }}
         />
-        <span className='invalid-message'>{error && error[0]}</span>
+        <span className='invalid-message'>{error && (Array.isArray(error) ? error[0] : error)}</span>
       </div>
     );
   } else {
@@ -133,7 +133,7 @@ const Input = props => {
           />
           {inlineElement}
         </div>
-        <span className='invalid-message'>{error && error[0]}</span>
+        <span className='invalid-message'>{error && (Array.isArray(error) ? error[0] : error)}</span>
       </div>
     );
   }

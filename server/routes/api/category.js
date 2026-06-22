@@ -140,7 +140,9 @@ router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
         'products -_id'
       ).populate('products');
 
-      store.disableProducts(categoryDoc.products);
+      if (categoryDoc && categoryDoc.products) {
+        await store.disableProducts(categoryDoc.products);
+      }
     }
 
     await Category.findOneAndUpdate(query, update, {

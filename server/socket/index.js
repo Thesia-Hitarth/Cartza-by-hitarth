@@ -17,7 +17,12 @@ const authHandler = async (socket, next) => {
     }
 
     const { secret } = keys.jwt;
-    const payload = jwt.verify(tokenValue, secret);
+    let payload;
+    try {
+      payload = jwt.verify(tokenValue, secret);
+    } catch (err) {
+      return next(new Error('Invalid token'));
+    }
     const id = payload.id.toString();
     const user = await User.findById(id);
 
@@ -37,6 +42,13 @@ const authHandler = async (socket, next) => {
     const existingUser = support.findUserById(id);
     if (!existingUser) {
       support.users.push(u);
+      if (support.users.length > 100) {
+        // Evict first offline user to prevent memory leak
+        const offlineIdx = support.users.findIndex(x => !x.online);
+        if (offlineIdx !== -1) {
+          support.users.splice(offlineIdx, 1);
+        }
+      }
     } else {
       existingUser.socketId = socket.id;
     }

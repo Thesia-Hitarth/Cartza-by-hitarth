@@ -61,12 +61,20 @@ exports.supportHandler = (io, socket) => {
       value: text,
       time: Date.now(),
       user: user,
-      from: user.id,
+      from: user?.id,
       to: userTo?.id
     };
 
     messages.push(message);
-    io.to(userTo.socketId).to(user.socketId).emit('message', message);
+    if (messages.length > 200) {
+      messages.shift();
+    }
+
+    if (userTo && userTo.socketId) {
+      io.to(userTo.socketId).to(user.socketId).emit('message', message);
+    } else if (user && user.socketId) {
+      io.to(user.socketId).emit('message', message);
+    }
   });
 
   socket.on('disconnect', async () => {

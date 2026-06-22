@@ -5,7 +5,8 @@ const router = express.Router();
 const Review = require('../../models/review');
 const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
-const { REVIEW_STATUS } = require('../../constants');
+const role = require('../../middleware/role');
+const { ROLES, REVIEW_STATUS } = require('../../constants');
 
 router.post('/add', auth, async (req, res) => {
   try {
@@ -31,7 +32,7 @@ router.post('/add', auth, async (req, res) => {
 });
 
 // fetch all reviews api
-router.get('/', async (req, res) => {
+router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
@@ -97,7 +98,7 @@ router.get('/:slug', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const reviewId = req.params.id;
     const update = req.body;
@@ -119,7 +120,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // approve review
-router.put('/approve/:reviewId', auth, async (req, res) => {
+router.put('/approve/:reviewId', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const reviewId = req.params.reviewId;
 
@@ -144,7 +145,7 @@ router.put('/approve/:reviewId', auth, async (req, res) => {
 });
 
 // reject review
-router.put('/reject/:reviewId', auth, async (req, res) => {
+router.put('/reject/:reviewId', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const reviewId = req.params.reviewId;
 
@@ -167,7 +168,7 @@ router.put('/reject/:reviewId', auth, async (req, res) => {
   }
 });
 
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/delete/:id', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const review = await Review.deleteOne({ _id: req.params.id });
 

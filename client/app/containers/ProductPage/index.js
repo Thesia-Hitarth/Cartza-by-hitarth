@@ -46,6 +46,7 @@ class ProductPage extends React.PureComponent {
     if (this.props.match.params.slug !== prevProps.match.params.slug) {
       const slug = this.props.match.params.slug;
       this.props.fetchStoreProduct(slug);
+      this.props.fetchProductReviews(slug);
     }
   }
 
@@ -410,7 +411,7 @@ class ProductPage extends React.PureComponent {
 
 const mapStateToProps = state => {
   const itemInCart = state.cart.cartItems.find(
-    item => item._id === state.product.storeProduct._id
+    item => item._id === state.product.storeProduct?._id
   )
     ? true
     : false;

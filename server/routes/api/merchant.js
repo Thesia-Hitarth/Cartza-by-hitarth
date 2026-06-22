@@ -12,6 +12,8 @@ const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const smtp = require('../../services/smtp');
 const keys = require('../../config/keys');
+const Product = require('../../models/product');
+const store = require('../../utils/store');
 
 // add merchant api
 router.post('/add', async (req, res) => {
@@ -122,7 +124,7 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
 });
 
 // disable merchant account
-router.put('/:id/active', auth, async (req, res) => {
+router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const merchantId = req.params.id;
     const update = req.body.merchant;
@@ -148,7 +150,7 @@ router.put('/:id/active', auth, async (req, res) => {
 });
 
 // approve merchant
-router.put('/approve/:id', auth, async (req, res) => {
+router.put('/approve/:id', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const merchantId = req.params.id;
     const query = { _id: merchantId };
@@ -179,7 +181,7 @@ router.put('/approve/:id', auth, async (req, res) => {
 });
 
 // reject merchant
-router.put('/reject/:id', auth, async (req, res) => {
+router.put('/reject/:id', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const merchantId = req.params.id;
 
@@ -224,6 +226,10 @@ router.post('/signup/:token', async (req, res) => {
       email,
       resetPasswordToken: req.params.token
     });
+
+    if (!userDoc) {
+      return res.status(400).json({ error: 'Invalid or expired signup token.' });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
@@ -291,6 +297,10 @@ const deactivateBrand = async merchantId => {
   const update = {
     isActive: false
   };
+
+  const products = await Product.find({ brand: brandId });
+  await store.disableProducts(products);
+
   return await Brand.findOneAndUpdate(query, update, {
     new: true
   });

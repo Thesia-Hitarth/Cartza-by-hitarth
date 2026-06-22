@@ -211,6 +211,9 @@ export const addOrder = () => {
         dispatch(clearCart());
       }
     } catch (error) {
+      if (error.response && error.response.status === 404) {
+        localStorage.removeItem('cart_id');
+      }
       handleError(error, dispatch);
     }
   };

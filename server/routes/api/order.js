@@ -7,30 +7,35 @@ const Order = require('../../models/order');
 const Cart = require('../../models/cart');
 const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
+const role = require('../../middleware/role');
 const smtp = require('../../services/smtp');
 const store = require('../../utils/store');
 const { ROLES, CART_ITEM_STATUS } = require('../../constants');
 
 router.post('/add', auth, async (req, res) => {
   try {
-    const cart = req.body.cartId;
+    const cartId = req.body.cartId;
     const total = req.body.total;
     const user = req.user._id;
 
-    const order = new Order({
-      cart,
-      user,
-      total
-    });
-
-    const orderDoc = await order.save();
-
-    const cartDoc = await Cart.findById(orderDoc.cart._id).populate({
+    const cartDoc = await Cart.findById(cartId).populate({
       path: 'products.product',
       populate: {
         path: 'brand'
       }
     });
+
+    if (!cartDoc) {
+      return res.status(404).json({ error: 'Shopping cart not found. Please recreate your cart.' });
+    }
+
+    const order = new Order({
+      cart: cartId,
+      user,
+      total
+    });
+
+    const orderDoc = await order.save();
 
     const newOrder = {
       _id: orderDoc._id,
@@ -125,7 +130,7 @@ router.get('/search', auth, async (req, res) => {
 });
 
 // fetch orders api
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
     const ordersDoc = await Order.find()
@@ -259,12 +264,21 @@ router.delete('/cancel/:orderId', auth, async (req, res) => {
     const orderId = req.params.orderId;
 
     const order = await Order.findOne({ _id: orderId });
-    const foundCart = await Cart.findOne({ _id: order.cart });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
 
-    increaseQuantity(foundCart.products);
+    if (req.user.role !== ROLES.Admin && String(order.user) !== String(req.user._id)) {
+      return res.status(403).json({ error: 'Unauthorized to cancel this order.' });
+    }
+
+    const foundCart = await Cart.findOne({ _id: order.cart });
+    if (foundCart) {
+      await increaseQuantity(foundCart.products);
+      await Cart.deleteOne({ _id: order.cart });
+    }
 
     await Order.deleteOne({ _id: orderId });
-    await Cart.deleteOne({ _id: order.cart });
 
     res.status(200).json({
       success: true
@@ -283,8 +297,30 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
     const cartId = req.body.cartId;
     const status = req.body.status || CART_ITEM_STATUS.Cancelled;
 
+    const order = await Order.findOne({ _id: orderId });
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
     const foundCart = await Cart.findOne({ 'products._id': itemId });
-    const foundCartProduct = foundCart.products.find(p => p._id == itemId);
+    if (!foundCart) {
+      return res.status(404).json({ error: 'Cart item not found.' });
+    }
+    const foundCartProduct = foundCart.products.find(p => String(p._id) === String(itemId));
+
+    if (req.user.role === ROLES.Merchant) {
+      const product = await Product.findById(foundCartProduct.product).populate('brand');
+      if (!product || !product.brand || String(product.brand.merchant) !== String(req.user.merchant)) {
+        return res.status(403).json({ error: 'Unauthorized to update this item status.' });
+      }
+    } else if (req.user.role !== ROLES.Admin) {
+      if (String(order.user) !== String(req.user._id)) {
+        return res.status(403).json({ error: 'Unauthorized to access this order.' });
+      }
+      if (status !== CART_ITEM_STATUS.Cancelled) {
+        return res.status(403).json({ error: 'Customers can only cancel items.' });
+      }
+    }
 
     await Cart.updateOne(
       { 'products._id': itemId },
@@ -335,7 +371,7 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
   }
 });
 
-const increaseQuantity = products => {
+const increaseQuantity = async products => {
   let bulkOptions = products.map(item => {
     return {
       updateOne: {
@@ -345,7 +381,7 @@ const increaseQuantity = products => {
     };
   });
 
-  Product.bulkWrite(bulkOptions);
+  await Product.bulkWrite(bulkOptions);
 };
 
 module.exports = router;

@@ -176,7 +176,7 @@ router.post('/forgot', async (req, res) => {
     existingUser.resetPasswordToken = resetToken;
     existingUser.resetPasswordExpires = Date.now() + 3600000;
 
-    existingUser.save();
+    await existingUser.save();
 
     await smtp.sendEmail(
       existingUser.email,
@@ -223,7 +223,7 @@ router.post('/reset/:token', async (req, res) => {
     resetUser.resetPasswordToken = undefined;
     resetUser.resetPasswordExpires = undefined;
 
-    resetUser.save();
+    await resetUser.save();
 
     await smtp.sendEmail(resetUser.email, 'reset-confirmation');
 
@@ -252,11 +252,15 @@ router.post('/reset', auth, async (req, res) => {
       return res.status(400).json({ error: 'You must enter a password.' });
     }
 
+    if (!confirmPassword || confirmPassword.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+    }
+
     const existingUser = await User.findOne({ email });
     if (!existingUser) {
       return res
         .status(400)
-        .json({ error: 'That email address is already in use.' });
+        .json({ error: 'No user found for this email address.' });
     }
 
     const isMatch = await bcrypt.compare(password, existingUser.password);
@@ -270,7 +274,7 @@ router.post('/reset', auth, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(confirmPassword, salt);
     existingUser.password = hash;
-    existingUser.save();
+    await existingUser.save();
 
     await smtp.sendEmail(existingUser.email, 'reset-confirmation');
 

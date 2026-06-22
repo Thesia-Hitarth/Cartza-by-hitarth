@@ -12,7 +12,8 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { search } = req.query;
 
-    const regex = new RegExp(search, 'i');
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapeRegExp(search || ''), 'i');
 
     const users = await User.find(
       {
@@ -36,7 +37,7 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
 });
 
 // fetch users api
-router.get('/', auth, async (req, res) => {
+router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
 
@@ -87,7 +88,8 @@ router.get('/me', auth, async (req, res) => {
 router.put('/', auth, async (req, res) => {
   try {
     const user = req.user._id;
-    const update = req.body.profile;
+    const { firstName, lastName, phoneNumber } = req.body.profile || {};
+    const update = { firstName, lastName, phoneNumber };
     const query = { _id: user };
 
     const userDoc = await User.findOneAndUpdate(query, update, {

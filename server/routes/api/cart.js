@@ -21,7 +21,7 @@ router.post('/add', auth, async (req, res) => {
 
     const cartDoc = await cart.save();
 
-    decreaseQuantity(products);
+    await decreaseQuantity(products);
 
     res.status(200).json({
       success: true,
@@ -36,6 +36,10 @@ router.post('/add', auth, async (req, res) => {
 
 router.delete('/delete/:cartId', auth, async (req, res) => {
   try {
+    const cart = await Cart.findById(req.params.cartId);
+    if (!cart || String(cart.user) !== String(req.user._id)) {
+      return res.status(403).json({ error: 'Unauthorized to modify this cart.' });
+    }
     await Cart.deleteOne({ _id: req.params.cartId });
 
     res.status(200).json({
@@ -50,6 +54,10 @@ router.delete('/delete/:cartId', auth, async (req, res) => {
 
 router.post('/add/:cartId', auth, async (req, res) => {
   try {
+    const cart = await Cart.findById(req.params.cartId);
+    if (!cart || String(cart.user) !== String(req.user._id)) {
+      return res.status(403).json({ error: 'Unauthorized to modify this cart.' });
+    }
     const product = req.body.product;
     const query = { _id: req.params.cartId };
 
@@ -67,6 +75,10 @@ router.post('/add/:cartId', auth, async (req, res) => {
 
 router.delete('/delete/:cartId/:productId', auth, async (req, res) => {
   try {
+    const cart = await Cart.findById(req.params.cartId);
+    if (!cart || String(cart.user) !== String(req.user._id)) {
+      return res.status(403).json({ error: 'Unauthorized to modify this cart.' });
+    }
     const product = { product: req.params.productId };
     const query = { _id: req.params.cartId };
 
@@ -82,7 +94,7 @@ router.delete('/delete/:cartId/:productId', auth, async (req, res) => {
   }
 });
 
-const decreaseQuantity = products => {
+const decreaseQuantity = async products => {
   let bulkOptions = products.map(item => {
     return {
       updateOne: {
@@ -92,7 +104,7 @@ const decreaseQuantity = products => {
     };
   });
 
-  Product.bulkWrite(bulkOptions);
+  await Product.bulkWrite(bulkOptions);
 };
 
 module.exports = router;

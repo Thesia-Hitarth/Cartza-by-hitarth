@@ -220,6 +220,18 @@ const calculatePurchaseQuantity = inventory => {
 export const updateCartItemQuantity = (product, quantity) => {
   return (dispatch, getState) => {
     if (quantity < 1) return;
+
+    const inventory = product.inventory || product.quantity;
+    if (quantity > inventory) {
+      const warningOptions = {
+        title: `Cannot exceed available inventory limit of ${inventory} items.`,
+        position: 'tr',
+        autoDismiss: 2
+      };
+      dispatch(success(warningOptions));
+      return;
+    }
+
     const cartItems = getState().cart.cartItems;
     const newCartItems = cartItems.map(item => {
       if (item._id === product._id) {

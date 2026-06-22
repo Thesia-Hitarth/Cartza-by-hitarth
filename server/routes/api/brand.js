@@ -153,6 +153,13 @@ router.put(
       const query = { _id: brandId };
       const { slug } = req.body.brand;
 
+      if (req.user.role === ROLES.Merchant) {
+        const brand = await Brand.findById(brandId);
+        if (!brand || String(brand.merchant) !== String(req.user.merchant)) {
+          return res.status(403).json({ error: 'Unauthorized to modify this brand.' });
+        }
+      }
+
       const foundBrand = await Brand.findOne({
         $or: [{ slug }]
       });
@@ -187,10 +194,17 @@ router.put(
       const update = req.body.brand;
       const query = { _id: brandId };
 
+      if (req.user.role === ROLES.Merchant) {
+        const brand = await Brand.findById(brandId);
+        if (!brand || String(brand.merchant) !== String(req.user.merchant)) {
+          return res.status(403).json({ error: 'Unauthorized to modify this brand.' });
+        }
+      }
+
       // disable brand(brandId) products
       if (!update.isActive) {
         const products = await Product.find({ brand: brandId });
-        store.disableProducts(products);
+        await store.disableProducts(products);
       }
 
       await Brand.findOneAndUpdate(query, update, {

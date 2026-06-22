@@ -14,7 +14,7 @@ import { Check } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import actions from '../../actions';
 
 const getCategoryBanner = (name = '') => {
-  const categoryName = name.toLowerCase();
+  const categoryName = (name || '').toLowerCase();
   if (categoryName.includes('fashion') || categoryName.includes('cloth') || categoryName.includes('wear') || categoryName.includes('apparel')) {
     return '/images/banners/banner-1.jpg';
   }
@@ -90,19 +90,19 @@ class Homepage extends React.PureComponent {
               {/* Left Column: Headline and Content */}
               <Col xs='12' lg='7' className='hero-left-content pr-lg-5'>
                 <div className='hero-eyebrow'>
-                  NEW ARRIVALS · SUMMER 2025
+                  NEW ARRIVALS · SUMMER 2026
                 </div>
-                
+
                 <h1 className='hero-headline'>
-                  <motion.div 
+                  <motion.div
                     className='kinetic-brand tw-flex'
                     variants={brandContainerVariants}
                     initial="initial"
                     animate="animate"
                   >
                     {"CARTZA".split("").map((letter, idx) => (
-                      <motion.span 
-                        key={idx} 
+                      <motion.span
+                        key={idx}
                         className='kinetic-char tw-inline-block'
                         variants={brandLetterVariants}
                       >
@@ -110,7 +110,7 @@ class Homepage extends React.PureComponent {
                       </motion.span>
                     ))}
                   </motion.div>
-                  <motion.div 
+                  <motion.div
                     className='headline-lines'
                     variants={wordContainerVariants}
                     initial="initial"
@@ -157,11 +157,11 @@ class Homepage extends React.PureComponent {
                 <div className='hero-mosaic-container'>
                   {/* Ambient background glow */}
                   <div className='hero-ambient-glow'></div>
-                  
+
                   {/* Overlapping images */}
                   <div className='mosaic-item larger portrait shadow-lg' style={{ backgroundImage: "url('/images/banners/banner-1.jpg')" }}>
                   </div>
-                  
+
                   <div className='mosaic-item smaller square shadow-lg' style={{ backgroundImage: "url('/images/banners/banner-2.jpg')" }}></div>
                 </div>
               </Col>
@@ -177,7 +177,7 @@ class Homepage extends React.PureComponent {
                 <h2 className='section-title'>Shop by Category</h2>
                 <div className='section-title-line'></div>
               </div>
-              
+
               <div className='category-cards-scroll-container'>
                 {categories.map((category, index) => (
                   <motion.div

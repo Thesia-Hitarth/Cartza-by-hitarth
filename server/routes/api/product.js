@@ -55,13 +55,14 @@ router.get('/item/:slug', async (req, res) => {
 router.get('/list/search/:name', async (req, res) => {
   try {
     const name = req.params.name;
+    const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
     const productDoc = await Product.find(
-      { name: { $regex: new RegExp(name), $options: 'is' }, isActive: true },
+      { name: { $regex: new RegExp(escapeRegExp(name || '')), $options: 'is' }, isActive: true },
       { name: 1, slug: 1, imageUrl: 1, price: 1, _id: 0 }
     );
 
-    if (productDoc.length < 0) {
+    if (productDoc.length === 0) {
       return res.status(404).json({
         message: 'No product found.'
       });
@@ -90,7 +91,11 @@ router.get('/list', async (req, res) => {
       page = 1,
       limit = 10
     } = req.query;
-    sortOrder = JSON.parse(sortOrder);
+    try {
+      sortOrder = sortOrder ? JSON.parse(sortOrder) : { created: -1 };
+    } catch (e) {
+      sortOrder = { created: -1 };
+    }
 
     const categoryFilter = category ? { category } : {};
     const basicQuery = getStoreProductsQuery(min, max, rating);
@@ -126,8 +131,9 @@ router.get('/list', async (req, res) => {
     }
 
     let products = null;
-    const productsCount = await Product.aggregate(basicQuery);
-    const count = productsCount.length;
+    const countQuery = [...basicQuery, { $count: 'total' }];
+    const countResult = await Product.aggregate(countQuery);
+    const count = countResult.length > 0 ? countResult[0].total : 0;
     const size = count > limit ? page - 1 : 0;
     const currentPage = count > limit ? Number(page) : 1;
 
@@ -261,17 +267,16 @@ router.get(
           merchant: req.user.merchant
         }).populate('merchant', '_id');
 
-        const brandId = brands[0]?.['_id'];
+        const brandIds = brands.map(b => b._id);
 
-        products = await Product.find({})
+        products = await Product.find({ brand: { $in: brandIds } })
           .populate({
             path: 'brand',
             populate: {
               path: 'merchant',
               model: 'Merchant'
             }
-          })
-          .where('brand', brandId);
+          });
       } else {
         products = await Product.find({}).populate({
           path: 'brand',
@@ -309,14 +314,12 @@ router.get(
           merchant: req.user.merchant
         }).populate('merchant', '_id');
 
-        const brandId = brands[0]['_id'];
+        const brandIds = brands.map(b => b._id);
 
-        productDoc = await Product.findOne({ _id: productId })
-          .populate({
-            path: 'brand',
-            select: 'name'
-          })
-          .where('brand', brandId);
+        productDoc = await Product.findOne({ _id: productId, brand: { $in: brandIds } }).populate({
+          path: 'brand',
+          select: 'name'
+        });
       } else {
         productDoc = await Product.findOne({ _id: productId }).populate({
           path: 'brand',
@@ -351,6 +354,13 @@ router.put(
       const update = req.body.product;
       const query = { _id: productId };
       const { sku, slug } = req.body.product;
+
+      if (req.user.role === ROLES.Merchant) {
+        const productDoc = await Product.findById(productId).populate('brand');
+        if (!productDoc || !productDoc.brand || String(productDoc.brand.merchant) !== String(req.user.merchant)) {
+          return res.status(403).json({ error: 'Unauthorized to edit this product.' });
+        }
+      }
 
       const foundProduct = await Product.findOne({
         $or: [{ slug }, { sku }]
@@ -388,6 +398,13 @@ router.put(
       const update = req.body.product;
       const query = { _id: productId };
 
+      if (req.user.role === ROLES.Merchant) {
+        const productDoc = await Product.findById(productId).populate('brand');
+        if (!productDoc || !productDoc.brand || String(productDoc.brand.merchant) !== String(req.user.merchant)) {
+          return res.status(403).json({ error: 'Unauthorized to edit this product.' });
+        }
+      }
+
       await Product.findOneAndUpdate(query, update, {
         new: true
       });
@@ -410,7 +427,16 @@ router.delete(
   role.check(ROLES.Admin, ROLES.Merchant),
   async (req, res) => {
     try {
-      const product = await Product.deleteOne({ _id: req.params.id });
+      const productId = req.params.id;
+
+      if (req.user.role === ROLES.Merchant) {
+        const productDoc = await Product.findById(productId).populate('brand');
+        if (!productDoc || !productDoc.brand || String(productDoc.brand.merchant) !== String(req.user.merchant)) {
+          return res.status(403).json({ error: 'Unauthorized to delete this product.' });
+        }
+      }
+
+      const product = await Product.deleteOne({ _id: productId });
 
       res.status(200).json({
         success: true,

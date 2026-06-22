@@ -43,14 +43,14 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const addressId = req.params.id;
 
-    const addressDoc = await Address.findOne({ _id: addressId });
+    const addressDoc = await Address.findOne({ _id: addressId, user: req.user._id });
 
     if (!addressDoc) {
-      res.status(404).json({
+      return res.status(404).json({
         message: `Cannot find Address with the id: ${addressId}.`
       });
     }
@@ -65,15 +65,19 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const addressId = req.params.id;
     const update = req.body;
-    const query = { _id: addressId };
+    const query = { _id: addressId, user: req.user._id };
 
-    await Address.findOneAndUpdate(query, update, {
+    const addressDoc = await Address.findOneAndUpdate(query, update, {
       new: true
     });
+
+    if (!addressDoc) {
+      return res.status(404).json({ error: 'Address not found or unauthorized.' });
+    }
 
     res.status(200).json({
       success: true,
@@ -86,9 +90,14 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.delete('/delete/:id', async (req, res) => {
+router.delete('/delete/:id', auth, async (req, res) => {
   try {
-    const address = await Address.deleteOne({ _id: req.params.id });
+    const addressId = req.params.id;
+    const addressDoc = await Address.findOne({ _id: addressId, user: req.user._id });
+    if (!addressDoc) {
+      return res.status(404).json({ error: 'Address not found or unauthorized.' });
+    }
+    const address = await Address.deleteOne({ _id: addressId });
 
     res.status(200).json({
       success: true,
