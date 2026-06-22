@@ -1,4 +1,9 @@
 require('dotenv').config();
+const dns = require('dns');
+
+// Resolve querySrv ECONNREFUSED issues on local machines/ISPs that block/fail SRV lookups
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 const chalk = require('chalk');
 const mongoose = require('mongoose');
 
@@ -12,7 +17,7 @@ const setupDB = async () => {
     mongoose
       .connect(database.url, {
         useNewUrlParser: true,
-        useUnifiedTopology: false,
+        useUnifiedTopology: true,
         useFindAndModify: false
       })
       .then(() =>

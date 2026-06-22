@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mohamedsamara/mern-ecommerce.git"
+    "url": "git+https://github.com/Thesia-Hitarth/Cartza-by-hitarth.git"
   },
   "keywords": [
     "node",
@@ -26,12 +26,12 @@
     "redux-thunk",
     "webpack"
   ],
-  "author": "Mohamed Samara (https://github.com/mohamedsamara)",
+  "author": "Thesia Hitarth (https://github.com/Thesia-Hitarth)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mohamedsamara/mern-ecommerce/issues"
+    "url": "https://github.com/Thesia-Hitarth/Cartza-by-hitarth/issues"
   },
-  "homepage": "https://github.com/mohamedsamara/mern-ecommerce#readme",
+  "homepage": "https://github.com/Thesia-Hitarth/Cartza-by-hitarth#readme",
   "devDependencies": {
     "cross-env": "^5.2.1",
     "npm-run-all": "^4.1.5"
