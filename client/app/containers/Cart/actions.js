@@ -30,10 +30,17 @@ import { toggleCart } from '../Navigation/actions';
 // Handle Add To Cart
 export const handleAddToCart = product => {
   return (dispatch, getState) => {
-    product.quantity = product.quantity ? Number(product.quantity) : Number(getState().product.productShopData.quantity || 1);
-    product.totalPrice = product.quantity * product.price;
-    product.totalPrice = parseFloat(product.totalPrice.toFixed(2));
-    const inventory = product.inventory || product.quantity; // Fallback to quantity if inventory not set
+    const shopQuantity = Number(getState().product.productShopData.quantity || 1);
+    const quantity = product.quantity ? Number(product.quantity) : shopQuantity;
+    const totalPrice = parseFloat((quantity * product.price).toFixed(2));
+
+    const cartProduct = {
+      ...product,
+      quantity,
+      totalPrice
+    };
+
+    const inventory = cartProduct.inventory || cartProduct.quantity; // Fallback to quantity if inventory not set
 
     const result = calculatePurchaseQuantity(inventory);
 
@@ -41,7 +48,7 @@ export const handleAddToCart = product => {
       quantity: `min:1|max:${result}`
     };
 
-    const { isValid, errors } = allFieldsValidation(product, rules, {
+    const { isValid, errors } = allFieldsValidation(cartProduct, rules, {
       'min.quantity': 'Quantity must be at least 1.',
       'max.quantity': `Quantity may not be greater than ${result}.`
     });
@@ -56,15 +63,15 @@ export const handleAddToCart = product => {
 
     dispatch({
       type: ADD_TO_CART,
-      payload: product
+      payload: cartProduct
     });
 
     const cartItems = JSON.parse(localStorage.getItem(CART_ITEMS));
     let newCartItems = [];
     if (cartItems) {
-      newCartItems = [...cartItems, product];
+      newCartItems = [...cartItems, cartProduct];
     } else {
-      newCartItems.push(product);
+      newCartItems.push(cartProduct);
     }
     localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
 
@@ -207,7 +214,7 @@ const getCartItems = cartItems => {
 
 const calculatePurchaseQuantity = inventory => {
   if (inventory <= 25) {
-    return 1;
+    return inventory;
   } else if (inventory > 25 && inventory <= 100) {
     return 5;
   } else if (inventory > 100 && inventory < 500) {
