@@ -7,7 +7,7 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Switch, Route, withRouter } from 'react-router-dom';
+import { Switch, Route, Redirect, withRouter } from 'react-router-dom';
 import { Container } from 'reactstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,7 +19,6 @@ import Signup from '../Signup';
 import MerchantSignup from '../MerchantSignup';
 import HomePage from '../Homepage';
 import Dashboard from '../Dashboard';
-import Support from '../Support';
 import Navigation from '../Navigation';
 import Authentication from '../Authentication';
 import Notification from '../Notification';
@@ -63,7 +62,7 @@ class Application extends React.PureComponent {
         rootMargin: '0px',
         threshold: 0.1
       };
-      
+
       const observer = new IntersectionObserver((entries, obs) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
@@ -76,7 +75,7 @@ class Application extends React.PureComponent {
       // Initial elements
       const animatedElements = document.querySelectorAll('[data-animate]');
       animatedElements.forEach(el => observer.observe(el));
-      
+
       // Mutation observer to detect dynamically added components (e.g., product lists, categories)
       this.mutationObserver = new MutationObserver(() => {
         const newAnimatedElements = document.querySelectorAll('[data-animate]:not(.is-visible)');
@@ -160,7 +159,6 @@ class Application extends React.PureComponent {
                       component={ResetPassword}
                     />
                     <Route path='/auth/success' component={AuthSuccess} />
-                    <Route path='/support' component={Authentication(Support)} />
                     <Route
                       path='/dashboard'
                       component={Authentication(Dashboard)}

@@ -9,7 +9,6 @@ import { Provider } from 'react-redux';
 import { ConnectedRouter } from 'connected-react-router';
 
 import store, { history } from './store';
-import { SocketProvider } from './contexts/Socket';
 import { SET_AUTH } from './containers/Authentication/constants';
 import Application from './containers/Application';
 import ScrollToTop from './scrollToTop';
@@ -44,11 +43,9 @@ if (token) {
 const app = () => (
   <Provider store={store}>
     <ConnectedRouter history={history}>
-      <SocketProvider>
-        <ScrollToTop>
-          <Application />
-        </ScrollToTop>
-      </SocketProvider>
+      <ScrollToTop>
+        <Application />
+      </ScrollToTop>
     </ConnectedRouter>
   </Provider>
 );

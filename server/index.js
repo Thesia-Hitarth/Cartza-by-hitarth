@@ -6,7 +6,6 @@ const helmet = require('helmet');
 
 const keys = require('./config/keys');
 const routes = require('./routes');
-const socket = require('./socket');
 const setupDB = require('./utils/db');
 
 const { port } = keys;
@@ -27,14 +26,13 @@ require('./config/passport')(app);
 app.use(routes);
 
 if (!process.env.VERCEL) {
-  const server = app.listen(port, () => {
+  app.listen(port, () => {
     console.log(
       `${chalk.green('✓')} ${chalk.blue(
         `Listening on port ${port}. Visit http://localhost:${port}/ in your browser.`
       )}`
     );
   });
-  socket(server);
 }
 
 module.exports = app;

@@ -14,8 +14,7 @@
     { "to": "/merchant", "name": "Merchants", "prefix": "/dashboard" },
     { "to": "/orders", "name": "Orders", "prefix": "/dashboard" },
     { "to": "/review", "name": "Reviews", "prefix": "/dashboard" },
-    { "to": "/inquiries", "name": "Support Inquiries", "prefix": "/dashboard" },
-    { "to": "/support", "name": "Support" }
+    { "to": "/inquiries", "name": "Support Inquiries", "prefix": "/dashboard" }
   ],
   "ROLE MERCHANT": [
     { "to": "", "name": "Account Details", "prefix": "/dashboard" },
@@ -29,7 +28,7 @@
     { "to": "/product", "name": "Products", "prefix": "/dashboard" },
     { "to": "/orders", "name": "Orders", "prefix": "/dashboard" },
     { "to": "/complaints", "name": "My Complaints", "prefix": "/dashboard" },
-    { "to": "/support", "name": "Support" }
+    { "to": "/contact", "name": "Contact" }
   ],
   "ROLE MEMBER": [
     { "to": "", "name": "Account Details", "prefix": "/dashboard" },
@@ -43,6 +42,6 @@
     { "to": "/orders", "name": "Orders", "prefix": "/dashboard" },
     { "to": "/wishlist", "name": "WishList", "prefix": "/dashboard" },
     { "to": "/complaints", "name": "My Complaints", "prefix": "/dashboard" },
-    { "to": "/support", "name": "Support" }
+    { "to": "/contact", "name": "Contact" }
   ]
 }
