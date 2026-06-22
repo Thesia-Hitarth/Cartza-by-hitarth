@@ -301,7 +301,7 @@ const createMerchantBrand = async ({ _id, brandName, business }) => {
     name: brandName,
     description: business,
     merchant: _id,
-    isActive: false
+    isActive: true
   });
 
   const brandDoc = await newBrand.save();

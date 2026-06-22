@@ -160,19 +160,6 @@ class Homepage extends React.PureComponent {
                   
                   {/* Overlapping images */}
                   <div className='mosaic-item larger portrait shadow-lg' style={{ backgroundImage: "url('/images/banners/banner-1.jpg')" }}>
-                    {/* Floating Product Card */}
-                    <div className='floating-product-card shadow'>
-                      <div className='floating-card-body d-flex align-items-center'>
-                        <img src='/images/urban-jacket-thumb.png' alt='Featured product' className='floating-prod-img mr-2' />
-                        <div>
-                          <h6 className='floating-prod-name mb-0'>Urban Denim Jacket</h6>
-                          <span className='floating-prod-price'>₹2,499</span>
-                        </div>
-                      </div>
-                      <Link to='/shop' className='floating-card-btn'>
-                        Add
-                      </Link>
-                    </div>
                   </div>
                   
                   <div className='mosaic-item smaller square shadow-lg' style={{ backgroundImage: "url('/images/banners/banner-2.jpg')" }}></div>
