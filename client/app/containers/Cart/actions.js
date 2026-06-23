@@ -4,7 +4,7 @@
  *
  */
 
-import { push } from 'connected-react-router';
+import { push } from '@lagunovsky/redux-react-router';
 import { success } from 'react-notification-system-redux';
 import axios from 'axios';
 
@@ -32,6 +32,9 @@ export const handleAddToCart = product => {
   return (dispatch, getState) => {
     const shopQuantity = Number(getState().product.productShopData.quantity || 1);
     const quantity = product.quantity ? Number(product.quantity) : shopQuantity;
+
+    // Lock price at add time
+    product.purchasePrice = product.price;
     const totalPrice = parseFloat((quantity * product.price).toFixed(2));
 
     const cartProduct = {
@@ -61,20 +64,40 @@ export const handleAddToCart = product => {
       type: RESET_PRODUCT_SHOP
     });
 
-    dispatch({
-      type: ADD_TO_CART,
-      payload: cartProduct
-    });
+    const existingItems = getState().cart.cartItems || [];
+    const existingIndex = existingItems.findIndex(item => item._id === product._id);
 
-    const cartItems = JSON.parse(localStorage.getItem(CART_ITEMS));
     let newCartItems = [];
-    if (cartItems) {
-      newCartItems = [...cartItems, cartProduct];
+    if (existingIndex >= 0) {
+      const existingItem = existingItems[existingIndex];
+      const newQty = existingItem.quantity + quantity;
+      const cappedQty = Math.min(newQty, result);
+      newCartItems = existingItems.map((item, idx) =>
+        idx === existingIndex
+          ? {
+              ...item,
+              quantity: cappedQty,
+              totalPrice: parseFloat((cappedQty * (item.purchasePrice || item.price)).toFixed(2))
+            }
+          : item
+      );
+      dispatch({
+        type: HANDLE_CART,
+        payload: {
+          cartItems: newCartItems,
+          cartTotal: 0,
+          cartId: getState().cart.cartId
+        }
+      });
     } else {
-      newCartItems.push(cartProduct);
+      newCartItems = [...existingItems, cartProduct];
+      dispatch({
+        type: ADD_TO_CART,
+        payload: cartProduct
+      });
     }
-    localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
 
+    localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
     dispatch(calculateCartTotal());
     dispatch(toggleCart());
   };
@@ -103,7 +126,7 @@ export const calculateCartTotal = () => {
     let total = 0;
 
     cartItems.map(item => {
-      total += item.price * item.quantity;
+      total += (item.purchasePrice || item.price) * item.quantity;
     });
 
     total = parseFloat(total.toFixed(2));
@@ -245,7 +268,7 @@ export const updateCartItemQuantity = (product, quantity) => {
         return {
           ...item,
           quantity: quantity,
-          totalPrice: parseFloat((quantity * item.price).toFixed(2))
+          totalPrice: parseFloat((quantity * (item.purchasePrice || item.price)).toFixed(2))
         };
       }
       return item;

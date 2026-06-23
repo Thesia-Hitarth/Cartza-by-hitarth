@@ -7,11 +7,11 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 
 import actions from '../../actions';
 
-// import { ROLES } from '../../constants';
+import { ROLES } from '../../constants';
 import List from './List';
 import Add from './Add';
 import Edit from './Edit';
@@ -23,14 +23,14 @@ class Product extends React.PureComponent {
 
     return (
       <div className='product-dashboard'>
-        <Switch>
-          <Route exact path='/dashboard/product' component={List} />
-          <Route exact path='/dashboard/product/edit/:id' component={Edit} />
-          {/* {user.role === ROLES.Admin && ( */}
-          <Route exact path='/dashboard/product/add' component={Add} />
-          {/* )} */}
-          <Route path='*' component={Page404} />
-        </Switch>
+        <Routes>
+          <Route path='/' element={<List />} />
+          <Route path='edit/:id' element={<Edit />} />
+          {(user.role === ROLES.Admin || user.role === ROLES.Merchant) && (
+            <Route path='add' element={<Add />} />
+          )}
+          <Route path='*' element={<Page404 />} />
+        </Routes>
       </div>
     );
   }

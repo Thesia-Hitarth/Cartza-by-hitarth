@@ -15,8 +15,18 @@ const { ROLES, CART_ITEM_STATUS } = require('../../constants');
 router.post('/add', auth, async (req, res) => {
   try {
     const cartId = req.body.cartId;
-    const total = req.body.total;
+    const addressId = req.body.addressId;
     const user = req.user._id;
+
+    if (!addressId) {
+      return res.status(400).json({ error: 'Please select a delivery address.' });
+    }
+
+    const Address = require('../../models/address');
+    const addr = await Address.findOne({ _id: addressId, user });
+    if (!addr) {
+      return res.status(400).json({ error: 'Invalid address selected.' });
+    }
 
     const cartDoc = await Cart.findById(cartId).populate({
       path: 'products.product',
@@ -29,13 +39,21 @@ router.post('/add', auth, async (req, res) => {
       return res.status(404).json({ error: 'Shopping cart not found. Please recreate your cart.' });
     }
 
+    const serverTotal = cartDoc.products.reduce((sum, item) => {
+      const price = item.purchasePrice || item.product?.price || 0;
+      return sum + (price * item.quantity);
+    }, 0);
+
     const order = new Order({
       cart: cartId,
       user,
-      total
+      address: addressId,
+      total: serverTotal
     });
 
     const orderDoc = await order.save();
+
+    await decreaseQuantity(cartDoc.products);
 
     const newOrder = {
       _id: orderDoc._id,
@@ -74,7 +92,7 @@ router.get('/search', auth, async (req, res) => {
 
     if (req.user.role === ROLES.Admin) {
       ordersDoc = await Order.find({
-        _id: Mongoose.Types.ObjectId(search)
+        _id: new Mongoose.Types.ObjectId(search)
       }).populate({
         path: 'cart',
         populate: {
@@ -87,7 +105,7 @@ router.get('/search', auth, async (req, res) => {
     } else {
       const user = req.user._id;
       ordersDoc = await Order.find({
-        _id: Mongoose.Types.ObjectId(search),
+        _id: new Mongoose.Types.ObjectId(search),
         user
       }).populate({
         path: 'cart',
@@ -377,6 +395,20 @@ const increaseQuantity = async products => {
       updateOne: {
         filter: { _id: item.product },
         update: { $inc: { quantity: item.quantity } }
+      }
+    };
+  });
+
+  await Product.bulkWrite(bulkOptions);
+};
+
+const decreaseQuantity = async products => {
+  let bulkOptions = products.map(item => {
+    const productId = item.product._id || item.product;
+    return {
+      updateOne: {
+        filter: { _id: productId },
+        update: { $inc: { quantity: -item.quantity } }
       }
     };
   });

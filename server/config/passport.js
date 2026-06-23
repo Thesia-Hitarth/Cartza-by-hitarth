@@ -66,13 +66,13 @@ const googleAuth = async () => {
                 password: null
               });
 
-              newUser.save((err, user) => {
-                if (err) {
+              newUser.save()
+                .then(user => {
+                  return done(null, user);
+                })
+                .catch(err => {
                   return done(err, false);
-                }
-
-                return done(null, user);
-              });
+                });
             })
             .catch(err => {
               return done(err, false);

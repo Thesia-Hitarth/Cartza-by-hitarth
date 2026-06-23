@@ -10,11 +10,12 @@ import { Row, Col, Container } from 'reactstrap';
 import { Link } from 'react-router-dom';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import NotFound from '../../components/Common/NotFound';
-import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import ProductReviews from '../../components/Store/ProductReviews';
 import SocialShare from '../../components/Store/SocialShare';
 
@@ -429,4 +430,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(ProductPage);
+export default withRouter(connect(mapStateToProps, actions)(ProductPage));

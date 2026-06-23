@@ -1,14 +1,14 @@
 [
   {
     "imageUrl": "/images/banners/banner-3.jpg",
-    "link": "",
-    "title": "",
-    "content": "<p></p>\n"
+    "link": "/shop",
+    "title": "Summer Tech Sale",
+    "content": "<p>Get up to 30% off on top categories like electronics and smart appliances.</p>\n"
   },
   {
     "imageUrl": "/images/banners/banner-4.jpg",
-    "link": "",
-    "title": "",
-    "content": "<p></p>\n"
+    "link": "/shop",
+    "title": "Modern Living Essentials",
+    "content": "<p>Discover premium home & garden collections tailored for your style.</p>\n"
   }
 ]

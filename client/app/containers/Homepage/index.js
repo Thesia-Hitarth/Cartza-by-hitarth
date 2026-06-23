@@ -9,9 +9,10 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Row, Col, Container } from 'reactstrap';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Check } from 'lucide-react';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 
 const getCategoryBanner = (name = '') => {
   const categoryName = (name || '').toLowerCase();
@@ -34,6 +35,14 @@ const getCategoryBanner = (name = '') => {
     return '/images/banners/banner-5.jpg';
   }
   return null;
+};
+
+const getSeason = () => {
+  const month = new Date().getMonth();
+  if (month >= 2 && month <= 4) return 'SPRING';
+  if (month >= 5 && month <= 7) return 'SUMMER';
+  if (month >= 8 && month <= 10) return 'AUTUMN';
+  return 'WINTER';
 };
 
 const brandContainerVariants = {
@@ -90,7 +99,7 @@ class Homepage extends React.PureComponent {
               {/* Left Column: Headline and Content */}
               <Col xs='12' lg='7' className='hero-left-content pr-lg-5'>
                 <div className='hero-eyebrow'>
-                  NEW ARRIVALS · SUMMER 2026
+                  {`NEW ARRIVALS · ${getSeason()} ${new Date().getFullYear()}`}
                 </div>
 
                 <h1 className='hero-headline'>
@@ -213,4 +222,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(Homepage);
+export default withRouter(connect(mapStateToProps, actions)(Homepage));

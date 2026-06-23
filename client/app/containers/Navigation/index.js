@@ -6,7 +6,8 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
-import { Link, NavLink, withRouter } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 import Autosuggest from 'react-autosuggest';
 import AutosuggestHighlightMatch from 'autosuggest-highlight/match';
 import AutosuggestHighlightParse from 'autosuggest-highlight/parse';
@@ -22,7 +23,7 @@ import {
 
 import actions from '../../actions';
 import CartIcon from '../../components/Common/CartIcon';
-import { Heart, Search, User, X } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Heart, Search, User, X } from 'lucide-react';
 import Menu from '../NavigationMenu';
 import Cart from '../Cart';
 

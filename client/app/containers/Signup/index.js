@@ -7,7 +7,8 @@
 import React from 'react';
 import { connect } from 'react-redux';
 import { Row, Col } from 'reactstrap';
-import { Redirect, Link } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 
 import actions from '../../actions';
 import Input from '../../components/Common/Input';
@@ -30,7 +31,7 @@ class Signup extends React.PureComponent {
       subscribeChange
     } = this.props;
 
-    if (authenticated) return <Redirect to='/dashboard' />;
+    if (authenticated) return <Navigate to='/dashboard' replace />;
 
     const handleSubmit = event => {
       event.preventDefault();
@@ -197,4 +198,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(Signup);
+export default withRouter(connect(mapStateToProps, actions)(Signup));

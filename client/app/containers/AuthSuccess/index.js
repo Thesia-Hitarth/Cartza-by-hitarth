@@ -7,7 +7,8 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 
 import actions from '../../actions';
 import setToken from '../../utils/token';
@@ -29,7 +30,7 @@ class AuthSuccess extends React.PureComponent {
   render() {
     const { authenticated } = this.props;
 
-    if (authenticated) return <Redirect to='/dashboard' />;
+    if (authenticated) return <Navigate to='/dashboard' replace />;
 
     return <LoadingIndicator />;
   }
@@ -41,4 +42,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(AuthSuccess);
+export default withRouter(connect(mapStateToProps, actions)(AuthSuccess));

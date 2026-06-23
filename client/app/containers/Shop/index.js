@@ -7,7 +7,7 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Row, Col } from 'reactstrap';
 
 import actions from '../../actions';
@@ -94,12 +94,12 @@ class Shop extends React.PureComponent {
                 />
               </Col>
             </Row>
-            <Switch>
-              <Route exact path='/shop' component={ProductsShop} />
-              <Route path='/shop/category/:slug' component={CategoryShop} />
-              <Route path='/shop/brand/:slug' component={BrandsShop} />
-              <Route path='*' component={Page404} />
-            </Switch>
+            <Routes>
+              <Route path='/' element={<ProductsShop />} />
+              <Route path='category/:slug' element={<CategoryShop />} />
+              <Route path='brand/:slug' element={<BrandsShop />} />
+              <Route path='*' element={<Page404 />} />
+            </Routes>
 
             {displayPagination && (
               <div className='d-flex justify-content-center text-center mt-4'>

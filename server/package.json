@@ -9,21 +9,20 @@
   },
   "dependencies": {
     "@faker-js/faker": "^8.4.1",
-    "axios": "^0.27.2",
+    "axios": "^1.7.2",
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.2.0",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
-    "dompurify": "^2.3.8",
+    "dompurify": "^3.1.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
-    "helmet": "^4.6.0",
+    "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^5.13.22",
-    "mongoose-slug-generator": "^1.0.4",
+    "mongoose": "^8.24.1",
     "multer": "^1.4.2",
     "nodemailer": "^6.9.14",
-    "passport": "^0.4.0",
+    "passport": "^0.7.0",
     "passport-google-oauth2": "^0.2.0",
     "passport-jwt": "^4.0.0",
     "socket.io": "^4.2.0",
@@ -34,6 +33,6 @@
   "devDependencies": {
     "chalk": "^2.4.2",
     "cross-env": "^5.2.1",
-    "nodemon": "^1.19.1"
+    "nodemon": "^3.1.4"
   }
 }

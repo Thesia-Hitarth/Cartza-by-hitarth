@@ -15,11 +15,35 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(
   helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        connectSrc: ["'self'", "*"],
+        fontSrc: ["'self'", "fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "res.cloudinary.com"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"]
+      }
+    },
+    crossOriginEmbedderPolicy: false,
     frameguard: true
   })
 );
-app.use(cors());
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  'http://localhost:8080'
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 
 setupDB();
 require('./config/passport')(app);

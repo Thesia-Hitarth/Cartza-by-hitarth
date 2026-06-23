@@ -7,7 +7,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Star } from 'lucide-react';
 
 import AddToWishList from '../AddToWishList';
 
@@ -17,9 +17,10 @@ const ProductList = props => {
   return (
     <div className='product-grid-custom'>
       {products.map((product, index) => {
-        // Calculate mock original price and discount for visual fidelity matching the redesign brief
-        const discountPercentage = Math.floor(10 + (index * 7) % 30); // Staggered mock discount (10% to 40%)
-        const originalPrice = parseFloat((product.price / (1 - discountPercentage / 100)).toFixed(2));
+        const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+        const discountPercentage = hasDiscount
+          ? Math.round((1 - product.price / product.compareAtPrice) * 100)
+          : null;
 
         return (
           <motion.div
@@ -108,9 +109,13 @@ const ProductList = props => {
                 <div className='product-card-pricing d-flex align-items-center justify-content-between pt-2'>
                   <div className='price-block d-flex align-items-baseline'>
                     <span className='sale-price mr-2'>₹{product.price}</span>
-                    <span className='original-price line-through'>₹{originalPrice}</span>
+                    {hasDiscount && (
+                      <span className='original-price line-through'>₹{product.compareAtPrice.toFixed(2)}</span>
+                    )}
                   </div>
-                  <span className='discount-badge'>-{discountPercentage}%</span>
+                  {hasDiscount && (
+                    <span className='discount-badge'>-{discountPercentage}%</span>
+                  )}
                 </div>
               </div>
             </div>

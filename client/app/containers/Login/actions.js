@@ -6,7 +6,7 @@
 
 import { success } from 'react-notification-system-redux';
 import axios from 'axios';
-import { push } from 'connected-react-router';
+import { push } from '@lagunovsky/redux-react-router';
 
 import {
   LOGIN_CHANGE,
@@ -95,11 +95,10 @@ export const signOut = () => {
 
     dispatch(clearAuth());
     dispatch(clearAccount());
+    dispatch(clearCart());
     dispatch(push('/login'));
 
     localStorage.removeItem('token');
-
     dispatch(success(successfulOptions));
-    // dispatch(clearCart());
   };
 };

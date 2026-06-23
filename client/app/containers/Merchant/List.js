@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 
 import actions from '../../actions';
 import { ROLES } from '../../constants';
+import { withRouter } from '../../utils/withRouter';
 
 import SubPage from '../../components/Manager/SubPage';
 import MerchantList from '../../components/Manager/MerchantList';
@@ -132,4 +133,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(List);
+export default withRouter(connect(mapStateToProps, actions)(List));

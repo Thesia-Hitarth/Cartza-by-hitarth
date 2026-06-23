@@ -7,7 +7,7 @@
 import React from 'react';
 
 import Checkbox from '../../Common/Checkbox';
-import { Heart } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Heart } from 'lucide-react';
 
 const AddToWishList = props => {
   const { id, liked, enabled, updateWishlist } = props;

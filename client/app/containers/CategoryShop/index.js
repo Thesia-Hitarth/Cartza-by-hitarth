@@ -8,6 +8,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 
 import ProductList from '../../components/Store/ProductList';
 import NotFound from '../../components/Common/NotFound';
@@ -56,4 +57,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(CategoryShop);
+export default withRouter(connect(mapStateToProps, actions)(CategoryShop));

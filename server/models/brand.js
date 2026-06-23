@@ -1,14 +1,6 @@
 const Mongoose = require('mongoose');
-const slug = require('mongoose-slug-generator');
 const { Schema } = Mongoose;
-
-const options = {
-  separator: '-',
-  lang: 'en',
-  truncate: 120
-};
-
-Mongoose.plugin(slug, options);
+const { generateUniqueSlug } = require('../utils/slugify');
 
 // Brand Schema
 const BrandSchema = new Schema({
@@ -18,7 +10,6 @@ const BrandSchema = new Schema({
   },
   slug: {
     type: String,
-    slug: 'name',
     unique: true
   },
   image: {
@@ -43,6 +34,13 @@ const BrandSchema = new Schema({
     type: Date,
     default: Date.now
   }
+});
+
+BrandSchema.pre('save', async function (next) {
+  if (this.isModified('name') || !this.slug) {
+    this.slug = await generateUniqueSlug(this.constructor, this.name, this._id);
+  }
+  next();
 });
 
 module.exports = Mongoose.model('Brand', BrandSchema);

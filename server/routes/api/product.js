@@ -18,7 +18,20 @@ const {
 const { ROLES } = require('../../constants');
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only JPEG, PNG, WebP, and GIF images are allowed.'), false);
+    }
+  }
+});
 
 // fetch product slug api
 router.get('/item/:slug', async (req, res) => {
@@ -194,6 +207,7 @@ router.post(
       const description = req.body.description;
       const quantity = req.body.quantity;
       const price = req.body.price;
+      const compareAtPrice = req.body.compareAtPrice || null;
       const taxable = req.body.taxable;
       const isActive = req.body.isActive;
       const brand = req.body.brand;
@@ -231,6 +245,7 @@ router.post(
         description,
         quantity,
         price,
+        compareAtPrice,
         taxable,
         isActive,
         brand,
@@ -450,5 +465,15 @@ router.delete(
     }
   }
 );
+
+router.use((err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    return res.status(400).json({ error: 'File size must not exceed 5MB.' });
+  }
+  if (err.message) {
+    return res.status(400).json({ error: err.message });
+  }
+  next(err);
+});
 
 module.exports = router;

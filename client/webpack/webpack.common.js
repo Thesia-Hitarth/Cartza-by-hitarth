@@ -21,10 +21,18 @@ module.exports = {
     ]
   },
   plugins: [
-    new CopyWebpackPlugin([
-      {
-        from: 'public'
-      }
-    ])
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: 'public',
+          filter: (resourcePath) => {
+            if (resourcePath.endsWith('index.html')) {
+              return false;
+            }
+            return true;
+          }
+        }
+      ]
+    })
   ]
 };

@@ -28,19 +28,19 @@ router.post('/add', auth, role.check(ROLES.Admin), (req, res) => {
     isActive
   });
 
-  category.save((err, data) => {
-    if (err) {
-      return res.status(400).json({
+  category.save()
+    .then(data => {
+      res.status(200).json({
+        success: true,
+        message: `Category has been added successfully!`,
+        category: data
+      });
+    })
+    .catch(err => {
+      res.status(400).json({
         error: 'Your request could not be processed. Please try again.'
       });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `Category has been added successfully!`,
-      category: data
     });
-  });
 });
 
 // fetch store categories api

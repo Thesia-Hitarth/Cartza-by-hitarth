@@ -16,6 +16,18 @@ import { BagIcon, CloseIcon } from '../../components/Common/Icon';
 import Button from '../../components/Common/Button';
 
 class Cart extends React.PureComponent {
+  componentDidMount() {
+    if (this.props.authenticated) {
+      this.props.fetchAddresses();
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.authenticated && !prevProps.authenticated) {
+      this.props.fetchAddresses();
+    }
+  }
+
   render() {
     const {
       isCartOpen,
@@ -26,7 +38,8 @@ class Cart extends React.PureComponent {
       handleCheckout,
       handleRemoveFromCart,
       placeOrder,
-      authenticated
+      authenticated,
+      addresses
     } = this.props;
 
     return (
@@ -65,6 +78,7 @@ class Cart extends React.PureComponent {
               handleCheckout={handleCheckout}
               placeOrder={placeOrder}
               authenticated={authenticated}
+              addresses={addresses}
             />
           </div>
         )}
@@ -78,7 +92,8 @@ const mapStateToProps = state => {
     isCartOpen: state.navigation.isCartOpen,
     cartItems: state.cart.cartItems,
     cartTotal: state.cart.cartTotal,
-    authenticated: state.authentication.authenticated
+    authenticated: state.authentication.authenticated,
+    addresses: state.address.addresses
   };
 };
 

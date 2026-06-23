@@ -9,6 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 
 import OrderDetails from '../../components/Manager/OrderDetails';
 import NotFound from '../../components/Common/NotFound';
@@ -71,4 +72,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(OrderPage);
+export default withRouter(connect(mapStateToProps, actions)(OrderPage));

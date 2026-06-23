@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import { ShoppingBag } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { ShoppingBag } from 'lucide-react';
 import Button from '../Button';
 
 const CartIcon = props => {

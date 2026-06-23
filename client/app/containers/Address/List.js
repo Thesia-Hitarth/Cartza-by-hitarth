@@ -9,6 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 
 import AddressList from '../../components/Manager/AddressList';
 import SubPage from '../../components/Manager/SubPage';
@@ -46,4 +47,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(List);
+export default withRouter(connect(mapStateToProps, actions)(List));

@@ -7,7 +7,7 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 
 import actions from '../../actions';
 
@@ -17,7 +17,7 @@ export default function (ComposedComponent) {
       const { authenticated } = this.props;
 
       if (!authenticated) {
-        return <Redirect to='/login' />;
+        return <Navigate to='/login' replace />;
       } else {
         return <ComposedComponent {...this.props} />;
       }

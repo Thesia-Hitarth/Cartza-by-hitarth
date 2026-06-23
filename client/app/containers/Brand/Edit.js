@@ -9,6 +9,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 
 import EditBrand from '../../components/Manager/EditBrand';
 import SubPage from '../../components/Manager/SubPage';
@@ -71,4 +72,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(Edit);
+export default withRouter(connect(mapStateToProps, actions)(Edit));

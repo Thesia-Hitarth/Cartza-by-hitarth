@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Provider } from 'react-redux';
-import { ConnectedRouter } from 'connected-react-router';
+import { ReduxRouter } from '@lagunovsky/redux-react-router';
 
 import store, { history } from './store';
 import { SET_AUTH } from './containers/Authentication/constants';
@@ -42,11 +42,11 @@ if (token) {
 
 const app = () => (
   <Provider store={store}>
-    <ConnectedRouter history={history}>
+    <ReduxRouter history={history}>
       <ScrollToTop>
         <Application />
       </ScrollToTop>
-    </ConnectedRouter>
+    </ReduxRouter>
   </Provider>
 );
 

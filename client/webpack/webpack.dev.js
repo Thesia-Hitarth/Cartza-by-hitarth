@@ -1,6 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const webpackMerge = require('webpack-merge');
+const { merge } = require('webpack-merge');
 const Dotenv = require('dotenv-webpack');
 
 const common = require('./webpack.common');
@@ -21,7 +21,17 @@ const config = {
         use: [
           'style-loader',
           {
-            loader: 'css-loader'
+            loader: 'css-loader',
+            options: {
+              url: {
+                filter: (url) => {
+                  if (url.startsWith('/')) {
+                    return false;
+                  }
+                  return true;
+                }
+              }
+            }
           },
           {
             loader: 'postcss-loader',
@@ -40,28 +50,18 @@ const config = {
         ]
       },
       {
-        test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'images',
-              name: '[name].[ext]'
-            }
-          }
-        ]
+        test: /\.(png|jpg|jpeg|gif|svg|ico)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name][ext]'
+        }
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'fonts',
-              name: '[name].[ext]'
-            }
-          }
-        ]
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name][ext]'
+        }
       }
     ]
   },
@@ -75,13 +75,12 @@ const config = {
   devServer: {
     port: 8080,
     open: true,
-    inline: true,
     compress: true,
     hot: true,
-    disableHostCheck: true,
-    historyApiFallback: true
+    historyApiFallback: true,
+    allowedHosts: 'all'
   },
   devtool: 'eval-source-map'
 };
 
-module.exports = webpackMerge(common, config);
+module.exports = merge(common, config);

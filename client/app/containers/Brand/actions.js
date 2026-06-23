@@ -4,7 +4,7 @@
  *
  */
 
-import { goBack } from 'connected-react-router';
+import { back as goBack } from '@lagunovsky/redux-react-router';
 import { success } from 'react-notification-system-redux';
 import axios from 'axios';
 

@@ -6,17 +6,16 @@
 
 import { createStore, compose, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
-import { routerMiddleware } from 'connected-react-router';
+import { createRouterMiddleware } from '@lagunovsky/redux-react-router';
 import { createBrowserHistory } from 'history';
 
 import createReducer from './reducers';
 
 export const history = createBrowserHistory({
-  basename: '/',
-  hashType: 'noslash'
+  basename: '/'
 });
 
-const middlewares = [thunk, routerMiddleware(history)];
+const middlewares = [thunk, createRouterMiddleware(history)];
 
 const enhancers = [applyMiddleware(...middlewares)];
 

@@ -10,12 +10,14 @@ import { connect } from 'react-redux';
 import { Row, Col } from 'reactstrap';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
 class MerchantSignup extends React.PureComponent {
   componentDidMount() {
-    const email = this.props.location.search.split('=')[1];
+    const search = this.props.location.search;
+    const email = search ? search.split('=')[1] : '';
     this.props.merchantSignupChange('email', email);
   }
 
@@ -119,4 +121,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(MerchantSignup);
+export default withRouter(connect(mapStateToProps, actions)(MerchantSignup));

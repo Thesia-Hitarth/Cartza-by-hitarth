@@ -6,7 +6,7 @@
 
 import React from 'react';
 
-import { Switch, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { Row, Col } from 'reactstrap';
 
 import AccountMenu from '../AccountMenu';
@@ -31,17 +31,17 @@ const Customer = props => {
         </Col>
         <Col xs='12' md='7' xl='9'>
           <div className='panel-body'>
-            <Switch>
-              <Route exact path='/dashboard' component={Account} />
+            <Routes>
+              <Route path='/' element={<Account />} />
               {!isProviderAllowed(user.provider) && (
-                <Route path='/dashboard/security' component={AccountSecurity} />
+                <Route path='security' element={<AccountSecurity />} />
               )}
-              <Route path='/dashboard/address' component={Address} />
-              <Route path='/dashboard/orders' component={Order} />
-              <Route path='/dashboard/wishlist' component={Wishlist} />
-              <Route path='/dashboard/complaints' component={Complaints} />
-              <Route path='*' component={Page404} />
-            </Switch>
+              <Route path='address/*' element={<Address />} />
+              <Route path='orders/*' element={<Order />} />
+              <Route path='wishlist' element={<Wishlist />} />
+              <Route path='complaints' element={<Complaints />} />
+              <Route path='*' element={<Page404 />} />
+            </Routes>
           </div>
         </Col>
       </Row>

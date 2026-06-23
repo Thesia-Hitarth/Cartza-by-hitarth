@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Minus, Trash2 } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Plus, Minus, Trash2 } from 'lucide-react';
 
 const CartList = props => {
   const { cartItems, handleRemoveFromCart, updateCartItemQuantity, toggleCart } = props;

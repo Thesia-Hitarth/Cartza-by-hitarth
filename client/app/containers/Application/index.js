@@ -7,7 +7,8 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Switch, Route, Redirect, withRouter } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 import { Container } from 'reactstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,6 +37,8 @@ import AuthSuccess from '../AuthSuccess';
 import Footer from '../../components/Common/Footer';
 import Page404 from '../../components/Common/Page404';
 import { CART_ITEMS } from '../../constants';
+
+const AuthenticatedDashboard = Authentication(Dashboard);
 
 class Application extends React.PureComponent {
   constructor(props) {
@@ -138,34 +141,34 @@ class Application extends React.PureComponent {
                   animate="enter"
                   exit="exit"
                 >
-                  <Switch location={location}>
-                    <Route exact path='/' component={HomePage} />
-                    <Route path='/shop' component={Shop} />
-                    <Route path='/sell' component={Sell} />
-                    <Route path='/contact' component={Contact} />
-                    <Route path='/brands' component={BrandsPage} />
-                    <Route path='/product/:slug' component={ProductPage} />
-                    <Route path='/order/success/:id' component={OrderSuccess} />
-                    <Route path='/order/:id' component={OrderPage} />
-                    <Route path='/login' component={Login} />
-                    <Route path='/register' component={Signup} />
+                  <Routes>
+                    <Route path='/' element={<HomePage />} />
+                    <Route path='/shop/*' element={<Shop />} />
+                    <Route path='/sell' element={<Sell />} />
+                    <Route path='/contact' element={<Contact />} />
+                    <Route path='/brands' element={<BrandsPage />} />
+                    <Route path='/product/:slug' element={<ProductPage />} />
+                    <Route path='/order/success/:id' element={<OrderSuccess />} />
+                    <Route path='/order/:id' element={<OrderPage />} />
+                    <Route path='/login' element={<Login />} />
+                    <Route path='/register' element={<Signup />} />
                     <Route
                       path='/merchant-signup/:token'
-                      component={MerchantSignup}
+                      element={<MerchantSignup />}
                     />
-                    <Route path='/forgot-password' component={ForgotPassword} />
+                    <Route path='/forgot-password' element={<ForgotPassword />} />
                     <Route
                       path='/reset-password/:token'
-                      component={ResetPassword}
+                      element={<ResetPassword />}
                     />
-                    <Route path='/auth/success' component={AuthSuccess} />
+                    <Route path='/auth/success' element={<AuthSuccess />} />
                     <Route
-                      path='/dashboard'
-                      component={Authentication(Dashboard)}
+                      path='/dashboard/*'
+                      element={<AuthenticatedDashboard />}
                     />
-                    <Route path='/404' component={Page404} />
-                    <Route path='*' component={Page404} />
-                  </Switch>
+                    <Route path='/404' element={<Page404 />} />
+                    <Route path='*' element={<Page404 />} />
+                  </Routes>
                 </motion.div>
               </AnimatePresence>
             </div>

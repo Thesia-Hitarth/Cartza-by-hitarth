@@ -4,7 +4,7 @@
  *
  */
 
-import { push } from 'connected-react-router';
+import { push } from '@lagunovsky/redux-react-router';
 import axios from 'axios';
 import { success } from 'react-notification-system-redux';
 
@@ -21,7 +21,7 @@ import {
 import { clearCart, getCartId } from '../Cart/actions';
 import { toggleCart } from '../Navigation/actions';
 import handleError from '../../utils/error';
-import { API_URL } from '../../constants';
+import { API_URL, CART_ID } from '../../constants';
 
 export const updateOrderStatus = value => {
   return {
@@ -195,16 +195,17 @@ export const updateOrderItemStatus = (itemId, status) => {
   };
 };
 
-export const addOrder = () => {
+export const addOrder = (addressId) => {
   return async (dispatch, getState) => {
     try {
-      const cartId = localStorage.getItem('cart_id');
+      const cartId = localStorage.getItem(CART_ID);
       const total = getState().cart.cartTotal;
 
       if (cartId) {
         const response = await axios.post(`${API_URL}/order/add`, {
           cartId,
-          total
+          total,
+          addressId
         });
 
         dispatch(push(`/order/success/${response.data.order._id}`));
@@ -212,26 +213,31 @@ export const addOrder = () => {
       }
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        localStorage.removeItem('cart_id');
+        localStorage.removeItem(CART_ID);
       }
       handleError(error, dispatch);
     }
   };
 };
 
-export const placeOrder = () => {
-  return (dispatch, getState) => {
+export const placeOrder = (addressId) => {
+  return async (dispatch, getState) => {
     const token = localStorage.getItem('token');
-
     const cartItems = getState().cart.cartItems;
 
-    if (token && cartItems.length > 0) {
-      Promise.all([dispatch(getCartId())]).then(() => {
-        dispatch(addOrder());
-      });
+    if (!token || cartItems.length === 0) {
+      dispatch(toggleCart());
+      return;
     }
 
-    dispatch(toggleCart());
+    try {
+      await dispatch(getCartId());
+      await dispatch(addOrder(addressId));
+    } catch (err) {
+      handleError(err, dispatch);
+    } finally {
+      dispatch(toggleCart());
+    }
   };
 };
 

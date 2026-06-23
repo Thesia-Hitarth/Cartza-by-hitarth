@@ -7,7 +7,8 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Redirect } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
+import { withRouter } from '../../utils/withRouter';
 
 import actions from '../../actions';
 import ResetPasswordForm from '../../components/Common/ResetPasswordForm';
@@ -22,7 +23,7 @@ class ResetPassword extends React.PureComponent {
     const { authenticated, resetFormData, formErrors, resetPasswordChange } =
       this.props;
 
-    if (authenticated) return <Redirect to='/dashboard' />;
+    if (authenticated) return <Navigate to='/dashboard' replace />;
 
     return (
       <div className='reset-password-form'>
@@ -48,4 +49,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(ResetPassword);
+export default withRouter(connect(mapStateToProps, actions)(ResetPassword));

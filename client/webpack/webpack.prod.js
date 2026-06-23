@@ -5,8 +5,8 @@ const TerserPlugin = require('terser-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const WebpackPwaManifest = require('webpack-pwa-manifest');
-const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
-const webpackMerge = require('webpack-merge');
+const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const { merge } = require('webpack-merge');
 
 const common = require('./webpack.common');
 
@@ -18,7 +18,7 @@ const config = {
   mode: 'production',
   output: {
     path: path.join(CURRENT_WORKING_DIR, '/dist'),
-    filename: 'js/[name].[hash].js',
+    filename: 'js/[name].[contenthash].js',
     publicPath: '/'
   },
   module: {
@@ -28,7 +28,17 @@ const config = {
         use: [
           MiniCssExtractPlugin.loader,
           {
-            loader: 'css-loader'
+            loader: 'css-loader',
+            options: {
+              url: {
+                filter: (url) => {
+                  if (url.startsWith('/')) {
+                    return false;
+                  }
+                  return true;
+                }
+              }
+            }
           },
           {
             loader: 'postcss-loader',
@@ -47,30 +57,20 @@ const config = {
         ]
       },
       {
-        test: /\.(png|jpg|jpeg|gif|svg|ico)$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'images',
-              publicPath: '../images',
-              name: '[name].[hash].[ext]'
-            }
-          }
-        ]
+        test: /\.(png|jpg|jpeg|gif|svg|ico)$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'images/[name].[contenthash][ext]',
+          publicPath: '../images/'
+        }
       },
       {
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
-        use: [
-          {
-            loader: 'file-loader',
-            options: {
-              outputPath: 'fonts',
-              publicPath: '../fonts',
-              name: '[name].[hash].[ext]'
-            }
-          }
-        ]
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/i,
+        type: 'asset/resource',
+        generator: {
+          filename: 'fonts/[name].[contenthash][ext]',
+          publicPath: '../fonts/'
+        }
       }
     ]
   },
@@ -103,7 +103,6 @@ const config = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          warnings: false,
           compress: {
             comparisons: false
           },
@@ -113,6 +112,16 @@ const config = {
             comments: false,
             ascii_only: true
           }
+        }
+      }),
+      new CssMinimizerPlugin({
+        minimizerOptions: {
+          preset: [
+            'default',
+            {
+              discardComments: { removeAll: true }
+            }
+          ]
         }
       })
     ]
@@ -141,7 +150,7 @@ const config = {
       }
     }),
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[hash].css'
+      filename: 'css/[name].[contenthash].css'
     }),
     new WebpackPwaManifest({
       name: 'CARTZA',
@@ -164,16 +173,8 @@ const config = {
           ios: true
         }
       ]
-    }),
-    new OptimizeCssAssetsPlugin({
-      assetNameRegExp: /\.css$/g,
-      cssProcessor: require('cssnano'),
-      cssProcessorPluginOptions: {
-        preset: ['default', { discardComments: { removeAll: true } }]
-      },
-      canPrint: true
     })
   ]
 };
 
-module.exports = webpackMerge(common, config);
+module.exports = merge(common, config);

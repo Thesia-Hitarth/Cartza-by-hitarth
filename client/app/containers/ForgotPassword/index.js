@@ -8,7 +8,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 
 import { Row, Col } from 'reactstrap';
-import { Redirect, Link } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 
 import actions from '../../actions';
 
@@ -25,7 +25,7 @@ class ForgotPassword extends React.PureComponent {
       forgotPassowrd
     } = this.props;
 
-    if (authenticated) return <Redirect to='/dashboard' />;
+    if (authenticated) return <Navigate to='/dashboard' replace />;
 
     const handleSubmit = event => {
       event.preventDefault();

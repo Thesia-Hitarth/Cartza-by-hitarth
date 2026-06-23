@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import actions from '../../actions';
+import { withRouter } from '../../utils/withRouter';
 
 import NotFound from '../../components/Common/NotFound';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
@@ -40,11 +41,8 @@ class OrderSuccess extends React.PureComponent {
             <p>
               Order{' '}
               <Link
-                to={{
-                  pathname: `/order/${order._id}?success`,
-                  state: { prevPath: location.pathname }
-                }}
-                // to={`/order/${order._id}?success`}
+                to={`/order/${order._id}?success`}
+                state={{ prevPath: this.props.location.pathname }}
                 className='order-label'
               >
                 #{order._id}
@@ -76,4 +74,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(OrderSuccess);
+export default withRouter(connect(mapStateToProps, actions)(OrderSuccess));

@@ -21,8 +21,6 @@ router.post('/add', auth, async (req, res) => {
 
     const cartDoc = await cart.save();
 
-    await decreaseQuantity(products);
-
     res.status(200).json({
       success: true,
       cartId: cartDoc.id
@@ -58,18 +56,14 @@ router.post('/add/:cartId', auth, async (req, res) => {
     if (!cart || String(cart.user) !== String(req.user._id)) {
       return res.status(403).json({ error: 'Unauthorized to modify this cart.' });
     }
-    const product = req.body.product;
-    const query = { _id: req.params.cartId };
 
-    await Cart.updateOne(query, { $push: { products: product } }).exec();
+    const rawProduct = req.body.product;
+    const [product] = store.caculateItemsSalesTax([rawProduct]);
 
-    res.status(200).json({
-      success: true
-    });
+    await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
+    res.status(200).json({ success: true });
   } catch (error) {
-    res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
-    });
+    res.status(400).json({ error: 'Your request could not be processed. Please try again.' });
   }
 });
 
@@ -93,18 +87,5 @@ router.delete('/delete/:cartId/:productId', auth, async (req, res) => {
     });
   }
 });
-
-const decreaseQuantity = async products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: -item.quantity } }
-      }
-    };
-  });
-
-  await Product.bulkWrite(bulkOptions);
-};
 
 module.exports = router;

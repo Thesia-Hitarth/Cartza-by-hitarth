@@ -1,14 +1,6 @@
 const Mongoose = require('mongoose');
-const slug = require('mongoose-slug-generator');
 const { Schema } = Mongoose;
-
-const options = {
-  separator: '-',
-  lang: 'en',
-  truncate: 120
-};
-
-Mongoose.plugin(slug, options);
+const { generateUniqueSlug } = require('../utils/slugify');
 
 // Category Schema
 const CategorySchema = new Schema({
@@ -22,7 +14,6 @@ const CategorySchema = new Schema({
   },
   slug: {
     type: String,
-    slug: 'name',
     unique: true
   },
   image: {
@@ -48,6 +39,13 @@ const CategorySchema = new Schema({
     type: Date,
     default: Date.now
   }
+});
+
+CategorySchema.pre('save', async function (next) {
+  if (this.isModified('name') || !this.slug) {
+    this.slug = await generateUniqueSlug(this.constructor, this.name, this._id);
+  }
+  next();
 });
 
 module.exports = Mongoose.model('Category', CategorySchema);
