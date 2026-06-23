@@ -8,7 +8,8 @@ module.exports = {
   resolve: {
     extensions: ['.js', '.json', '.css', '.scss', '.html'],
     alias: {
-      app: 'app'
+      app: 'app',
+      'lucide-react/dist/cjs/lucide-react.cjs': path.resolve(CURRENT_WORKING_DIR, 'node_modules/lucide-react/dist/cjs/lucide-react.cjs')
     }
   },
   module: {

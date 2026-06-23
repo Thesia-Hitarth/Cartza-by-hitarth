@@ -23,8 +23,10 @@ const BagIcon = () => {
   );
 };
 
+import { Menu } from 'lucide-react/dist/cjs/lucide-react.cjs';
+
 const BarsIcon = () => {
-  return <span className='bars-icon fa fa-bars' aria-hidden='true' />;
+  return <Menu className='bars-icon' size={22} strokeWidth={1.5} aria-hidden='true' />;
 };
 
 const CloseIcon = () => {

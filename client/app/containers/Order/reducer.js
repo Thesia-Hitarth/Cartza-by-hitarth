@@ -11,7 +11,8 @@ import {
   UPDATE_ORDER_STATUS,
   SET_ORDERS_LOADING,
   SET_ADVANCED_FILTERS,
-  CLEAR_ORDERS
+  CLEAR_ORDERS,
+  SET_PLACING_ORDER
 } from './constants';
 
 const initialState = {
@@ -26,6 +27,7 @@ const initialState = {
     status: ''
   },
   isLoading: false,
+  isPlacingOrder: false,
   advancedFilters: {
     totalPages: 1,
     currentPage: 1,
@@ -76,6 +78,11 @@ const orderReducer = (state = initialState, action) => {
       return {
         ...state,
         isLoading: action.payload
+      };
+    case SET_PLACING_ORDER:
+      return {
+        ...state,
+        isPlacingOrder: action.payload
       };
     case CLEAR_ORDERS:
       return {

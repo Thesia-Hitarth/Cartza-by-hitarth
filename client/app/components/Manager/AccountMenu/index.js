@@ -44,8 +44,8 @@ const AccountMenu = props => {
                 <li key={index}>
                   <NavLink
                     to={PREFIX + link.to}
-                    activeClassName='active-link'
-                    exact
+                    className={({ isActive }) => isActive ? 'active-link' : ''}
+                    end
                   >
                     {link.name}
                   </NavLink>

@@ -13,7 +13,7 @@ body {
   font-size: var(--text-sm);
   font-weight: var(--font-weight-normal);
   height: 100%;
-  letter-spacing: var(--space-1);
+  letter-spacing: normal;
   line-height: var(--line-height);
   margin: 0;
   padding: 0;
@@ -43,10 +43,14 @@ body {
 }
 
 .wrapper {
-  padding: 260px 0px 25px;
-
+  padding-top: var(--space-5);
+  padding-bottom: var(--space-7);
   @include media-breakpoint-up(md) {
-    padding: 25px 0px;
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+  @include media-breakpoint-up(lg) {
+    padding-top: var(--space-6);
   }
 }
 

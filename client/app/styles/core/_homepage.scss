@@ -11,13 +11,13 @@
   display: flex;
   align-items: center;
   position: relative;
-  padding-top: 120px;
+  padding-top: 40px;
   /* Offset for fixed header */
   padding-bottom: var(--space-8);
 
   @media (max-width: 991px) {
     min-height: auto;
-    padding-top: 100px;
+    padding-top: 20px;
     padding-bottom: var(--space-6);
   }
 }

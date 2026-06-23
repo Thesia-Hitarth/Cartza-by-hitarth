@@ -6,6 +6,8 @@
 
 import React from 'react';
 
+import { ChevronDown } from 'lucide-react/dist/cjs/lucide-react.cjs';
+
 import {
   UncontrolledButtonDropdown,
   DropdownMenu,
@@ -21,7 +23,7 @@ const DropdownConfirm = props => {
         <DropdownToggle nav>
           <div className='dropdown-action sm'>
             {label}
-            <span className='fa fa-chevron-down dropdown-caret'></span>
+            <ChevronDown size={14} className='dropdown-caret ml-1' style={{ verticalAlign: 'middle', display: 'inline-block' }} />
           </div>
         </DropdownToggle>
         <DropdownMenu right>{children}</DropdownMenu>

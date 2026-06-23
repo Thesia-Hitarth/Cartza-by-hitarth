@@ -1,53 +1,57 @@
-// Import core styles
+// 1. Utilities (no CSS output)
+@import 'utils/reset';
+@import 'utils/tokens';
+@import 'utils/fonts';
+
+// 2. Variables + Mixins
 @import 'variables';
 @import 'mixins';
 
-// layout
+// 3. Base layout
 @import 'layout';
-@import 'utils';
-
-// overrides
-@import 'overrides';
-
-// bug fixes
 @import 'fixes';
-
-// Right-to-left
+@import 'overrides';
 @import 'rtl';
 
-// components
-@import 'components';
-@import 'footer';
-@import 'header';
-@import 'input';
+// 4. Animations (must be early — other files extend these)
+@import 'animations';
+
+// 5. Global components
 @import 'button';
-@import 'checkbox';
-@import 'switch';
+@import 'input';
 @import 'spinner';
-@import 'cart';
-@import 'newsletter';
-@import 'login';
-@import 'page404';
-@import 'homepage';
-@import 'dashboard';
-@import 'account';
-@import 'users';
-@import 'product';
-@import 'category';
-@import 'brand';
-@import 'address';
-@import 'subpage';
-@import 'table';
+@import 'badge';
+@import 'checkbox';
+@import 'radio';
+@import 'switch';
+@import 'notification';
+
+// 6. Layout components
+@import 'header';
+@import 'footer';
 @import 'menu';
+@import 'dashboard';
+@import 'subpage';
+
+// 7. Page styles
+@import 'homepage';
 @import 'shop';
+@import 'product';
+@import 'cart';
 @import 'checkout';
-@import 'merchant';
-@import 'coming-soon';
 @import 'order';
 @import 'review';
 @import 'wishlist';
-@import 'share';
+@import 'login';
+@import 'account';
+@import 'address';
+@import 'brand';
+@import 'category';
+@import 'merchant';
+@import 'users';
 @import 'search';
-@import 'radio';
-@import 'badge';
 @import 'support';
+@import 'newsletter';
+@import 'share';
+@import 'coming-soon';
+@import 'table';

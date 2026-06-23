@@ -15,7 +15,7 @@ import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import NotFound from '../../components/Common/NotFound';
-import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import ProductReviews from '../../components/Store/ProductReviews';
 import SocialShare from '../../components/Store/SocialShare';
 
@@ -27,7 +27,7 @@ class ProductPage extends React.PureComponent {
       isZoomed: false,
       zoomPos: 'center',
       selectedColor: 'Default',
-      selectedSize: 'M',
+      selectedSize: 'Default',
       openAccordion: 'description' // 'description', 'specs', 'shipping'
     };
     this.handleMouseMove = this.handleMouseMove.bind(this);
@@ -48,6 +48,14 @@ class ProductPage extends React.PureComponent {
       const slug = this.props.match.params.slug;
       this.props.fetchStoreProduct(slug);
       this.props.fetchProductReviews(slug);
+    }
+    if (this.props.product !== prevProps.product && this.props.product) {
+      const colors = this.props.product.colors || [];
+      const sizes = this.props.product.sizes || [];
+      this.setState({
+        selectedColor: colors.length > 0 ? colors[0] : 'Default',
+        selectedSize: sizes.length > 0 ? sizes[0] : 'Default'
+      });
     }
   }
 
@@ -111,10 +119,6 @@ class ProductPage extends React.PureComponent {
     ];
 
     const currentImage = dummyThumbnails[activeThumbIdx];
-
-    // Color/Size variant mock data
-    const colors = ['Default', 'Carbon Black', 'Crimson Red'];
-    const sizes = ['S', 'M', 'L', 'XL'];
 
     // Mock discount elements
     const discountPercentage = 15;
@@ -230,37 +234,41 @@ class ProductPage extends React.PureComponent {
 
                   {/* Custom Swatch Selectors */}
                   {/* Color Swatch */}
-                  <div className='variant-swatch-block mb-3'>
-                    <div className='variant-label'>Color: <strong>{selectedColor}</strong></div>
-                    <div className='color-swatch-list d-flex align-items-center'>
-                      {colors.map((col, idx) => (
-                        <button
-                          key={idx}
-                          className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(' ', '-')}`}
-                          onClick={() => this.setState({ selectedColor: col })}
-                          title={col}
-                          aria-label={`Select color ${col}`}
-                        ></button>
-                      ))}
+                  {product.colors && product.colors.length > 0 && (
+                    <div className='variant-swatch-block mb-3'>
+                      <div className='variant-label'>Color: <strong>{selectedColor}</strong></div>
+                      <div className='color-swatch-list d-flex align-items-center'>
+                        {product.colors.map((col, idx) => (
+                          <button
+                            key={idx}
+                            className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(' ', '-')}`}
+                            onClick={() => this.setState({ selectedColor: col })}
+                            title={col}
+                            aria-label={`Select color ${col}`}
+                          ></button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Size Selectors */}
-                  <div className='variant-swatch-block mb-4'>
-                    <div className='variant-label'>Size: <strong>{selectedSize}</strong></div>
-                    <div className='size-swatch-list d-flex align-items-center'>
-                      {sizes.map((sz, idx) => (
-                        <button
-                          key={idx}
-                          className={`size-swatch-btn ${selectedSize === sz ? 'active' : ''}`}
-                          onClick={() => this.setState({ selectedSize: sz })}
-                          aria-label={`Select size ${sz}`}
-                        >
-                          {sz}
-                        </button>
-                      ))}
+                  {product.sizes && product.sizes.length > 0 && (
+                    <div className='variant-swatch-block mb-4'>
+                      <div className='variant-label'>Size: <strong>{selectedSize}</strong></div>
+                      <div className='size-swatch-list d-flex align-items-center'>
+                        {product.sizes.map((sz, idx) => (
+                          <button
+                            key={idx}
+                            className={`size-swatch-btn ${selectedSize === sz ? 'active' : ''}`}
+                            onClick={() => this.setState({ selectedSize: sz })}
+                            aria-label={`Select size ${sz}`}
+                          >
+                            {sz}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Quantity and Actions */}
                   <div className='quantity-input-box mb-4'>

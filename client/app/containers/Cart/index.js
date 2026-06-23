@@ -6,14 +6,14 @@
 
 import React from 'react';
 import { connect } from 'react-redux';
+import { X } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import actions from '../../actions';
 
 import CartList from '../../components/Store/CartList';
 import CartSummary from '../../components/Store/CartSummary';
 import Checkout from '../../components/Store/Checkout';
-import { BagIcon, CloseIcon } from '../../components/Common/Icon';
-import Button from '../../components/Common/Button';
+import { BagIcon } from '../../components/Common/Icon';
 
 class Cart extends React.PureComponent {
   componentDidMount() {
@@ -39,20 +39,21 @@ class Cart extends React.PureComponent {
       handleRemoveFromCart,
       placeOrder,
       authenticated,
-      addresses
+      addresses,
+      isPlacingOrder
     } = this.props;
 
     return (
       <div className='cart'>
         <div className='cart-header'>
+          <span className='cart-header-title'>
+            Your Cart
+            {cartItems.length > 0 && <span className='cart-header-count'> ({cartItems.length})</span>}
+          </span>
           {isCartOpen && (
-            <Button
-              borderless
-              variant='empty'
-              ariaLabel='close the cart'
-              icon={<CloseIcon />}
-              onClick={toggleCart}
-            />
+            <button className='cart-close-btn' aria-label='Close cart' onClick={toggleCart}>
+              <X size={22} strokeWidth={1.5} />
+            </button>
           )}
         </div>
         {cartItems.length > 0 ? (
@@ -79,6 +80,7 @@ class Cart extends React.PureComponent {
               placeOrder={placeOrder}
               authenticated={authenticated}
               addresses={addresses}
+              isPlacingOrder={isPlacingOrder}
             />
           </div>
         )}
@@ -93,7 +95,8 @@ const mapStateToProps = state => {
     cartItems: state.cart.cartItems,
     cartTotal: state.cart.cartTotal,
     authenticated: state.authentication.authenticated,
-    addresses: state.address.addresses
+    addresses: state.address.addresses,
+    isPlacingOrder: state.order.isPlacingOrder
   };
 };
 

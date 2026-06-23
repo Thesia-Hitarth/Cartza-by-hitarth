@@ -33,7 +33,7 @@ class Checkout extends React.Component {
   };
 
   render() {
-    const { authenticated, handleShopping, handleCheckout, placeOrder, addresses } = this.props;
+    const { authenticated, handleShopping, handleCheckout, placeOrder, addresses, isPlacingOrder } = this.props;
     const { selectedAddressId } = this.state;
 
     return (
@@ -77,24 +77,21 @@ class Checkout extends React.Component {
           </div>
         )}
         <div className='checkout-actions'>
-          <Button
-            variant='primary'
-            text='Continue shopping'
-            onClick={() => handleShopping()}
-          />
+          <button className='btn-shopping' onClick={() => handleShopping()}>
+            Continue Shopping
+          </button>
           {authenticated ? (
-            <Button
-              variant='primary'
-              text='Place Order'
-              disabled={!selectedAddressId}
+            <button
+              className='btn-checkout'
+              disabled={!selectedAddressId || isPlacingOrder}
               onClick={() => placeOrder(selectedAddressId)}
-            />
+            >
+              {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+            </button>
           ) : (
-            <Button
-              variant='primary'
-              text='Proceed To Checkout'
-              onClick={() => handleCheckout()}
-            />
+            <button className='btn-checkout' onClick={() => handleCheckout()}>
+              Proceed to Checkout
+            </button>
           )}
         </div>
       </div>

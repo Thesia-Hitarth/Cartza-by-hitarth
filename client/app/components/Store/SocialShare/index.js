@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { Facebook, Twitter, Mail, MessageCircle } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import {
   EmailShareButton,
@@ -24,22 +25,22 @@ const SocialShare = props => {
     <ul className='d-flex flex-row mx-0 mb-0 justify-content-center justify-content-md-start share-box'>
       <li>
         <FacebookShareButton url={`${shareMsg}`} className='share-btn facebook'>
-          <i className='fa fa-facebook'></i>
+          <Facebook size={16} strokeWidth={2} />
         </FacebookShareButton>
       </li>
       <li>
         <TwitterShareButton url={`${shareMsg}`} className='share-btn twitter'>
-          <i className='fa fa-twitter'></i>
+          <Twitter size={16} strokeWidth={2} />
         </TwitterShareButton>
       </li>
       <li>
         <EmailShareButton url={`${shareMsg}`} className='share-btn envelope'>
-          <i className='fa fa-envelope-o'></i>
+          <Mail size={16} strokeWidth={2} />
         </EmailShareButton>
       </li>
       <li>
         <WhatsappShareButton url={`${shareMsg}`} className='share-btn whatsapp'>
-          <i className='fa fa-whatsapp'></i>
+          <MessageCircle size={16} strokeWidth={2} />
         </WhatsappShareButton>
       </li>
     </ul>

@@ -5,8 +5,8 @@
  */
 
 import React from 'react';
-
 import ReactStars from 'react-rating-stars-component';
+import { Star, StarHalf } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import NotFound from '../../Common/NotFound';
 import { ReviewIcon } from '../../Common/Icon';
@@ -36,9 +36,9 @@ const Summary = props => {
             activeColor={'#ffb302'}
             a11y={true}
             isHalf={true}
-            emptyIcon={<i className='fa fa-star' />}
-            halfIcon={<i className='fa fa-star-half-alt' />}
-            filledIcon={<i className='fa fa-star' />}
+            emptyIcon={<Star size={17} />}
+            halfIcon={<StarHalf size={17} />}
+            filledIcon={<Star size={17} />}
             value={averageRating}
           />
           {totalReviews > 0 && <span>based on {totalReviews} reviews.</span>}

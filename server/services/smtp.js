@@ -99,6 +99,10 @@ const prepareTemplate = (type, hostParam, data) => {
       message = template.orderConfirmationEmail(data);
       break;
 
+    case 'order-cancellation':
+      message = template.orderCancellationEmail(data);
+      break;
+
     default:
       message = '';
   }

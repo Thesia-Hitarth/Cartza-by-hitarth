@@ -48,6 +48,14 @@ const ProductSchema = new Schema({
     ref: 'Brand',
     default: null
   },
+  colors: {
+    type: [String],
+    default: []
+  },
+  sizes: {
+    type: [String],
+    default: []
+  },
   updated: Date,
   created: {
     type: Date,

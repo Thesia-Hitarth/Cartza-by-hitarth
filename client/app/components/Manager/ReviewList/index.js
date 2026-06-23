@@ -7,6 +7,7 @@
 import React from 'react';
 
 import { Link } from 'react-router-dom';
+import { Star, StarHalf } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import ReactStars from 'react-rating-stars-component';
 
 import { REVIEW_STATUS } from '../../../constants';
@@ -89,9 +90,9 @@ const ReviewList = props => {
                   activeColor={'#ffb302'}
                   a11y={true}
                   isHalf={true}
-                  emptyIcon={<i className='fa fa-star' />}
-                  halfIcon={<i className='fa fa-star-half-alt' />}
-                  filledIcon={<i className='fa fa-star' />}
+                  emptyIcon={<Star size={16} />}
+                  halfIcon={<StarHalf size={16} />}
+                  filledIcon={<Star size={16} />}
                   value={review.rating}
                 />
               </div>

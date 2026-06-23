@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Row, Col, Container } from 'reactstrap';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { Check } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';

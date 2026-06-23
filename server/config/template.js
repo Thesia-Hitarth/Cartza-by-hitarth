@@ -326,16 +326,90 @@ exports.orderConfirmationEmail = order => {
                   ${item.product.brand ? `<br><span style="font-size: 12px; color: #64748b;">by ${item.product.brand.name}</span>` : ''}
                 </td>
                 <td style="text-align: center; padding: 12px 0; font-size: 15px; color: #64748b;">${item.quantity}</td>
-                <td style="text-align: right; padding: 12px 0; font-size: 15px; font-weight: 600; color: #0f172a;">$${(item.purchasePrice || item.product.price).toFixed(2)}</td>
+                <td style="text-align: right; padding: 12px 0; font-size: 15px; font-weight: 600; color: #0f172a;">₹${(item.purchasePrice || item.product.price).toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>
         </table>
         <div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; border: 1px solid #e2e8f0; margin-top: 16px;">
-          <table style="width: 100%; border-collapse: collapse;">
+          <table style="width: 100%; border-collapse: collapse; font-family: inherit;">
             <tr>
-              <td style="font-size: 16px; font-weight: 700; color: #0f172a; padding: 0;">Total</td>
-              <td style="font-size: 16px; font-weight: 700; color: #0f172a; text-align: right; padding: 0;">$${order.total.toFixed(2)}</td>
+              <td style="font-size: 14px; color: #64748b; padding: 4px 0;">Subtotal</td>
+              <td style="font-size: 14px; color: #0f172a; text-align: right; padding: 4px 0; font-weight: 600;">₹${order.total.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="font-size: 14px; color: #64748b; padding: 4px 0;">Est. Sales Tax</td>
+              <td style="font-size: 14px; color: #0f172a; text-align: right; padding: 4px 0; font-weight: 600;">₹${(order.totalTax || 0).toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="font-size: 14px; color: #64748b; padding: 4px 0;">Shipping & Handling</td>
+              <td style="font-size: 14px; color: #0f172a; text-align: right; padding: 4px 0; font-weight: 600;">₹0.00</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td style="font-size: 16px; font-weight: 700; color: #0f172a; padding: 8px 0 0 0;">Total</td>
+              <td style="font-size: 16px; font-weight: 700; color: #0f172a; text-align: right; padding: 8px 0 0 0;">₹${(order.totalWithTax || order.total).toFixed(2)}</td>
+            </tr>
+          </table>
+        </div>
+      `
+    )
+  };
+
+  return message;
+};
+
+exports.orderCancellationEmail = order => {
+  const message = {
+    subject: `Order Cancelled ${order._id}`,
+    text:
+      `Hi ${order.user.firstName}! Your order #${order._id} has been cancelled. \n\n` +
+      `We've processed your cancellation. If this was an error, please contact support. \n\n`,
+    html: buildHtmlTemplate(
+      'Order Cancelled',
+      `
+        <p>Hi ${order.user.firstName},</p>
+        <p>Your order <span class="highlight">#${order._id}</span> has been successfully cancelled.</p>
+        <p>We've processed your cancellation. If this was an error or you need assistance, please reach out to our support team.</p>
+        <div class="divider"></div>
+        <p style="font-size: 14px; color: #64748b;">Below are the details of the cancelled order:</p>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+          <thead>
+            <tr style="border-bottom: 2px solid #e2e8f0;">
+              <th style="text-align: left; padding: 8px 0; font-size: 14px; color: #64748b;">Product</th>
+              <th style="text-align: center; padding: 8px 0; font-size: 14px; color: #64748b; width: 60px;">Qty</th>
+              <th style="text-align: right; padding: 8px 0; font-size: 14px; color: #64748b; width: 80px;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${order.products.map(item => `
+              <tr style="border-bottom: 1px solid #f1f5f9;">
+                <td style="padding: 12px 0; font-size: 15px;">
+                  <span style="font-weight: 600; color: #0f172a;">${item.product.name}</span>
+                  ${item.product.brand ? `<br><span style="font-size: 12px; color: #64748b;">by ${item.product.brand.name}</span>` : ''}
+                </td>
+                <td style="text-align: center; padding: 12px 0; font-size: 15px; color: #64748b;">${item.quantity}</td>
+                <td style="text-align: right; padding: 12px 0; font-size: 15px; font-weight: 600; color: #0f172a;">₹${(item.purchasePrice || item.product.price).toFixed(2)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div style="background-color: #f8fafc; border-radius: 8px; padding: 16px; border: 1px solid #e2e8f0; margin-top: 16px;">
+          <table style="width: 100%; border-collapse: collapse; font-family: inherit;">
+            <tr>
+              <td style="font-size: 14px; color: #64748b; padding: 4px 0;">Subtotal Cancelled</td>
+              <td style="font-size: 14px; color: #0f172a; text-align: right; padding: 4px 0; font-weight: 600;">₹${order.total.toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="font-size: 14px; color: #64748b; padding: 4px 0;">Sales Tax Refunded</td>
+              <td style="font-size: 14px; color: #0f172a; text-align: right; padding: 4px 0; font-weight: 600;">₹${(order.totalTax || 0).toFixed(2)}</td>
+            </tr>
+            <tr>
+              <td style="font-size: 14px; color: #64748b; padding: 4px 0;">Shipping & Handling Refunded</td>
+              <td style="font-size: 14px; color: #0f172a; text-align: right; padding: 4px 0; font-weight: 600;">₹0.00</td>
+            </tr>
+            <tr style="border-top: 1px solid #e2e8f0;">
+              <td style="font-size: 16px; font-weight: 700; color: #0f172a; padding: 8px 0 0 0;">Total Refunded</td>
+              <td style="font-size: 16px; font-weight: 700; color: #0f172a; text-align: right; padding: 8px 0 0 0;">₹${(order.totalWithTax || order.total).toFixed(2)}</td>
             </tr>
           </table>
         </div>

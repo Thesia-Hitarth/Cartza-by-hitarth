@@ -1,10 +1,47 @@
-.shop-page {
-  .main {
-    background-color: $theme-white;
-  }
+/* Shop Page Redesign Styles */
+
+.shop {
+  font-family: var(--font-ui);
+  margin-top: var(--space-4);
 
   .shop-toolbar {
-    border-radius: $border-radius-primary;
-    box-shadow: $box-shadow-primary;
+    background-color: var(--color-surface) !important;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-5);
+    box-shadow: var(--shadow-sm);
+    color: var(--color-ink);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+}
+
+/* Product Filter Sidebar cards */
+.product-filter {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+
+  .card {
+    background-color: var(--color-surface) !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-sm) !important;
+    overflow: hidden;
+
+    .card-header {
+      background-color: var(--color-canvas) !important;
+      border-bottom: 1px solid var(--color-border) !important;
+      font-family: var(--font-brand);
+      font-size: var(--text-base) !important;
+      font-weight: 600;
+      color: var(--color-ink) !important;
+      padding: var(--space-3) var(--space-4) !important;
+    }
+
+    .card-body {
+      padding: var(--space-4) !important;
+    }
   }
 }

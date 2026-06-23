@@ -7,7 +7,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Star } from 'lucide-react';
+import { Star } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import AddToWishList from '../AddToWishList';
 
@@ -58,15 +58,14 @@ const ProductList = props => {
 
                 {/* Quick Add Button */}
                 <button
-                  className='quick-add-btn'
+                  className={`quick-add-btn${product.quantity <= 0 ? ' out-of-stock-btn' : ''}`}
+                  disabled={product.quantity <= 0}
                   onClick={(e) => {
                     e.preventDefault();
-                    if (handleAddToCart) {
-                      handleAddToCart({ ...product, quantity: 1 });
-                    }
+                    if (handleAddToCart && product.quantity > 0) handleAddToCart({ ...product, quantity: 1 });
                   }}
                 >
-                  Quick Add
+                  {product.quantity <= 0 ? 'Out of Stock' : 'Quick Add'}
                 </button>
               </div>
 

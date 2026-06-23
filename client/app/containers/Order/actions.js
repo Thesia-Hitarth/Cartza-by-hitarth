@@ -15,7 +15,8 @@ import {
   UPDATE_ORDER_STATUS,
   SET_ORDERS_LOADING,
   SET_ADVANCED_FILTERS,
-  CLEAR_ORDERS
+  CLEAR_ORDERS,
+  SET_PLACING_ORDER
 } from './constants';
 
 import { clearCart, getCartId } from '../Cart/actions';
@@ -224,18 +225,16 @@ export const placeOrder = (addressId) => {
   return async (dispatch, getState) => {
     const token = localStorage.getItem('token');
     const cartItems = getState().cart.cartItems;
+    if (!token || cartItems.length === 0) { dispatch(toggleCart()); return; }
 
-    if (!token || cartItems.length === 0) {
-      dispatch(toggleCart());
-      return;
-    }
-
+    dispatch({ type: SET_PLACING_ORDER, payload: true });
     try {
       await dispatch(getCartId());
       await dispatch(addOrder(addressId));
     } catch (err) {
       handleError(err, dispatch);
     } finally {
+      dispatch({ type: SET_PLACING_ORDER, payload: false });
       dispatch(toggleCart());
     }
   };

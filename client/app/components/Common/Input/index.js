@@ -6,6 +6,7 @@
 
 import React from 'react';
 import ReactStars from 'react-rating-stars-component';
+import { Star, StarHalf } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 const Input = props => {
   const {
@@ -99,9 +100,9 @@ const Input = props => {
           activeColor={'#ffb302'}
           a11y={true}
           isHalf={false}
-          emptyIcon={<i className='fa fa-star' />}
-          halfIcon={<i className='fa fa-star-half-alt' />}
-          filledIcon={<i className='fa fa-star' />}
+          emptyIcon={<Star size={30} />}
+          halfIcon={<StarHalf size={30} />}
+          filledIcon={<Star size={30} />}
           value={value}
           onChange={value => {
             onInputChange(name, value);

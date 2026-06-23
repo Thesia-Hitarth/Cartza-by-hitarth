@@ -55,13 +55,15 @@ router.post('/add', auth, async (req, res) => {
 
     await decreaseQuantity(cartDoc.products);
 
-    const newOrder = {
+    let newOrder = {
       _id: orderDoc._id,
       created: orderDoc.created,
       user: req.user,
       total: orderDoc.total,
       products: cartDoc.products
     };
+
+    newOrder = store.caculateTaxAmount(newOrder);
 
     await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
 
@@ -281,22 +283,47 @@ router.delete('/cancel/:orderId', auth, async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
-    const order = await Order.findOne({ _id: orderId });
+    const order = await Order.findOne({ _id: orderId })
+      .populate('user')
+      .populate({
+        path: 'cart',
+        populate: {
+          path: 'products.product',
+          populate: {
+            path: 'brand'
+          }
+        }
+      });
+
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
     }
 
-    if (req.user.role !== ROLES.Admin && String(order.user) !== String(req.user._id)) {
+    if (req.user.role !== ROLES.Admin && String(order.user._id || order.user) !== String(req.user._id)) {
       return res.status(403).json({ error: 'Unauthorized to cancel this order.' });
     }
 
-    const foundCart = await Cart.findOne({ _id: order.cart });
+    const foundCart = await Cart.findOne({ _id: order.cart?._id || order.cart });
     if (foundCart) {
       await increaseQuantity(foundCart.products);
-      await Cart.deleteOne({ _id: order.cart });
+      await Cart.deleteOne({ _id: order.cart?._id || order.cart });
     }
 
+    let populatedOrder = {
+      _id: order._id,
+      total: order.total,
+      created: order.created,
+      user: order.user,
+      products: order.cart?.products || []
+    };
+
+    populatedOrder = store.caculateTaxAmount(populatedOrder);
+
     await Order.deleteOne({ _id: orderId });
+
+    if (order.user && order.user.email) {
+      await smtp.sendEmail(order.user.email, 'order-cancellation', null, populatedOrder);
+    }
 
     res.status(200).json({
       success: true
@@ -360,8 +387,32 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
 
       // All items are cancelled => Cancel order
       if (cart.products.length === items.length) {
+        const orderDoc = await Order.findOne({ _id: orderId })
+          .populate('user')
+          .populate({
+            path: 'cart',
+            populate: {
+              path: 'products.product',
+              populate: {
+                path: 'brand'
+              }
+            }
+          });
+
         await Order.deleteOne({ _id: orderId });
         await Cart.deleteOne({ _id: cartId });
+
+        if (orderDoc && orderDoc.user && orderDoc.user.email) {
+          let populatedOrder = {
+            _id: orderDoc._id,
+            total: orderDoc.total,
+            created: orderDoc.created,
+            user: orderDoc.user,
+            products: orderDoc.cart?.products || []
+          };
+          populatedOrder = store.caculateTaxAmount(populatedOrder);
+          await smtp.sendEmail(orderDoc.user.email, 'order-cancellation', null, populatedOrder);
+        }
 
         return res.status(200).json({
           success: true,

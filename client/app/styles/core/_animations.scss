@@ -1,0 +1,35 @@
+/* Keyframes */
+@keyframes fadeIn       { from { opacity: 0; }                      to { opacity: 1; } }
+@keyframes fadeSlideUp  { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeSlideDown{ from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes scaleIn      { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+@keyframes shimmer      { from { background-position: -200% 0; } to { background-position: 200% 0; } }
+@keyframes spin         { to { transform: rotate(360deg); } }
+@keyframes pulse        { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes checkPop     { 0% { transform: scale(0); opacity: 0; } 70% { transform: scale(1.2); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes slideInRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
+@keyframes slideInLeft  { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+@keyframes bounceIn     { 0% { transform: scale(0.3); opacity: 0; } 50% { transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes countUp      { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, var(--color-border) 25%, rgba(255,255,255,0.6) 50%, var(--color-border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-sm);
+}
+
+/* Scroll-triggered reveal */
+[data-animate] {
+  transition: opacity var(--duration-slower) var(--ease-out), transform var(--duration-slower) var(--ease-out);
+  will-change: opacity, transform;
+}
+[data-animate="fade-up"]    { opacity: 0; transform: translateY(24px); }
+[data-animate="fade-in"]    { opacity: 0; }
+[data-animate="scale-in"]   { opacity: 0; transform: scale(0.95); }
+[data-animate].is-visible   { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-animate], [data-animate].is-visible, * { animation: none !important; transition-duration: 0.01ms !important; transform: none !important; }
+}

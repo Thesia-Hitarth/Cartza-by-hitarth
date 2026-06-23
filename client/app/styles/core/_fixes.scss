@@ -1,7 +1,4 @@
-// Reset global letter-spacing that's bleeding from the Poppins era
-body {
-  letter-spacing: 0 !important;
-}
+
 
 body, p, span, label, a, li, td, th, input, textarea, select, button {
   font-family: var(--font-ui, 'Inter', sans-serif) !important;

@@ -1,12 +1,7 @@
-/**
- *
- * Footer
- *
- */
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Container, Row, Col } from 'reactstrap';
+import { Facebook, Instagram, Twitter, Pin } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import Newsletter from '../../../containers/Newsletter';
 
@@ -20,16 +15,16 @@ const Footer = () => {
 
   const helpLinks = [
     { name: 'Order Tracking', to: '/dashboard' },
-    { name: 'Shipping Policy', to: '/shipping' },
-    { name: 'Returns & Exchanges', to: '/returns' },
+    { name: 'Shipping & Delivery', to: '/contact' },
+    { name: 'Returns & Exchanges', to: '/contact' },
     { name: 'FAQs', to: '/contact' }
   ];
 
   const companyLinks = [
-    { name: 'About Us', to: '/about' },
-    { name: 'Careers', to: '/careers' },
-    { name: 'Press & Media', to: '/press' },
-    { name: 'Privacy Policy', to: '/privacy' }
+    { name: 'About Us', to: '/contact' },
+    { name: 'Careers', to: '/contact' },
+    { name: 'Press & Media', to: '/contact' },
+    { name: 'Privacy Policy', to: '/contact' }
   ];
 
   return (
@@ -55,22 +50,22 @@ const Footer = () => {
                 <ul className='footer-social-row d-flex align-items-center list-unstyled p-0 m-0'>
                   <li className='mr-3'>
                     <a href='#facebook' aria-label='Facebook' className='social-icon-link'>
-                      <span className='fa fa-facebook' />
+                      <Facebook size={15} strokeWidth={1.5} />
                     </a>
                   </li>
                   <li className='mr-3'>
                     <a href='#instagram' aria-label='Instagram' className='social-icon-link'>
-                      <span className='fa fa-instagram' />
+                      <Instagram size={15} strokeWidth={1.5} />
                     </a>
                   </li>
                   <li className='mr-3'>
                     <a href='#twitter' aria-label='Twitter' className='social-icon-link'>
-                      <span className='fa fa-twitter' />
+                      <Twitter size={15} strokeWidth={1.5} />
                     </a>
                   </li>
                   <li>
                     <a href='#pinterest' aria-label='Pinterest' className='social-icon-link'>
-                      <span className='fa fa-pinterest' />
+                      <Pin size={15} strokeWidth={1.5} />
                     </a>
                   </li>
                 </ul>

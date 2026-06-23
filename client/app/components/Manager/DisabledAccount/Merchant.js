@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { Phone } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 const DisabledMerchantAccount = props => {
   const { user } = props;
@@ -20,8 +21,8 @@ const DisabledMerchantAccount = props => {
         <p className='text-gray mb-1'>
           Please contact admin to request access again.
         </p>
-        <div className='mt-2'>
-          <i className='fa fa-phone mr-2' />
+        <div className='mt-2 d-flex align-items-center'>
+          <Phone size={15} strokeWidth={1.5} className='mr-2' />
           <span>Call us 951-999-9999</span>
         </div>
       </div>

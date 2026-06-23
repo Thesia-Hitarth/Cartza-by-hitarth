@@ -23,7 +23,7 @@ import {
 
 import actions from '../../actions';
 import CartIcon from '../../components/Common/CartIcon';
-import { Heart, Search, User, X } from 'lucide-react';
+import { Heart, Search, User, X } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import Menu from '../NavigationMenu';
 import Cart from '../Cart';
 
@@ -32,10 +32,12 @@ class Navigation extends React.PureComponent {
     super(props);
     this.state = {
       showAnnouncement: localStorage.getItem('cartza_announcement_dismissed') !== 'true',
-      isDropdownOpen: false
+      isDropdownOpen: false,
+      isMobileSearchOpen: false
     };
     this.dismissAnnouncement = this.dismissAnnouncement.bind(this);
     this.toggleDropdown = this.toggleDropdown.bind(this);
+    this.toggleMobileSearch = this.toggleMobileSearch.bind(this);
   }
 
   componentDidMount() {
@@ -52,6 +54,10 @@ class Navigation extends React.PureComponent {
     this.setState(prevState => ({
       isDropdownOpen: !prevState.isDropdownOpen
     }));
+  }
+
+  toggleMobileSearch() {
+    this.setState(prev => ({ isMobileSearchOpen: !prev.isMobileSearchOpen }));
   }
 
   toggleBrand() {
@@ -201,8 +207,8 @@ class Navigation extends React.PureComponent {
               <div className='nav-right d-flex align-items-center'>
                 <div className='nav-icon-row d-flex align-items-center'>
                   {/* Search Icon for Mobile */}
-                  <button className='nav-icon-btn d-lg-none mobile-search-trigger' aria-label='Search'>
-                    <Search size={22} strokeWidth={1.5} />
+                  <button className='nav-icon-btn d-lg-none mobile-search-trigger' onClick={() => this.toggleMobileSearch()} aria-label='Search'>
+                    {this.state.isMobileSearchOpen ? <X size={22} strokeWidth={1.5} /> : <Search size={22} strokeWidth={1.5} />}
                   </button>
 
                   {/* Wishlist Icon */}
@@ -241,24 +247,26 @@ class Navigation extends React.PureComponent {
             </div>
 
             {/* Mobile-only Search Bar (Visible when collapsed on mobile) */}
-            <div className='mobile-search-bar d-lg-none py-2'>
-              <div className='search-input-wrapper'>
-                <span className='search-icon-left'>
-                  <Search size={16} strokeWidth={1.5} />
-                </span>
-                <Autosuggest
-                  suggestions={suggestions}
-                  onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                  onSuggestionsClearRequested={onSuggestionsClearRequested}
-                  getSuggestionValue={this.getSuggestionValue}
-                  renderSuggestion={this.renderSuggestion}
-                  inputProps={{ ...inputProps, placeholder: 'Search...' }}
-                  onSuggestionSelected={(_, item) => {
-                    history.push(`/product/${item.suggestion.slug}`);
-                  }}
-                />
+            {this.state.isMobileSearchOpen && (
+              <div className='mobile-search-bar d-lg-none py-2'>
+                <div className='search-input-wrapper'>
+                  <span className='search-icon-left'>
+                    <Search size={16} strokeWidth={1.5} />
+                  </span>
+                  <Autosuggest
+                    suggestions={suggestions}
+                    onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+                    onSuggestionsClearRequested={onSuggestionsClearRequested}
+                    getSuggestionValue={this.getSuggestionValue}
+                    renderSuggestion={this.renderSuggestion}
+                    inputProps={{ ...inputProps, placeholder: 'Search...' }}
+                    onSuggestionSelected={(_, item) => {
+                      history.push(`/product/${item.suggestion.slug}`);
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </Container>
         </div>
 
@@ -267,16 +275,19 @@ class Navigation extends React.PureComponent {
           <div className='category-nav-strip d-none d-md-block'>
             <Container>
               <div className='category-strip-inner d-flex align-items-center justify-content-center'>
-                <NavLink to='/shop' className='category-strip-item' activeClassName='active' exact>
+                <NavLink
+                  to='/shop'
+                  className={({ isActive }) => `category-strip-item${isActive ? ' active' : ''}`}
+                  end
+                >
                   All Products
                 </NavLink>
                 {categories.map((link, index) => (
                   <NavLink
                     key={index}
-                    className='category-strip-item'
+                    className={({ isActive }) => `category-strip-item${isActive ? ' active' : ''}`}
                     to={'/shop/category/' + link.slug}
-                    activeClassName='active'
-                    exact
+                    end
                   >
                     {link.name}
                   </NavLink>

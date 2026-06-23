@@ -1,0 +1,18 @@
+.notifications-wrapper {
+  .notification {
+    border-radius: var(--radius-md) !important;
+    font-family: var(--font-ui) !important;
+    font-size: var(--text-sm) !important;
+    font-weight: 500 !important;
+    box-shadow: var(--shadow-lg) !important;
+    border: none !important;
+    padding: var(--space-4) var(--space-5) !important;
+    
+    &.notification-success { background: var(--color-success) !important; color: white !important; }
+    &.notification-error   { background: var(--color-accent) !important; color: white !important; }
+    &.notification-info    { background: var(--color-ink) !important; color: white !important; }
+    &.notification-warning { background: var(--color-accent-alt) !important; color: white !important; }
+    
+    .notification-dismiss { background: transparent !important; color: rgba(255,255,255,0.7) !important; font-size: 18px !important; }
+  }
+}

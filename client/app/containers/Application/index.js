@@ -133,7 +133,7 @@ class Application extends React.PureComponent {
         <main className='main'>
           <Container>
             <div className='wrapper'>
-              <AnimatePresence exitBeforeEnter>
+              <AnimatePresence exitBeforeEnter={true}>
                 <motion.div
                   key={location.pathname}
                   variants={pageVariants}

@@ -5,7 +5,8 @@
  */
 
 import React from 'react';
-import { Card, CardBody, CardHeader } from 'reactstrap';
+import { Card, CardHeader, CardBody } from 'reactstrap';
+import { Star } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import RangeSlider from '../../Common/RangeSlider';
 
@@ -19,11 +20,7 @@ const rateMarks = {
     label: (
       <span>
         <span className='mr-1'>5</span>
-        <i
-          className='fa fa-star fa-1x'
-          style={{ display: 'contents' }}
-          aria-hidden='true'
-        ></i>
+        <Star size={14} strokeWidth={1.5} fill='#FF8C42' color='#FF8C42' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
       </span>
     )
   },
@@ -31,7 +28,7 @@ const rateMarks = {
     label: (
       <span>
         <span className='mr-1'>4</span>
-        <i className='fa fa-star fa-1x' aria-hidden='true'></i>
+        <Star size={14} strokeWidth={1.5} fill='#FF8C42' color='#FF8C42' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
       </span>
     )
   },
@@ -39,7 +36,7 @@ const rateMarks = {
     label: (
       <span>
         <span className='mr-1'>3</span>
-        <i className='fa fa-star fa-1x' aria-hidden='true'></i>
+        <Star size={14} strokeWidth={1.5} fill='#FF8C42' color='#FF8C42' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
       </span>
     )
   },
@@ -47,7 +44,7 @@ const rateMarks = {
     label: (
       <span>
         <span className='mr-1'>2</span>
-        <i className='fa fa-star fa-1x' aria-hidden='true'></i>
+        <Star size={14} strokeWidth={1.5} fill='#FF8C42' color='#FF8C42' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
       </span>
     )
   },
@@ -55,7 +52,7 @@ const rateMarks = {
     label: (
       <span>
         <span className='mr-1'>1</span>
-        <i className='fa fa-star fa-1x' aria-hidden='true'></i>
+        <Star size={14} strokeWidth={1.5} fill='#FF8C42' color='#FF8C42' style={{ display: 'inline-block', verticalAlign: 'middle' }} />
       </span>
     )
   },
