@@ -10,7 +10,9 @@ const UserSchema = new Schema({
     type: String,
     required: function() {
       return this.provider === EMAIL_PROVIDER.Email;
-    }
+    },
+    unique: true,
+    index: true
   },
   phoneNumber: {
     type: String
@@ -22,7 +24,8 @@ const UserSchema = new Schema({
     type: String
   },
   password: {
-    type: String
+    type: String,
+    select: false
   },
   merchant: {
     type: Schema.Types.ObjectId,
@@ -45,8 +48,8 @@ const UserSchema = new Schema({
     default: ROLES.Member,
     enum: [ROLES.Admin, ROLES.Member, ROLES.Merchant]
   },
-  resetPasswordToken: { type: String },
-  resetPasswordExpires: { type: Date },
+  resetPasswordToken: { type: String, select: false },
+  resetPasswordExpires: { type: Date, select: false },
   updated: Date,
   created: {
     type: Date,

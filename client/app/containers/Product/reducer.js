@@ -22,7 +22,8 @@ import {
   FETCH_PRODUCTS_SELECT,
   SET_PRODUCTS_LOADING,
   SET_ADVANCED_FILTERS,
-  RESET_ADVANCED_FILTERS
+  RESET_ADVANCED_FILTERS,
+  TOGGLE_PRODUCT_WISHLIST
 } from './constants';
 
 const initialState = {
@@ -210,6 +211,19 @@ const productReducer = (state = initialState, action) => {
           count: 0,
           limit: 10
         }
+      };
+    case TOGGLE_PRODUCT_WISHLIST:
+      return {
+        ...state,
+        storeProducts: state.storeProducts.map(item =>
+          item._id === action.payload
+            ? { ...item, isLiked: !item.isLiked }
+            : item
+        ),
+        storeProduct:
+          state.storeProduct._id === action.payload
+            ? { ...state.storeProduct, isLiked: !state.storeProduct.isLiked }
+            : state.storeProduct
       };
     default:
       return state;

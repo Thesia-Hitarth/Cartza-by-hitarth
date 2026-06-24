@@ -7,29 +7,25 @@ const auth = require('../../middleware/auth');
 
 router.post('/', auth, async (req, res) => {
   try {
-    const { product, isLiked } = req.body;
+    const { product } = req.body;
     const user = req.user;
-    const update = {
-      product,
-      isLiked,
-      updated: Date.now()
-    };
-    const query = { product: update.product, user: user._id };
 
-    const updatedWishlist = await Wishlist.findOneAndUpdate(query, update, {
-      new: true
-    });
+    const existingWishlist = await Wishlist.findOne({ product, user: user._id });
 
-    if (updatedWishlist !== null) {
+    if (existingWishlist) {
+      existingWishlist.isLiked = !existingWishlist.isLiked;
+      existingWishlist.updated = Date.now();
+      const updatedWishlist = await existingWishlist.save();
+
       res.status(200).json({
         success: true,
-        message: 'Your Wishlist has been updated successfully!',
+        message: existingWishlist.isLiked ? 'Added to your Wishlist successfully!' : 'Removed from your Wishlist successfully!',
         wishlist: updatedWishlist
       });
     } else {
       const wishlist = new Wishlist({
         product,
-        isLiked,
+        isLiked: true,
         user: user._id
       });
 

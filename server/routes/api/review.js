@@ -8,16 +8,53 @@ const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const { ROLES, REVIEW_STATUS } = require('../../constants');
 
+const Order = require('../../models/order');
+const Cart = require('../../models/cart');
+
 router.post('/add', auth, async (req, res) => {
   try {
     const user = req.user;
+    const { product, title, rating, review, isRecommended } = req.body;
 
-    const review = new Review({
-      ...req.body,
+    if (!product) {
+      return res.status(400).json({ error: 'Product is required.' });
+    }
+    if (!rating) {
+      return res.status(400).json({ error: 'Rating is required.' });
+    }
+    if (!review) {
+      return res.status(400).json({ error: 'Review text is required.' });
+    }
+
+    // 1. Verify if user has purchased the product
+    const orders = await Order.find({ user: user._id }).populate('cart');
+    const hasPurchased = orders.some(order => {
+      if (order.cart && order.cart.products) {
+        return order.cart.products.some(item => String(item.product) === String(product));
+      }
+      return false;
+    });
+
+    if (!hasPurchased) {
+      return res.status(400).json({ error: 'You can only review products you have purchased.' });
+    }
+
+    // 2. Prevent duplicate reviews
+    const existingReview = await Review.findOne({ product, user: user._id });
+    if (existingReview) {
+      return res.status(400).json({ error: 'You have already submitted a review for this product.' });
+    }
+
+    const newReview = new Review({
+      product,
+      title,
+      rating,
+      review,
+      isRecommended,
       user: user._id
     });
 
-    const reviewDoc = await review.save();
+    const reviewDoc = await newReview.save();
 
     res.status(200).json({
       success: true,

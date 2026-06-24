@@ -29,7 +29,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: 'You must enter a password.' });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password');
     if (!user) {
       return res
         .status(400)
@@ -207,7 +207,7 @@ router.post('/reset/:token', async (req, res) => {
     const resetUser = await User.findOne({
       resetPasswordToken: req.params.token,
       resetPasswordExpires: { $gt: Date.now() }
-    });
+    }).select('+resetPasswordToken +resetPasswordExpires');
 
     if (!resetUser) {
       return res.status(400).json({
@@ -256,7 +256,7 @@ router.post('/reset', auth, async (req, res) => {
       return res.status(400).json({ error: 'New password must be at least 6 characters.' });
     }
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email }).select('+password');
     if (!existingUser) {
       return res
         .status(400)

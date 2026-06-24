@@ -9,12 +9,14 @@ const ReviewSchema = new Schema({
   product: {
     type: Schema.Types.ObjectId,
     ref: 'Product',
-    default: null
+    default: null,
+    index: true
   },
   user: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    default: null
+    default: null,
+    index: true
   },
   title: {
     type: String,

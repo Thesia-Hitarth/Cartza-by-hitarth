@@ -9,6 +9,7 @@ const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const store = require('../../utils/store');
 const { ROLES, MERCHANT_STATUS } = require('../../constants');
+const User = require('../../models/user');
 
 router.post('/add', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
@@ -205,6 +206,10 @@ router.put(
       if (!update.isActive) {
         const products = await Product.find({ brand: brandId });
         await store.disableProducts(products);
+        const brand = await Brand.findById(brandId);
+        if (brand && brand.merchant) {
+          await User.findOneAndUpdate({ merchant: brand.merchant }, { role: ROLES.Member });
+        }
       }
 
       await Brand.findOneAndUpdate(query, update, {
@@ -259,6 +264,7 @@ const deactivateMerchant = async brandId => {
     isActive: false,
     brand: null
   };
+  await User.findOneAndUpdate({ merchant: merchantId }, { role: ROLES.Member });
   return await Merchant.findOneAndUpdate(query, update, {
     new: true
   });

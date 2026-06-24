@@ -34,7 +34,7 @@ class SearchBar extends React.Component {
         if (this.props.onSearch) {
           this.props.onSearch({ name, value });
         }
-      }, 1000)
+      }, 300)
     });
   }
 

@@ -10,24 +10,32 @@ const { ROLES } = require('../../constants');
 // search users api
 router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, page = 1, limit = 10 } = req.query;
 
     const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escapeRegExp(search || ''), 'i');
 
-    const users = await User.find(
-      {
-        $or: [
-          { firstName: { $regex: regex } },
-          { lastName: { $regex: regex } },
-          { email: { $regex: regex } }
-        ]
-      },
-      { password: 0, _id: 0 }
-    ).populate('merchant', 'name');
+    const query = {
+      $or: [
+        { firstName: { $regex: regex } },
+        { lastName: { $regex: regex } },
+        { email: { $regex: regex } }
+      ]
+    };
+
+    const users = await User.find(query, { password: 0, _id: 0 })
+      .populate('merchant', 'name')
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await User.countDocuments(query);
 
     res.status(200).json({
-      users
+      users,
+      totalPages: Math.ceil(count / limit),
+      currentPage: Number(page),
+      count
     });
   } catch (error) {
     res.status(400).json({

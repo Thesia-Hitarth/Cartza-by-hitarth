@@ -40,14 +40,15 @@ const CartItemSchema = new Schema({
   }
 });
 
-module.exports = Mongoose.model('CartItem', CartItemSchema);
+Mongoose.model('CartItem', CartItemSchema);
 
 // Cart Schema
 const CartSchema = new Schema({
   products: [CartItemSchema],
   user: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    index: true
   },
   updated: Date,
   created: {

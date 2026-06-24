@@ -134,6 +134,7 @@ export const addAddress = () => {
           type: ADD_ADDRESS,
           payload: response.data.address
         });
+        dispatch(fetchAddresses());
         dispatch(goBack());
         dispatch({ type: RESET_ADDRESS });
       }
@@ -185,6 +186,7 @@ export const updateAddress = () => {
 
       if (response.data.success === true) {
         dispatch(success(successfulOptions));
+        dispatch(fetchAddresses());
         dispatch(goBack());
       }
     } catch (error) {
@@ -211,6 +213,7 @@ export const deleteAddress = id => {
           type: REMOVE_ADDRESS,
           payload: id
         });
+        dispatch(fetchAddresses());
         dispatch(goBack());
       }
     } catch (error) {

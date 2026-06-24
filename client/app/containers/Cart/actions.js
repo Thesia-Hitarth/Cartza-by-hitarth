@@ -248,7 +248,7 @@ const calculatePurchaseQuantity = inventory => {
 };
 
 export const updateCartItemQuantity = (product, quantity) => {
-  return (dispatch, getState) => {
+  return async (dispatch, getState) => {
     if (quantity < 1) return;
 
     const inventory = product.inventory || product.quantity;
@@ -260,6 +260,19 @@ export const updateCartItemQuantity = (product, quantity) => {
       };
       dispatch(success(warningOptions));
       return;
+    }
+
+    const cartId = getState().cart.cartId;
+    if (cartId) {
+      try {
+        await axios.put(`${API_URL}/cart/update-quantity/${cartId}`, {
+          productId: product._id,
+          quantity
+        });
+      } catch (err) {
+        handleError(err, dispatch);
+        return;
+      }
     }
 
     const cartItems = getState().cart.cartItems;

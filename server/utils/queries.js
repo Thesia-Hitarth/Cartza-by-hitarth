@@ -1,20 +1,20 @@
 const Mongoose = require('mongoose');
 
 exports.getStoreProductsQuery = (min, max, rating) => {
-  rating = Number(rating);
-  max = Number(max);
-  min = Number(min);
-
-  const priceFilter = min && max ? { price: { $gte: min, $lte: max } } : {};
-  const ratingFilter = rating
-    ? { rating: { $gte: rating } }
-    : { rating: { $gte: rating } };
-
   const matchQuery = {
-    isActive: true,
-    price: priceFilter.price,
-    averageRating: ratingFilter.rating
+    isActive: true
   };
+
+  const parsedMin = Number(min);
+  const parsedMax = Number(max);
+  if (!isNaN(parsedMin) && !isNaN(parsedMax) && min !== undefined && max !== undefined) {
+    matchQuery.price = { $gte: parsedMin, $lte: parsedMax };
+  }
+
+  const parsedRating = Number(rating);
+  if (!isNaN(parsedRating) && parsedRating > 0) {
+    matchQuery.averageRating = { $gte: parsedRating };
+  }
 
   const basicQuery = [
     {

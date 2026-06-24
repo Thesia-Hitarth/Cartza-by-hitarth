@@ -98,9 +98,11 @@ export const filterProducts = (n, v) => {
       });
       const { products, totalPages, currentPage, count } = response.data;
 
+      const mappedProducts = products.map(p => ({ ...p, inventory: p.quantity }));
+
       dispatch({
         type: FETCH_STORE_PRODUCTS,
-        payload: products
+        payload: mappedProducts
       });
 
       const newPayload = {

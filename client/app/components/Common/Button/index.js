@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 import Tooltip from '../Tooltip';
 import Popover from '../Popover';
 
@@ -21,8 +21,10 @@ const Button = ({
   round, borderless, fullWidth, tooltip, tooltipContent,
   popover, popoverContent, popoverTitle
 }) => {
-  const tooltipId = tooltip ? `tooltip-${id}` : id;
-  const popoverId = popover ? `popover-${id}` : id;
+  const reactId = useId();
+  const activeId = id || reactId;
+  const tooltipId = tooltip ? `tooltip-${activeId}` : activeId;
+  const popoverId = popover ? `popover-${activeId}` : activeId;
   const btnId = tooltip ? tooltipId : popoverId;
 
   const classes = [

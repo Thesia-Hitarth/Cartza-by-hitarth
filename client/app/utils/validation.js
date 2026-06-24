@@ -15,7 +15,7 @@ export const santizeFields = data => {
   const fields = { ...data };
 
   for (const field in fields) {
-    if (typeof field === 'string') {
+    if (typeof fields[field] === 'string') {
       fields[field] = DOMPurify.sanitize(fields[field], {
         USE_PROFILES: { html: false }
       });

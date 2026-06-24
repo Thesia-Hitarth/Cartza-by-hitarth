@@ -304,7 +304,10 @@ class ProductPage extends React.PureComponent {
                       <button
                         className='btn-cart-page-add d-flex align-items-center justify-content-center'
                         disabled={product.inventory <= 0}
-                        onClick={() => handleAddToCart(product)}
+                        onClick={() => {
+                          const shopQuantity = Number(productShopData.quantity || 1);
+                          handleAddToCart({ ...product, quantity: shopQuantity });
+                        }}
                       >
                         <ShoppingBag size={20} strokeWidth={1.5} />
                         <span className='ml-2'>Add To Bag</span>

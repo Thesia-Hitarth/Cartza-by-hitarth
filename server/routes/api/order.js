@@ -35,11 +35,24 @@ router.post('/add', auth, async (req, res) => {
       }
     });
 
-    if (!cartDoc) {
-      return res.status(404).json({ error: 'Shopping cart not found. Please recreate your cart.' });
+    if (!cartDoc || !cartDoc.products || cartDoc.products.length === 0) {
+      return res.status(400).json({ error: 'Cannot place an order with an empty cart.' });
     }
 
-    const serverTotal = cartDoc.products.reduce((sum, item) => {
+    // Filter out items where product has been deleted (is null)
+    const validProducts = cartDoc.products.filter(item => item.product !== null);
+    if (validProducts.length === 0) {
+      return res.status(400).json({ error: 'Cannot place an order with no valid products.' });
+    }
+
+    // Verify stock availability
+    for (const item of validProducts) {
+      if (item.product.quantity < item.quantity) {
+        return res.status(400).json({ error: `Insufficient stock for product: ${item.product.name}.` });
+      }
+    }
+
+    const serverTotal = validProducts.reduce((sum, item) => {
       const price = item.purchasePrice || item.product?.price || 0;
       return sum + (price * item.quantity);
     }, 0);
@@ -53,19 +66,22 @@ router.post('/add', auth, async (req, res) => {
 
     const orderDoc = await order.save();
 
-    await decreaseQuantity(cartDoc.products);
+    await decreaseQuantity(validProducts);
 
     let newOrder = {
       _id: orderDoc._id,
       created: orderDoc.created,
       user: req.user,
       total: orderDoc.total,
-      products: cartDoc.products
+      products: validProducts
     };
 
     newOrder = store.caculateTaxAmount(newOrder);
 
     await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
+
+    // Delete cart from database to clean up orphaned carts
+    await Cart.deleteOne({ _id: cartId });
 
     res.status(200).json({
       success: true,
@@ -441,30 +457,39 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
 });
 
 const increaseQuantity = async products => {
-  let bulkOptions = products.map(item => {
-    return {
-      updateOne: {
-        filter: { _id: item.product },
-        update: { $inc: { quantity: item.quantity } }
-      }
-    };
-  });
+  let bulkOptions = products
+    .filter(item => item && item.product)
+    .map(item => {
+      const productId = item.product._id || item.product;
+      return {
+        updateOne: {
+          filter: { _id: productId },
+          update: { $inc: { quantity: item.quantity } }
+        }
+      };
+    });
 
-  await Product.bulkWrite(bulkOptions);
+  if (bulkOptions.length > 0) {
+    await Product.bulkWrite(bulkOptions);
+  }
 };
 
 const decreaseQuantity = async products => {
-  let bulkOptions = products.map(item => {
-    const productId = item.product._id || item.product;
-    return {
-      updateOne: {
-        filter: { _id: productId },
-        update: { $inc: { quantity: -item.quantity } }
-      }
-    };
-  });
+  let bulkOptions = products
+    .filter(item => item && item.product)
+    .map(item => {
+      const productId = item.product._id || item.product;
+      return {
+        updateOne: {
+          filter: { _id: productId },
+          update: { $inc: { quantity: -item.quantity } }
+        }
+      };
+    });
 
-  await Product.bulkWrite(bulkOptions);
+  if (bulkOptions.length > 0) {
+    await Product.bulkWrite(bulkOptions);
+  }
 };
 
 module.exports = router;

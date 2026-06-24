@@ -13,6 +13,19 @@ import { SET_AUTH } from './containers/Authentication/constants';
 import Application from './containers/Application';
 import ScrollToTop from './scrollToTop';
 import setToken from './utils/token';
+import axios from 'axios';
+import { signOut } from './containers/Login/actions';
+
+// Global Axios response interceptor to catch 401s and sign out the user
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response && error.response.status === 401) {
+      store.dispatch(signOut());
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Import application sass styles
 import './styles/style.scss';

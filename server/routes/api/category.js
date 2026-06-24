@@ -58,7 +58,7 @@ router.get('/list', async (req, res) => {
 });
 
 // fetch categories api
-router.get('/', async (req, res) => {
+router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const categories = await Category.find({});
     res.status(200).json({

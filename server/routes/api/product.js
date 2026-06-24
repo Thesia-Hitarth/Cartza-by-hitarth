@@ -68,12 +68,20 @@ router.get('/item/:slug', async (req, res) => {
 router.get('/list/search/:name', async (req, res) => {
   try {
     const name = req.params.name;
+    const { page = 1, limit = 10 } = req.query;
     const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapeRegExp(name || ''), 'is');
+    const query = { name: { $regex: regex }, isActive: true };
 
     const productDoc = await Product.find(
-      { name: { $regex: new RegExp(escapeRegExp(name || '')), $options: 'is' }, isActive: true },
+      query,
       { name: 1, slug: 1, imageUrl: 1, price: 1, _id: 0 }
-    );
+    )
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await Product.countDocuments(query);
 
     if (productDoc.length === 0) {
       return res.status(404).json({
@@ -82,7 +90,10 @@ router.get('/list/search/:name', async (req, res) => {
     }
 
     res.status(200).json({
-      products: productDoc
+      products: productDoc,
+      totalPages: Math.ceil(count / limit),
+      currentPage: Number(page),
+      count
     });
   } catch (error) {
     res.status(400).json({
@@ -213,22 +224,44 @@ router.post(
       const brand = req.body.brand;
       const image = req.file;
 
-      if (!sku) {
-        return res.status(400).json({ error: 'You must enter sku.' });
+      if (!sku || typeof sku !== 'string' || !sku.trim()) {
+        return res.status(400).json({ error: 'You must enter a SKU.' });
       }
 
-      if (!description || !name) {
-        return res
-          .status(400)
-          .json({ error: 'You must enter description & name.' });
+      if (!name || typeof name !== 'string' || !name.trim()) {
+        return res.status(400).json({ error: 'You must enter a name.' });
       }
 
-      if (!quantity) {
-        return res.status(400).json({ error: 'You must enter a quantity.' });
+      if (!description || typeof description !== 'string' || !description.trim()) {
+        return res.status(400).json({ error: 'You must enter a description.' });
       }
 
-      if (!price) {
-        return res.status(400).json({ error: 'You must enter a price.' });
+      const parsedQuantity = Number(quantity);
+      if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+        return res.status(400).json({ error: 'Quantity must be a valid number greater than or equal to 0.' });
+      }
+
+      const parsedPrice = Number(price);
+      if (isNaN(parsedPrice) || parsedPrice < 0) {
+        return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0.' });
+      }
+
+      if (compareAtPrice !== undefined && compareAtPrice !== null) {
+        const parsedCompare = Number(compareAtPrice);
+        if (isNaN(parsedCompare) || parsedCompare < 0) {
+          return res.status(400).json({ error: 'Compare At Price must be a valid number greater than or equal to 0.' });
+        }
+      }
+
+      if (!brand) {
+        return res.status(400).json({ error: 'Please select a brand.' });
+      }
+
+      if (req.user.role === ROLES.Merchant) {
+        const brandDoc = await Brand.findById(brand);
+        if (!brandDoc || String(brandDoc.merchant) !== String(req.user.merchant)) {
+          return res.status(403).json({ error: 'Unauthorized to add product to this brand.' });
+        }
       }
 
       const foundProduct = await Product.findOne({ sku });
@@ -243,9 +276,9 @@ router.post(
         sku,
         name,
         description,
-        quantity,
-        price,
-        compareAtPrice,
+        quantity: parsedQuantity,
+        price: parsedPrice,
+        compareAtPrice: compareAtPrice ? Number(compareAtPrice) : null,
         taxable,
         isActive,
         brand,

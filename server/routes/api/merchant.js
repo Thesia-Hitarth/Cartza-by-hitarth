@@ -72,11 +72,10 @@ router.post('/add', async (req, res) => {
 // search merchants api
 router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
-    const { search } = req.query;
+    const { search, page = 1, limit = 10 } = req.query;
 
     const regex = new RegExp(search, 'i');
-
-    const merchants = await Merchant.find({
+    const query = {
       $or: [
         { phoneNumber: { $regex: regex } },
         { email: { $regex: regex } },
@@ -84,10 +83,21 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
         { brandName: { $regex: regex } },
         { status: { $regex: regex } }
       ]
-    }).populate('brand', 'name');
+    };
+
+    const merchants = await Merchant.find(query)
+      .populate('brand', 'name')
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .exec();
+
+    const count = await Merchant.countDocuments(query);
 
     res.status(200).json({
-      merchants
+      merchants,
+      totalPages: Math.ceil(count / limit),
+      currentPage: Number(page),
+      count
     });
   } catch (error) {
     res.status(400).json({
@@ -136,6 +146,7 @@ router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
 
     if (!update.isActive) {
       await deactivateBrand(merchantId);
+      await User.findOneAndUpdate({ merchant: merchantId }, { role: ROLES.Member });
       await smtp.sendEmail(merchantDoc.email, 'merchant-deactivate-account');
     }
 
@@ -175,7 +186,7 @@ router.put('/approve/:id', auth, role.check(ROLES.Admin), async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+      error: error.message || 'Your request could not be processed. Please try again.'
     });
   }
 });
@@ -271,6 +282,7 @@ router.delete(
     try {
       const merchantId = req.params.id;
       await deactivateBrand(merchantId);
+      await User.findOneAndUpdate({ merchant: merchantId }, { role: ROLES.Member, merchant: null });
       const merchant = await Merchant.deleteOne({ _id: merchantId });
 
       res.status(200).json({
@@ -301,6 +313,8 @@ const deactivateBrand = async merchantId => {
   const products = await Product.find({ brand: brandId });
   await store.disableProducts(products);
 
+  await User.findOneAndUpdate({ merchant: merchantId }, { role: ROLES.Member });
+
   return await Brand.findOneAndUpdate(query, update, {
     new: true
   });
@@ -329,6 +343,9 @@ const createMerchantUser = async (email, name, merchant, host) => {
   const existingUser = await User.findOne({ email });
 
   if (existingUser) {
+    if (existingUser.role === ROLES.Admin) {
+      throw new Error('Cannot convert an Admin account to a Merchant.');
+    }
     const query = { _id: existingUser._id };
     const update = {
       merchant,

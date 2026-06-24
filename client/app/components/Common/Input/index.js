@@ -42,7 +42,6 @@ const Input = props => {
       <div className={styles}>
         {label && <label>{label}</label>}
         <textarea
-          type={'textarea'}
           onChange={e => {
             _onChange(e);
           }}
@@ -71,7 +70,6 @@ const Input = props => {
           step={step}
           min={min || 0}
           max={max || null}
-          pattern='[0-9]'
           onInput={handleOnInput}
           type={type}
           onChange={e => {
@@ -94,7 +92,7 @@ const Input = props => {
         {label && <label>{label}</label>}
         <ReactStars
           name={name}
-          starCount={5}
+          count={5}
           size={30}
           color={'#adb5bd'}
           activeColor={'#ffb302'}
