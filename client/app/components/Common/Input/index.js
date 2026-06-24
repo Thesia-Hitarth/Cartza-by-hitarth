@@ -94,8 +94,8 @@ const Input = props => {
           name={name}
           count={5}
           size={30}
-          color={'#adb5bd'}
-          activeColor={'#ffb302'}
+          color={'#C8BCA8'}
+          activeColor={'#C8A97E'}
           a11y={true}
           isHalf={false}
           emptyIcon={<Star size={30} />}

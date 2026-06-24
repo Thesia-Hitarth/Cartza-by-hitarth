@@ -110,17 +110,13 @@
 
     .logo-text {
       font-family: var(--font-body);
-      font-size: 0.95rem;
-      font-weight: 300;
+      font-size: 1.35rem;
+      font-weight: 700;
       color: var(--color-ink) !important;
       letter-spacing: var(--tracking-widest);
       text-transform: uppercase;
     }
 
-    /* On dark hero, logo is white */
-    .header:not(.scrolled) & .logo-text {
-      color: var(--color-canvas) !important;
-    }
   }
 }
 
@@ -136,8 +132,8 @@
 
   .nav-link-item {
     font-family: var(--font-body);
-    font-size: 0.72rem;
-    font-weight: 400;
+    font-size: 0.85rem;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: var(--tracking-wider);
     color: var(--color-ink) !important;
@@ -170,10 +166,6 @@
       color: var(--color-accent) !important;
     }
 
-    /* On dark hero */
-    .header:not(.scrolled) & {
-      color: var(--color-canvas) !important;
-    }
   }
 }
 
@@ -193,7 +185,7 @@
     left: var(--space-4);
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-muted);
+    color: var(--color-ink) !important;
     pointer-events: none;
     z-index: 3;
     display: flex;
@@ -211,15 +203,15 @@
     border-radius: 0 !important;
     background-color: transparent !important;
     border: none !important;
-    border-bottom: 1px solid var(--color-sand) !important;
+    border-bottom: 1px solid var(--color-ink) !important;
     color: var(--color-ink) !important;
     font-family: var(--font-body) !important;
-    font-size: var(--text-sm) !important;
-    font-weight: 300 !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
     transition: border-color 0.3s var(--ease-out-expo) !important;
 
     &::placeholder {
-      color: var(--color-muted);
+      color: rgba(10, 10, 10, 0.45) !important;
     }
 
     &:focus {
@@ -229,16 +221,7 @@
     }
   }
 
-  /* On dark hero, search adapts */
-  .header:not(.scrolled) & {
-    .react-autosuggest__input {
-      color: var(--color-canvas) !important;
-      border-bottom-color: rgba(245, 242, 238, 0.3) !important;
-      &::placeholder { color: rgba(245, 242, 238, 0.5); }
-      &:focus { border-bottom-color: var(--color-accent) !important; }
-    }
-    .search-icon-left { color: rgba(245, 242, 238, 0.5); }
-  }
+
 
   .search-clear-btn {
     position: absolute;
@@ -247,7 +230,7 @@
     transform: translateY(-50%);
     background: none;
     border: none;
-    color: var(--color-muted);
+    color: var(--color-ink) !important;
     cursor: none;
     z-index: 3;
     padding: var(--space-1);
@@ -348,11 +331,6 @@
       color: var(--color-accent) !important;
     }
 
-    /* On dark hero */
-    .header:not(.scrolled) & {
-      color: var(--color-canvas) !important;
-      &:hover { color: var(--color-accent) !important; }
-    }
   }
 
   .nav-cart-icon-btn {
@@ -447,10 +425,7 @@
     transition: all 0.3s var(--ease-out-expo);
   }
 
-  /* On dark hero */
-  .header:not(.scrolled) & .hamburger-line {
-    background-color: var(--color-canvas);
-  }
+
 
   &.open {
     .hamburger-line:nth-child(1) {

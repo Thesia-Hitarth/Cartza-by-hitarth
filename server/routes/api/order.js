@@ -80,8 +80,6 @@ router.post('/add', auth, async (req, res) => {
 
     await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
 
-    // Delete cart from database to clean up orphaned carts
-    await Cart.deleteOne({ _id: cartId });
 
     res.status(200).json({
       success: true,

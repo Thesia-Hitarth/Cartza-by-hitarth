@@ -18,7 +18,9 @@ const SelectOption = props => {
     options,
     defaultValue,
     value,
-    handleSelectChange
+    handleSelectChange,
+    isSearchable = true,
+    noBorder = false
   } = props;
 
   const _handleSelectChange = value => {
@@ -29,11 +31,14 @@ const SelectOption = props => {
 
   const styles = `select-box${error ? ' invalid' : ''}`;
 
+  const customStyles = getDropdownStyles(noBorder);
+
   return (
     <div className={styles}>
       {label && <label>{label}</label>}
       <Select
         isDisabled={disabled}
+        isSearchable={isSearchable}
         className='select-container'
         classNamePrefix='react-select'
         components={animatedComponents}
@@ -42,7 +47,7 @@ const SelectOption = props => {
         defaultValue={defaultValue}
         value={value}
         onChange={_handleSelectChange}
-        styles={dropdownStyles}
+        styles={customStyles}
       />
       <span className='invalid-message'>{error && error[0]}</span>
     </div>
@@ -51,54 +56,89 @@ const SelectOption = props => {
 
 export default SelectOption;
 
-const dropdownStyles = {
+const getDropdownStyles = noBorder => ({
   control: (styles, { isFocused }) => {
+    const baseBorderStyles = noBorder
+      ? {
+          border: 'none',
+          borderBottom: isFocused ? '1px solid var(--color-ink)' : '1px solid var(--color-sand)',
+          borderRadius: 0
+        }
+      : {
+          borderColor: isFocused ? 'var(--color-ink)' : 'var(--color-sand)'
+        };
+
+    const hoverBorderStyles = noBorder
+      ? {
+          border: 'none',
+          borderBottom: '1px solid var(--color-ink)'
+        }
+      : {
+          borderColor: !isFocused ? 'var(--color-sand)' : 'var(--color-ink)'
+        };
+
     return {
       ...styles,
-      color: '#323232',
-      fontFamily: 'Poppins',
-      backgroundColor: 'white',
+      color: 'var(--color-ink)',
+      fontFamily: 'var(--font-body)',
+      backgroundColor: 'transparent',
       transition: '0.3s',
       boxShadow: 'none',
-
-      borderColor: isFocused ? '#bdcbd2' : '#e4e6eb',
+      minHeight: '36px',
+      height: '36px',
+      ...baseBorderStyles,
 
       ':hover': {
-        borderColor: !isFocused ? '#e4e6eb' : '#bdcbd2',
+        ...styles[':hover'],
+        ...hoverBorderStyles,
         boxShadow: 'none'
       }
     };
   },
+  valueContainer: styles => ({
+    ...styles,
+    padding: '0 8px',
+    height: '30px',
+    display: 'flex',
+    alignItems: 'center'
+  }),
+  indicatorsContainer: styles => ({
+    ...styles,
+    height: '30px'
+  }),
   menu: styles => {
     return {
       ...styles,
-      zIndex: 2
+      zIndex: 2,
+      backgroundColor: 'var(--color-canvas)',
+      border: '1px solid var(--color-sand)'
     };
   },
   option: (styles, { isDisabled, isFocused, isSelected }) => {
     return {
       ...styles,
-      color: '#323232',
-      fontFamily: 'Poppins',
+      color: 'var(--color-ink)',
+      fontFamily: 'var(--font-body)',
+      fontSize: '0.82rem',
       backgroundColor: isDisabled
         ? undefined
         : isSelected
-        ? '#eceef3'
-        : isFocused
-        ? '#f8f9fa'
-        : undefined,
+          ? 'var(--color-sand)'
+          : isFocused
+            ? 'var(--color-surface)'
+            : undefined,
 
       ':hover': {
         ...styles[':hover'],
         backgroundColor: isDisabled
           ? undefined
           : isSelected
-          ? undefined
-          : '#f8f9fa'
+            ? undefined
+            : 'var(--color-surface)'
       },
       ':active': {
         ...styles[':active'],
-        backgroundColor: !isDisabled ? '#eceef3' : undefined
+        backgroundColor: !isDisabled ? 'var(--color-sand)' : undefined
       }
     };
   },
@@ -109,19 +149,26 @@ const dropdownStyles = {
   dropdownIndicator: (base, { isFocused }) => ({
     ...base,
     transform: isFocused ? 'rotate(180deg)' : undefined,
-    transition: 'transform 0.3s'
+    transition: 'transform 0.3s',
+    padding: '4px'
   }),
   input: styles => ({
     ...styles,
-    color: '#323232'
+    color: 'var(--color-ink)',
+    fontFamily: 'var(--font-body)',
+    margin: 0,
+    padding: 0
   }),
   placeholder: styles => ({
     ...styles,
-    color: '#323232'
+    color: 'var(--color-muted)',
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.82rem'
   }),
   singleValue: styles => ({
     ...styles,
-    color: '#323232',
-    fontFamily: 'Poppins'
+    color: 'var(--color-ink)',
+    fontFamily: 'var(--font-body)',
+    fontSize: '0.82rem'
   })
-};
+});

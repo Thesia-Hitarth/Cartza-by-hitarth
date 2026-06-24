@@ -1,22 +1,76 @@
+/* ─────────────────────────────────────────────
+   CARTZA — Easy Checkout
+   Cream inputs, clean dropdown, stacked actions
+   ───────────────────────────────────────────── */
+
 .easy-checkout {
   border-top: 1.5px solid var(--color-border);
+  padding-top: var(--space-3);
+
+  .address-selection-checkout {
+    .address-select-label {
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 0.75rem;
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--color-ink);
+      margin-bottom: var(--space-2);
+    }
+
+    .address-select-dropdown {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 0 !important;
+      border: 1px solid var(--color-sand) !important;
+      background-color: var(--color-surface) !important;
+      color: var(--color-ink) !important;
+      font-family: var(--font-body) !important;
+      font-size: 0.85rem !important;
+      height: 42px;
+      cursor: pointer;
+
+      &:focus {
+        border-color: var(--color-accent) !important;
+        box-shadow: none !important;
+        outline: none !important;
+      }
+    }
+
+    .no-address-warning {
+      font-family: var(--font-body);
+      font-size: 0.8rem;
+      color: var(--color-red);
+      margin-top: var(--space-2);
+
+      a {
+        text-decoration: underline;
+        color: var(--color-ink);
+        font-weight: 500;
+      }
+    }
+  }
 
   .checkout-actions {
     padding: var(--space-4) 0;
     display: flex;
     gap: var(--space-3);
 
-    @include media-breakpoint-down(xs) {
+    @media (max-width: 575px) {
       flex-direction: column;
+      gap: var(--space-2);
     }
 
     .btn-shopping,
     .btn-checkout {
       flex: 1;
       height: 46px;
-      border-radius: 6px;
-      font-weight: 600;
-      font-size: var(--text-sm);
+      border-radius: 0 !important;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
       cursor: pointer;
       transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, opacity 0.2s ease;
       display: inline-flex;
@@ -27,23 +81,28 @@
 
     .btn-shopping {
       background-color: transparent;
-      border: 1.5px solid var(--color-border);
+      border: 1px solid var(--color-border);
       color: var(--color-ink);
 
       &:hover {
         background-color: var(--color-ink);
         border-color: var(--color-ink);
-        color: var(--color-surface) !important;
+        color: var(--color-canvas) !important;
       }
     }
 
     .btn-checkout {
       background-color: var(--color-accent);
-      border: 1.5px solid var(--color-accent);
-      color: var(--color-surface) !important;
+      border: 1px solid var(--color-accent);
+      color: var(--color-canvas) !important;
+      height: 56px !important;
+      padding: 16px var(--space-4) !important;
+      line-height: 1 !important;
 
       &:hover {
-        opacity: 0.95;
+        background-color: var(--color-ink);
+        border-color: var(--color-ink);
+        color: var(--color-canvas) !important;
       }
 
       &:disabled {

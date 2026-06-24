@@ -21,7 +21,7 @@ const Button = ({
   round, borderless, fullWidth, tooltip, tooltipContent,
   popover, popoverContent, popoverTitle
 }) => {
-  const reactId = useId();
+  const reactId = useId().replace(/:/g, '');
   const activeId = id || reactId;
   const tooltipId = tooltip ? `tooltip-${activeId}` : activeId;
   const popoverId = popover ? `popover-${activeId}` : activeId;

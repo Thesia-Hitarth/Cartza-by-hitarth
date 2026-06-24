@@ -194,3 +194,7 @@
   width: 60px;
   height: 60px;
 }
+
+body.no-scroll {
+  overflow: hidden !important;
+}

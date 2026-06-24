@@ -24,7 +24,7 @@ const Summary = props => {
     totalRatings > 0 && Math.round(totalRatings / totalReviews);
 
   return (
-    <div className='bg-white p-4 box-shadow-primary review-summary'>
+    <div className='review-summary-card'>
       <h2 className='mb-0'>Rating</h2>
       {averageRating && (
         <div className='d-flex flex-wrap align-items-center mt-2'>
@@ -32,8 +32,8 @@ const Summary = props => {
             classNames='mr-2'
             size={17}
             edit={false}
-            color={'#adb5bd'}
-            activeColor={'#ffb302'}
+            color={'#C8BCA8'}
+            activeColor={'#C8A97E'}
             a11y={true}
             isHalf={true}
             emptyIcon={<Star size={17} />}
@@ -45,7 +45,7 @@ const Summary = props => {
         </div>
       )}
 
-      <hr style={{ border: '3px solid #f1f1f1' }} />
+      <div className='section-rule' />
       {totalReviews > 0 ? (
         ratingSummary.map((r, obj) => (
           <div key={obj} className='d-flex align-items-center mb-2'>

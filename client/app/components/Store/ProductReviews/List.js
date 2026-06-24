@@ -16,14 +16,25 @@ const List = props => {
   const { reviews } = props;
 
   const getAvatar = review => {
-    const color = getRandomColors();
-    if (review.user.firstName) {
+    const name = review.user.firstName || '';
+    const char = name.charAt(0).toUpperCase();
+    // Deterministic selection from premium colors
+    const charCode = char.charCodeAt(0) || 0;
+    const premiumColors = [
+      '#C8A97E', // gold
+      '#0A0A0A', // ink
+      '#8A8278', // muted gray
+      '#9E7B50'  // dark gold
+    ];
+    const color = premiumColors[charCode % premiumColors.length];
+
+    if (name) {
       return (
         <div
           className='d-flex flex-column justify-content-center align-items-center fw-normal text-white avatar'
-          style={{ backgroundColor: color ? color : 'red' }}
+          style={{ backgroundColor: color }}
         >
-          {review.user.firstName.charAt(0)}
+          {char}
         </div>
       );
     }
@@ -41,8 +52,8 @@ const List = props => {
                 classNames='mr-2'
                 size={16}
                 edit={false}
-                color={'#adb5bd'}
-                activeColor={'#ffb302'}
+                color={'#C8BCA8'}
+                activeColor={'#C8A97E'}
                 a11y={true}
                 isHalf={true}
                 emptyIcon={<Star size={16} />}

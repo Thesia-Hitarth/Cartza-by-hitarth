@@ -68,10 +68,19 @@ class Navigation extends React.PureComponent {
       this.setState({ scrolled: !isHome ? true : window.scrollY > 80 });
       window.scrollTo(0, 0);
     }
+
+    if (this.props.isCartOpen !== prevProps.isCartOpen) {
+      if (this.props.isCartOpen) {
+        document.body.classList.add('no-scroll');
+      } else {
+        document.body.classList.remove('no-scroll');
+      }
+    }
   }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
+    document.body.classList.remove('no-scroll');
   }
 
   handleScroll() {
@@ -202,7 +211,8 @@ class Navigation extends React.PureComponent {
     ].filter(Boolean).join(' ');
 
     return (
-      <header className={headerClasses}>
+      <>
+        <header className={headerClasses}>
         {/* Tier 1: Announcement Bar (gold accent) */}
         {this.state.showAnnouncement && (
           <div className='announcement-bar'>
@@ -356,37 +366,38 @@ class Navigation extends React.PureComponent {
             )}
           </Container>
         </div>
-
-        {/* hidden cart drawer */}
-        <div
-          className={isCartOpen ? 'mini-cart-open' : 'hidden-mini-cart'}
-          aria-hidden={`${isCartOpen ? false : true}`}
-        >
-          <div className='mini-cart'>
-            <Cart />
-          </div>
-          <div
-            className={isCartOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'}
-            onClick={toggleCart}
-          />
-        </div>
-
-        {/* Full-screen Overlay Menu for Mobile */}
-        <div
-          className={`mobile-full-screen-menu ${isMenuOpen ? 'open' : ''}`}
-          aria-hidden={`${isMenuOpen ? false : true}`}
-        >
-          <div className='menu-header-bar d-flex align-items-center justify-content-between px-4 py-3'>
-            <span className='logo-text text-white'>CARTZA</span>
-            <button className='menu-close-btn' onClick={() => this.toggleMenu()} aria-label='Close menu'>
-              <X size={24} strokeWidth={1.2} className="text-white" />
-            </button>
-          </div>
-          <div className='menu-body-overlay'>
-            <Menu />
-          </div>
-        </div>
       </header>
+
+      {/* hidden cart drawer */}
+      <div
+        className={isCartOpen ? 'mini-cart-open' : 'hidden-mini-cart'}
+        aria-hidden={`${isCartOpen ? false : true}`}
+      >
+        <div className='mini-cart'>
+          <Cart />
+        </div>
+        <div
+          className={isCartOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'}
+          onClick={toggleCart}
+        />
+      </div>
+
+      {/* Full-screen Overlay Menu for Mobile */}
+      <div
+        className={`mobile-full-screen-menu ${isMenuOpen ? 'open' : ''}`}
+        aria-hidden={`${isMenuOpen ? false : true}`}
+      >
+        <div className='menu-header-bar d-flex align-items-center justify-content-between px-4 py-3'>
+          <span className='logo-text text-white'>CARTZA</span>
+          <button className='menu-close-btn' onClick={() => this.toggleMenu()} aria-label='Close menu'>
+            <X size={24} strokeWidth={1.2} className="text-white" />
+          </button>
+        </div>
+        <div className='menu-body-overlay'>
+          <Menu />
+        </div>
+      </div>
+    </>
     );
   }
 }

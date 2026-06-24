@@ -110,15 +110,8 @@ class ProductPage extends React.PureComponent {
 
     const { activeThumbIdx, isZoomed, zoomPos, selectedColor, selectedSize, openAccordion } = this.state;
 
-    // Gallery variant fallback images matching seeded styles
-    const dummyThumbnails = [
-      product.imageUrl || '/images/placeholder-image.png',
-      '/images/banners/banner-2.jpg',
-      '/images/banners/banner-3.jpg',
-      '/images/banners/banner-4.jpg'
-    ];
-
-    const currentImage = dummyThumbnails[activeThumbIdx];
+    const productImages = product.imageUrl ? [product.imageUrl] : ['/images/placeholder-image.png'];
+    const currentImage = productImages[activeThumbIdx] || productImages[0];
 
     // Mock discount elements
     const discountPercentage = 15;
@@ -169,18 +162,20 @@ class ProductPage extends React.PureComponent {
                   </div>
 
                   {/* Thumbnail Strip */}
-                  <div className='thumbnail-strip d-flex mt-3'>
-                    {dummyThumbnails.map((thumb, idx) => (
-                      <button
-                        key={idx}
-                        className={`thumb-button ${activeThumbIdx === idx ? 'active' : ''}`}
-                        onClick={() => this.setState({ activeThumbIdx: idx })}
-                        aria-label={`Select image variant ${idx + 1}`}
-                      >
-                        <img src={thumb} alt='' className='thumb-img' />
-                      </button>
-                    ))}
-                  </div>
+                  {productImages.length > 1 && (
+                    <div className='thumbnail-strip d-flex mt-3'>
+                      {productImages.map((thumb, idx) => (
+                        <button
+                          key={idx}
+                          className={`thumb-button ${activeThumbIdx === idx ? 'active' : ''}`}
+                          onClick={() => this.setState({ activeThumbIdx: idx })}
+                          aria-label={`Select image variant ${idx + 1}`}
+                        >
+                          <img src={thumb} alt='' className='thumb-img' />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </Col>
 
@@ -198,7 +193,7 @@ class ProductPage extends React.PureComponent {
 
                   {/* Title */}
                   <h1 className='product-title-display'>{product.name}</h1>
-                  
+
                   {/* Rating summary */}
                   <div className='rating-reviews-line d-flex align-items-center mb-3' onClick={this.scrollToReviews}>
                     <div className='rating-stars-row mr-2 d-flex align-items-center'>

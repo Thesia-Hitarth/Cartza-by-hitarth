@@ -40,7 +40,7 @@ class Checkout extends React.Component {
       <div className='easy-checkout'>
         {authenticated && (
           <div className='address-selection-checkout mb-3'>
-            <label htmlFor='checkout-address-select' className='address-select-label d-block mb-1' style={{ fontWeight: '600', fontSize: '13px', color: 'var(--color-ink)' }}>
+            <label htmlFor='checkout-address-select' className='address-select-label d-block mb-1'>
               Shipping Address:
             </label>
             {addresses && addresses.length > 0 ? (
@@ -49,15 +49,6 @@ class Checkout extends React.Component {
                 className='form-control address-select-dropdown'
                 value={selectedAddressId}
                 onChange={this.handleAddressChange}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--color-border)',
-                  backgroundColor: 'var(--color-surface)',
-                  color: 'var(--color-ink)',
-                  fontSize: '14px'
-                }}
               >
                 {addresses.map(addr => (
                   <option key={addr._id} value={addr._id}>
@@ -83,13 +74,14 @@ class Checkout extends React.Component {
           {authenticated ? (
             <button
               className='btn-checkout'
+              style={{ height: '56px' }}
               disabled={!selectedAddressId || isPlacingOrder}
               onClick={() => placeOrder(selectedAddressId)}
             >
               {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
             </button>
           ) : (
-            <button className='btn-checkout' onClick={() => handleCheckout()}>
+            <button className='btn-checkout' style={{ height: '56px' }} onClick={() => handleCheckout()}>
               Proceed to Checkout
             </button>
           )}

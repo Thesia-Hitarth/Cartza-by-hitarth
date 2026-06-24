@@ -75,6 +75,7 @@
     opacity: 0;
     transition: opacity var(--duration-base) var(--ease-out-expo);
     z-index: 3;
+    pointer-events: none;
   }
 
   .image-aspect-wrapper {
@@ -613,7 +614,11 @@
         z-index: 0;
       }
 
-      span, svg { position: relative; z-index: 1; }
+      span, svg {
+        position: relative;
+        z-index: 1;
+        color: inherit !important;
+      }
     }
 
     .btn-cart-page-add {

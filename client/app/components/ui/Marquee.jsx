@@ -52,8 +52,8 @@ const Marquee = ({ speed = 28, bg = 'accent', textColor = 'white', children }) =
           animationPlayState: paused ? 'paused' : 'running',
         }}
       >
-        {/* Duplicate content for seamless loop */}
-        {[0, 1].map((i) => (
+        {/* Duplicate content 8 times for seamless loop on high-res screens */}
+        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
           <span
             key={i}
             style={{

@@ -1,116 +1,176 @@
-.product-reviews {
-  .fa {
-    font-size: $font-size-x-large;
-  }
+/* ─────────────────────────────────────────────
+   CARTZA — Ratings & Reviews System
+   Sleek editorial styles, gold accents
+   ───────────────────────────────────────────── */
 
-  .review-summary {
+.product-reviews {
+  margin-top: var(--space-6);
+
+  /* Rating Summary Card */
+  .review-summary-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-sand);
+    padding: var(--space-5);
+    border-radius: 0;
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-md);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-ink);
+      margin-bottom: var(--space-2);
+    }
+
+    span {
+      font-family: var(--font-body);
+      font-size: 0.85rem;
+      color: var(--color-muted);
+    }
+
     .left {
       width: 20%;
-
-      @include media-breakpoint-up(md) {
-        width: 25%;
-      }
-      @include media-breakpoint-up(lg) {
-        width: 15%;
+      @include media-breakpoint-up(md) { width: 25%; }
+      @include media-breakpoint-up(lg) { width: 15%; }
+      span {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        color: var(--color-muted);
+        letter-spacing: var(--tracking-wide);
       }
     }
+
     .middle {
       width: 60%;
-
-      @include media-breakpoint-up(md) {
-        width: 50%;
-      }
-      @include media-breakpoint-up(lg) {
-        width: 70%;
-      }
+      @include media-breakpoint-up(md) { width: 50%; }
+      @include media-breakpoint-up(lg) { width: 70%; }
     }
+
     .right {
       width: 20%;
       text-align: right;
-
-      @include media-breakpoint-up(md) {
-        width: 25%;
-      }
-
-      @include media-breakpoint-up(lg) {
-        width: 15%;
+      @include media-breakpoint-up(md) { width: 25%; }
+      @include media-breakpoint-up(lg) { width: 15%; }
+      span {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--color-ink);
       }
     }
 
     .bar-container {
       width: 100%;
-      background-color: #f1f1f1;
-      text-align: center;
-      color: white;
+      height: 6px;
+      background-color: rgba(200, 188, 168, 0.22);
+      border-radius: 0;
+      overflow: hidden;
     }
-    .bar-5 {
-      height: 16px;
-      background-color: #4caf50;
-    }
-    .bar-4 {
-      height: 16px;
-      background-color: #2196f3;
-    }
-    .bar-3 {
-      height: 16px;
-      background-color: #00bcd4;
-    }
-    .bar-2 {
-      height: 16px;
-      background-color: #ff9800;
-    }
-    .bar-1 {
-      height: 16px;
-      background-color: #f44336;
+
+    .bar-5, .bar-4, .bar-3, .bar-2, .bar-1 {
+      height: 100%;
+      background-color: var(--color-accent);
+      transition: width 0.6s var(--ease-out-expo);
     }
   }
 
-  .review-list {
-    .review-box {
-      height: 100%;
-      border-radius: $border-radius-default;
-      box-shadow: $box-shadow-secondary;
-      background-color: $white;
+  /* Add Review Card */
+  .add-review-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-sand);
+    padding: var(--space-5);
+    border-radius: 0;
 
-      .avatar {
-        width: 40px;
-        height: 40px;
+    h3 {
+      font-family: var(--font-display);
+      font-size: var(--text-md);
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-ink);
+      margin-bottom: var(--space-4);
+    }
+  }
+
+  /* Review List */
+  .review-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+
+    .review-box {
+      background-color: var(--color-surface);
+      border: 1px solid var(--color-sand);
+      border-radius: 0;
+      box-shadow: none;
+      transition: border-color var(--duration-base) var(--ease-out-expo);
+
+      &:hover {
+        border-color: var(--color-ink);
       }
 
-      .review-icon {
-        width: 35px;
-        height: 35px;
+      .avatar {
+        width: 44px;
+        height: 44px;
+        font-family: var(--font-body);
+        font-size: 0.9rem;
+        font-weight: 500;
+        border-radius: 0;
+        letter-spacing: 0;
+      }
 
-        @include media-breakpoint-up(lg) {
-          width: 50px;
-          height: 50px;
-        }
+      h4 {
+        font-family: var(--font-body);
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--color-ink);
+        letter-spacing: var(--tracking-wide);
+      }
+
+      .fs-12 {
+        font-family: var(--font-mono);
+        font-size: 0.65rem;
+        color: var(--color-muted);
+        letter-spacing: var(--tracking-wide);
+        text-transform: uppercase;
+        margin-top: var(--space-1);
+      }
+
+      p.mb-0 {
+        font-family: var(--font-body);
+        font-size: 0.88rem;
+        font-weight: 300;
+        color: var(--color-muted);
+        line-height: 1.6;
+        margin-top: var(--space-2);
       }
     }
   }
 }
 
+/* Reviews Dashboard (User panel side) */
 .review-dashboard {
   .r-list {
     .review-box {
-      border-radius: $border-radius-default;
-      box-shadow: $box-shadow-secondary;
+      border: 1px solid var(--color-sand);
+      background-color: var(--color-surface);
+      border-radius: 0;
+      box-shadow: none;
+      margin-bottom: var(--space-3);
 
       .avatar {
-        width: 30px;
-        height: 30px;
-        font-size: $font-size-x-small;
-
-        @include media-breakpoint-up(md) {
-          width: 40px;
-          height: 40px;
-          font-size: $font-size-medium;
-        }
+        width: 36px;
+        height: 36px;
+        font-family: var(--font-body);
+        font-size: 0.8rem;
+        font-weight: 500;
+        background-color: var(--color-accent) !important;
+        border-radius: 0;
       }
 
       .review-content {
         width: 100%;
-
         @include media-breakpoint-up(lg) {
           width: 80%;
         }
@@ -124,7 +184,8 @@
     }
 
     .item-image {
-      border-radius: $border-radius-default;
+      border-radius: 0;
+      border: 1px solid var(--color-sand);
 
       @include media-breakpoint-up(lg) {
         width: 70px;

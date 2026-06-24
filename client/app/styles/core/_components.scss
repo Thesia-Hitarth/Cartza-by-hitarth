@@ -121,3 +121,7 @@
   }
 }
 /* end slider styles */
+
+.rc-slider-tooltip {
+  pointer-events: none !important;
+}

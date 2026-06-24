@@ -8,16 +8,21 @@
 
   /* Shop Toolbar / Top Bar */
   .shop-toolbar {
-    background-color: var(--color-canvas);
-    border-top: 1px solid var(--color-sand);
-    border-bottom: 1px solid var(--color-sand);
-    padding: var(--space-3) 0;
-    margin-bottom: var(--space-5);
-    position: sticky;
-    top: 72px;
-    z-index: 50;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background-color: rgba(245, 242, 238, 0.88) !important;
+    border-top: 1px solid rgba(10, 10, 10, 0.05) !important;
+    border-bottom: 1px solid rgba(10, 10, 10, 0.05) !important;
+    padding: 0.5rem var(--space-4) !important;
+    margin-bottom: var(--space-5) !important;
+    position: sticky !important;
+    top: 72px !important;
+    z-index: 50 !important;
+    backdrop-filter: blur(16px) saturate(1.2) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+    transition: top var(--duration-base) var(--ease-out-expo) !important;
+
+    .select-box {
+      margin-bottom: 0 !important;
+    }
 
     .toolbar-inner {
       display: flex;
@@ -29,10 +34,19 @@
 
     .results-count {
       font-family: var(--font-mono);
-      font-size: 0.7rem;
-      font-weight: 300;
-      color: var(--color-muted);
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--color-ink);
       letter-spacing: var(--tracking-wide);
+    }
+
+    .sort-label {
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 400;
+      text-transform: uppercase;
+      letter-spacing: var(--tracking-wider);
+      color: var(--color-ink);
     }
 
     .sort-select-wrapper {
@@ -40,15 +54,6 @@
       display: flex;
       align-items: center;
       gap: var(--space-2);
-
-      .sort-label {
-        font-family: var(--font-body);
-        font-size: 0.72rem;
-        font-weight: 300;
-        text-transform: uppercase;
-        letter-spacing: var(--tracking-wider);
-        color: var(--color-muted);
-      }
 
       select {
         background: transparent;
@@ -102,6 +107,11 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
+  margin-top: var(--space-4);
+
+  @media (min-width: 1024px) {
+    margin-top: var(--space-5);
+  }
 
   .filter-section {
     border-bottom: 1px solid var(--color-sand);
@@ -276,4 +286,9 @@
       padding: var(--space-3) 0 !important;
     }
   }
+}
+
+/* Slide shop toolbar to top when navbar is hidden */
+.header.nav-hidden ~ .main .shop-toolbar {
+  top: 0 !important;
 }

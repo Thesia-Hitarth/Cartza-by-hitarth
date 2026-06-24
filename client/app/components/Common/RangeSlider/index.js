@@ -7,8 +7,7 @@
 import React from 'react';
 import Slider, { SliderTooltip } from 'rc-slider';
 
-const { createSliderWithTooltip } = Slider;
-const Range = createSliderWithTooltip(Slider.Range);
+const Range = Slider.Range;
 const { Handle } = Slider;
 
 const handle = props => {
@@ -20,6 +19,7 @@ const handle = props => {
       visible={dragging}
       placement='top'
       key={index}
+      trigger={[]}
     >
       <Handle value={value} {...restProps} />
     </SliderTooltip>
@@ -30,8 +30,8 @@ class RangeSlider extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      sliderValue: 50,
-      rangeValue: this.props.defaultValue
+      sliderValue: Array.isArray(props.defaultValue) ? props.defaultValue[0] : props.defaultValue,
+      rangeValue: props.defaultValue
     };
   }
 
@@ -84,8 +84,6 @@ class RangeSlider extends React.Component {
             step={step}
             defaultValue={defaultValue}
             marks={marks}
-            handle={handle}
-            tipFormatter={value => `₹${value}`}
             value={rangeValue}
             onChange={this.onRangeChange}
             onAfterChange={this.onAfterRangeChange}

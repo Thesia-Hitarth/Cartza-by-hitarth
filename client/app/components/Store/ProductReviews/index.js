@@ -21,7 +21,11 @@ const ProductReviews = props => {
           )}
         </Col>
         <Col xs='12' md='7' lg='7' className='mb-3 px-3 px-md-2'>
-          {props.reviews.length > 0 && <ReviewList reviews={props.reviews} />}
+          {props.reviews.length > 0 && (
+            <div className='mb-4'>
+              <ReviewList reviews={props.reviews} />
+            </div>
+          )}
           <AddReview
             reviewFormData={props.reviewFormData}
             reviewChange={props.reviewChange}

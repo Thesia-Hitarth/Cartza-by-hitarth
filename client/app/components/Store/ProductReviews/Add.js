@@ -26,7 +26,7 @@ const Add = props => {
   };
 
   return (
-    <div className='bg-white p-4 box-shadow-primary add-review'>
+    <div className='add-review-card'>
       <form onSubmit={handleSubmit} noValidate>
         <h3 className='mb-3'>Add Review</h3>
         <Row>

@@ -32,13 +32,13 @@ const getCategoryBanner = (name = '') => {
     return '/images/banners/banner-1.png';
   }
   if (categoryName.includes('electron') || categoryName.includes('tech') || categoryName.includes('phone') || categoryName.includes('gadget')) {
-    return '/images/banners/banner-3.jpg';
+    return '/images/banners/banner-3.png';
   }
   if (categoryName.includes('home') || categoryName.includes('garden') || categoryName.includes('furnit') || categoryName.includes('kitchen') || categoryName.includes('living')) {
     return '/images/banners/banner-4.jpg';
   }
   if (categoryName.includes('sport') || categoryName.includes('outdoor') || categoryName.includes('fitness')) {
-    return '/images/banners/banner-2.jpg';
+    return '/images/banners/banner-2.png';
   }
   if (categoryName.includes('beauty') || categoryName.includes('cosmetic') || categoryName.includes('makeup')) {
     return '/images/banners/banner-7.jpg';
@@ -51,8 +51,8 @@ const getCategoryBanner = (name = '') => {
 
 const defaultImages = [
   '/images/banners/banner-1.png',
-  '/images/banners/banner-2.jpg',
-  '/images/banners/banner-3.jpg',
+  '/images/banners/banner-2.png',
+  '/images/banners/banner-3.png',
   '/images/banners/banner-4.jpg',
   '/images/banners/banner-5.jpg',
   '/images/banners/banner-6.jpg',
@@ -87,7 +87,19 @@ class Homepage extends React.PureComponent {
   }
 
   render() {
-    const { categories, history } = this.props;
+    const {
+      categories,
+      history,
+      email,
+      formErrors,
+      newsletterChange,
+      subscribeToNewsletter
+    } = this.props;
+
+    const handleSubmit = event => {
+      event.preventDefault();
+      subscribeToNewsletter();
+    };
 
     return (
       <div className='homepage-redesign'>
@@ -125,10 +137,10 @@ class Homepage extends React.PureComponent {
 
                 {/* CTA Row */}
                 <motion.div className='hero-cta-row' custom={3} variants={heroTextVariants}>
-                  <Link to='/shop' className='btn-primary-dark' data-cursor="link">
+                  <Link to='/shop' className='btn-primary' data-cursor="link">
                     <span>EXPLORE COLLECTION</span>
                   </Link>
-                  <Link to='/brands' className='btn-ghost-light' data-cursor="link">
+                  <Link to='/brands' className='btn-ghost' data-cursor="link">
                     DISCOVER BRANDS <span className='arrow'>→</span>
                   </Link>
                 </motion.div>
@@ -255,7 +267,7 @@ class Homepage extends React.PureComponent {
             </Link>
           </div>
           <div className='editorial-right' data-animate="slide-right">
-            <div className='editorial-image' style={{ backgroundImage: "url('/images/banners/banner-5.jpg')" }}></div>
+            <div className='editorial-image' style={{ backgroundImage: "url('/images/banners/banner-2.png')" }}></div>
           </div>
         </section>
 
@@ -267,12 +279,28 @@ class Homepage extends React.PureComponent {
             <div className='newsletter-editorial-row'>
               <h2 className='newsletter-headline-editorial'>Stay in the loop.</h2>
               <p className='newsletter-sub'>Be the first to know about new arrivals, exclusive offers, and editorial drops.</p>
-              <div className='newsletter-input-editorial'>
-                <input type='email' placeholder='your@email.com' className='newsletter-email-field' data-cursor="text" />
-                <button className='newsletter-submit-btn' data-cursor="link">
-                  <span>SUBSCRIBE</span> <ArrowRight size={14} strokeWidth={1.2} />
-                </button>
-              </div>
+              <form onSubmit={handleSubmit} noValidate>
+                <div className='newsletter-input-editorial'>
+                  <input
+                    type='email'
+                    name='email'
+                    placeholder='your@email.com'
+                    className='newsletter-email-field'
+                    data-cursor="text"
+                    value={email}
+                    onChange={e => newsletterChange('email', e.target.value)}
+                    required
+                  />
+                  <button type='submit' className='newsletter-submit-btn' data-cursor="link">
+                    <span>SUBSCRIBE</span> <ArrowRight size={14} strokeWidth={1.2} />
+                  </button>
+                </div>
+                {formErrors['email'] && (
+                  <p className='text-danger mt-2 font-weight-500' style={{ fontSize: '13px' }}>
+                    {formErrors['email']}
+                  </p>
+                )}
+              </form>
             </div>
           </Container>
         </section>
@@ -283,7 +311,9 @@ class Homepage extends React.PureComponent {
 
 const mapStateToProps = state => {
   return {
-    categories: state.category.storeCategories
+    categories: state.category.storeCategories,
+    email: state.newsletter.email,
+    formErrors: state.newsletter.formErrors
   };
 };
 
