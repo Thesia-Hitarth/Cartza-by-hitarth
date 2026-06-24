@@ -7,9 +7,8 @@
 import React from 'react';
 
 import { connect } from 'react-redux';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { withRouter } from '../../utils/withRouter';
-import { Container } from 'reactstrap';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import actions from '../../actions';
@@ -36,18 +35,25 @@ import AuthSuccess from '../AuthSuccess';
 
 import Footer from '../../components/Common/Footer';
 import Page404 from '../../components/Common/Page404';
+import CustomCursor from '../../components/ui/CustomCursor';
 import { CART_ITEMS } from '../../constants';
 
 const AuthenticatedDashboard = Authentication(Dashboard);
+
+// Wrapper that provides padding-top for pages that need it (non-homepage)
+const PageWrapper = ({ children, isFullBleed }) => {
+  if (isFullBleed) return <>{children}</>;
+  return <div className='wrapper'>{children}</div>;
+};
 
 class Application extends React.PureComponent {
   constructor(props) {
     super(props);
     this.handleStorage = this.handleStorage.bind(this);
   }
+
   componentDidMount() {
     const token = localStorage.getItem('token');
-
     if (token) {
       this.props.fetchProfile();
     }
@@ -58,12 +64,12 @@ class Application extends React.PureComponent {
     document.addEventListener('mousedown', this.handleMouseDown);
     window.addEventListener('storage', this.handleStorage);
 
-    // Scroll trigger animations using IntersectionObserver
+    // Scroll-trigger animations via IntersectionObserver
     if ('IntersectionObserver' in window) {
       const observerOptions = {
         root: null,
-        rootMargin: '0px',
-        threshold: 0.1
+        rootMargin: '0px 0px -80px 0px',
+        threshold: 0.08
       };
 
       const observer = new IntersectionObserver((entries, obs) => {
@@ -75,20 +81,14 @@ class Application extends React.PureComponent {
         });
       }, observerOptions);
 
-      // Initial elements
-      const animatedElements = document.querySelectorAll('[data-animate]');
-      animatedElements.forEach(el => observer.observe(el));
+      document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
 
-      // Mutation observer to detect dynamically added components (e.g., product lists, categories)
       this.mutationObserver = new MutationObserver(() => {
-        const newAnimatedElements = document.querySelectorAll('[data-animate]:not(.is-visible)');
-        newAnimatedElements.forEach(el => observer.observe(el));
+        document.querySelectorAll('[data-animate]:not(.is-visible)').forEach(el => observer.observe(el));
       });
       this.mutationObserver.observe(document.body, { childList: true, subtree: true });
     } else {
-      // Fallback
-      const animatedElements = document.querySelectorAll('[data-animate]');
-      animatedElements.forEach(el => el.classList.add('is-visible'));
+      document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('is-visible'));
     }
   }
 
@@ -119,61 +119,112 @@ class Application extends React.PureComponent {
 
   render() {
     const { location } = this.props;
+    const isHomePage = location.pathname === '/';
 
     const pageVariants = {
-      initial: { opacity: 0, y: 8 },
-      enter: { opacity: 1, y: 0, transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] } },
-      exit: { opacity: 0, transition: { duration: 0.15 } }
+      initial: { opacity: 0 },
+      enter: {
+        opacity: 1,
+        transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] }
+      },
+      exit: {
+        opacity: 0,
+        transition: { duration: 0.15 }
+      }
     };
 
     return (
       <div className='application'>
+        {/* Custom editorial cursor */}
+        <CustomCursor />
+
         <Notification />
         <Navigation />
+
         <main className='main'>
-          <Container>
-            <div className='wrapper'>
-              <AnimatePresence exitBeforeEnter={true}>
-                <motion.div
-                  key={location.pathname}
-                  variants={pageVariants}
-                  initial="initial"
-                  animate="enter"
-                  exit="exit"
-                >
-                  <Routes>
-                    <Route path='/' element={<HomePage />} />
-                    <Route path='/shop/*' element={<Shop />} />
-                    <Route path='/sell' element={<Sell />} />
-                    <Route path='/contact' element={<Contact />} />
-                    <Route path='/brands' element={<BrandsPage />} />
-                    <Route path='/product/:slug' element={<ProductPage />} />
-                    <Route path='/order/success/:id' element={<OrderSuccess />} />
-                    <Route path='/order/:id' element={<OrderPage />} />
-                    <Route path='/login' element={<Login />} />
-                    <Route path='/register' element={<Signup />} />
-                    <Route
-                      path='/merchant-signup/:token'
-                      element={<MerchantSignup />}
-                    />
-                    <Route path='/forgot-password' element={<ForgotPassword />} />
-                    <Route
-                      path='/reset-password/:token'
-                      element={<ResetPassword />}
-                    />
-                    <Route path='/auth/success' element={<AuthSuccess />} />
-                    <Route
-                      path='/dashboard/*'
-                      element={<AuthenticatedDashboard />}
-                    />
-                    <Route path='/404' element={<Page404 />} />
-                    <Route path='*' element={<Page404 />} />
-                  </Routes>
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </Container>
+          <AnimatePresence exitBeforeEnter={true}>
+            <motion.div
+              key={location.pathname}
+              variants={pageVariants}
+              initial="initial"
+              animate="enter"
+              exit="exit"
+            >
+              {/* All routes live together; homepage gets no wrapper padding */}
+              <Routes>
+                <Route
+                  path='/'
+                  element={<HomePage />}
+                />
+                <Route
+                  path='/shop/*'
+                  element={<div className='wrapper'><Shop /></div>}
+                />
+                <Route
+                  path='/sell'
+                  element={<div className='wrapper'><Sell /></div>}
+                />
+                <Route
+                  path='/contact'
+                  element={<div className='wrapper'><Contact /></div>}
+                />
+                <Route
+                  path='/brands'
+                  element={<div className='wrapper'><BrandsPage /></div>}
+                />
+                <Route
+                  path='/product/:slug'
+                  element={<div className='wrapper'><ProductPage /></div>}
+                />
+                <Route
+                  path='/order/success/:id'
+                  element={<div className='wrapper'><OrderSuccess /></div>}
+                />
+                <Route
+                  path='/order/:id'
+                  element={<div className='wrapper'><OrderPage /></div>}
+                />
+                <Route
+                  path='/login'
+                  element={<div className='wrapper'><Login /></div>}
+                />
+                <Route
+                  path='/register'
+                  element={<div className='wrapper'><Signup /></div>}
+                />
+                <Route
+                  path='/merchant-signup/:token'
+                  element={<div className='wrapper'><MerchantSignup /></div>}
+                />
+                <Route
+                  path='/forgot-password'
+                  element={<div className='wrapper'><ForgotPassword /></div>}
+                />
+                <Route
+                  path='/reset-password/:token'
+                  element={<div className='wrapper'><ResetPassword /></div>}
+                />
+                <Route
+                  path='/auth/success'
+                  element={<div className='wrapper'><AuthSuccess /></div>}
+                />
+                <Route
+                  path='/dashboard/*'
+                  element={<div className='wrapper'><AuthenticatedDashboard /></div>}
+                />
+                <Route
+                  path='/404'
+                  element={<div className='wrapper'><Page404 /></div>}
+                />
+                <Route
+                  path='*'
+                  element={<div className='wrapper'><Page404 /></div>}
+                />
+              </Routes>
+            </motion.div>
+          </AnimatePresence>
         </main>
+
         <Footer />
       </div>
     );

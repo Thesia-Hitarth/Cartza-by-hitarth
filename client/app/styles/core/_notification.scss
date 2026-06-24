@@ -1,18 +1,49 @@
 .notifications-wrapper {
   .notification {
-    border-radius: var(--radius-md) !important;
-    font-family: var(--font-ui) !important;
-    font-size: var(--text-sm) !important;
-    font-weight: 500 !important;
+    border-radius: 0 !important;
+    font-family: var(--font-body) !important;
+    font-size: 0.82rem !important;
+    font-weight: 300 !important;
     box-shadow: var(--shadow-lg) !important;
     border: none !important;
+    border-left: 3px solid currentColor !important;
     padding: var(--space-4) var(--space-5) !important;
-    
-    &.notification-success { background: var(--color-success) !important; color: white !important; }
-    &.notification-error   { background: var(--color-accent) !important; color: white !important; }
-    &.notification-info    { background: var(--color-ink) !important; color: white !important; }
-    &.notification-warning { background: var(--color-accent-alt) !important; color: white !important; }
-    
-    .notification-dismiss { background: transparent !important; color: rgba(255,255,255,0.7) !important; font-size: 18px !important; }
+
+    &.notification-success {
+      background: var(--color-canvas) !important;
+      color: var(--color-success) !important;
+    }
+    &.notification-error {
+      background: var(--color-canvas) !important;
+      color: var(--color-red) !important;
+    }
+    &.notification-info {
+      background: var(--color-canvas) !important;
+      color: var(--color-accent) !important;
+    }
+    &.notification-warning {
+      background: var(--color-canvas) !important;
+      color: var(--color-accent-dark) !important;
+    }
+
+    .notification-title {
+      font-family: var(--font-body) !important;
+      font-size: 0.82rem !important;
+      font-weight: 500 !important;
+      color: inherit !important;
+    }
+
+    .notification-message {
+      font-family: var(--font-body) !important;
+      font-size: 0.75rem !important;
+      font-weight: 300 !important;
+      opacity: 0.8;
+    }
+
+    .notification-dismiss {
+      background: transparent !important;
+      color: var(--color-muted) !important;
+      font-size: 14px !important;
+    }
   }
 }

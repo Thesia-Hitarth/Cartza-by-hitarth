@@ -1,6 +1,9 @@
 /**
  *
- * Navigation
+ * Navigation — CARTZA Premium Navbar
+ *
+ * Single fixed bar: transparent → frosted glass on scroll
+ * Smart-hide: hides on fast scroll down, shows on scroll up
  *
  */
 
@@ -13,8 +16,6 @@ import AutosuggestHighlightMatch from 'autosuggest-highlight/match';
 import AutosuggestHighlightParse from 'autosuggest-highlight/parse';
 import {
   Container,
-  Row,
-  Col,
   Dropdown,
   DropdownToggle,
   DropdownMenu,
@@ -23,26 +24,76 @@ import {
 
 import actions from '../../actions';
 import CartIcon from '../../components/Common/CartIcon';
-import { Heart, Search, User, X } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Heart, Search, User, X, ShoppingBag } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import Menu from '../NavigationMenu';
 import Cart from '../Cart';
 
 class Navigation extends React.PureComponent {
+  isHomePage() {
+    return this.props.location && this.props.location.pathname === '/';
+  }
   constructor(props) {
     super(props);
+    // Non-homepage pages start in 'scrolled' (frosted glass, dark text) state immediately
+    const isHome = typeof window !== 'undefined'
+      ? window.location.pathname === '/'
+      : true;
     this.state = {
       showAnnouncement: localStorage.getItem('cartza_announcement_dismissed') !== 'true',
       isDropdownOpen: false,
-      isMobileSearchOpen: false
+      isMobileSearchOpen: false,
+      scrolled: !isHome,
+      navHidden: false,
     };
+    this.lastScrollY = 0;
     this.dismissAnnouncement = this.dismissAnnouncement.bind(this);
     this.toggleDropdown = this.toggleDropdown.bind(this);
     this.toggleMobileSearch = this.toggleMobileSearch.bind(this);
+    this.handleScroll = this.handleScroll.bind(this);
   }
 
   componentDidMount() {
     this.props.fetchStoreBrands();
     this.props.fetchStoreCategories();
+    window.addEventListener('scroll', this.handleScroll, { passive: true });
+    // Immediately sync scroll state (handles direct URL navigation)
+    this.handleScroll();
+  }
+
+  componentDidUpdate(prevProps) {
+    // When route changes, re-evaluate scrolled state for new page
+    if (prevProps.location && this.props.location &&
+        prevProps.location.pathname !== this.props.location.pathname) {
+      const isHome = this.props.location.pathname === '/';
+      this.setState({ scrolled: !isHome ? true : window.scrollY > 80 });
+      window.scrollTo(0, 0);
+    }
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
+  }
+
+  handleScroll() {
+    const currentScrollY = window.scrollY;
+    const delta = currentScrollY - this.lastScrollY;
+
+    // On non-homepage pages always stay in scrolled (frosted glass) state
+    const scrolled = !this.isHomePage() ? true : currentScrollY > 80;
+
+    // Smart-hide: hide on fast scroll down (delta > 8), show on scroll up
+    let navHidden = this.state.navHidden;
+    if (delta > 8 && currentScrollY > 200) {
+      navHidden = true;
+    } else if (delta < -3) {
+      navHidden = false;
+    }
+
+    if (scrolled !== this.state.scrolled || navHidden !== this.state.navHidden) {
+      this.setState({ scrolled, navHidden });
+    }
+
+    this.lastScrollY = currentScrollY;
   }
 
   dismissAnnouncement() {
@@ -133,6 +184,8 @@ class Navigation extends React.PureComponent {
       onSuggestionsClearRequested
     } = this.props;
 
+    const { scrolled, navHidden } = this.state;
+
     const inputProps = {
       placeholder: 'Search Products...',
       value: searchValue,
@@ -141,16 +194,23 @@ class Navigation extends React.PureComponent {
       }
     };
 
+    const headerClasses = [
+      'header',
+      'fixed-mobile-header',
+      scrolled ? 'scrolled' : '',
+      navHidden ? 'nav-hidden' : '',
+    ].filter(Boolean).join(' ');
+
     return (
-      <header className='header fixed-mobile-header'>
-        {/* Tier 1: Announcement Bar */}
+      <header className={headerClasses}>
+        {/* Tier 1: Announcement Bar (gold accent) */}
         {this.state.showAnnouncement && (
           <div className='announcement-bar'>
             <div className='announcement-ticker'>
-              <span>Free Delivery on Orders Above ₹999 · Use Code CARTZA10 for 10% Off</span>
+              <span>Free Delivery on Orders Above ₹999  ✦  Use Code CARTZA10 for 10% Off  ✦  New Arrivals Every Monday</span>
             </div>
             <button className='announcement-close' onClick={this.dismissAnnouncement} aria-label='Dismiss announcement'>
-              <X size={14} strokeWidth={1.5} />
+              <X size={14} strokeWidth={1.2} />
             </button>
           </div>
         )}
@@ -159,7 +219,7 @@ class Navigation extends React.PureComponent {
         <div className='main-nav-wrapper'>
           <Container>
             <div className='main-nav-inner d-flex align-items-center justify-content-between'>
-              {/* Left Logo / Branding */}
+              {/* Left: Logo + Mobile Hamburger */}
               <div className='nav-left d-flex align-items-center'>
                 {/* Mobile Hamburger menu */}
                 <button
@@ -172,54 +232,81 @@ class Navigation extends React.PureComponent {
                   <span className='hamburger-line'></span>
                 </button>
 
-                <Link to='/' className='brand-link'>
+                <Link to='/' className='brand-link' data-cursor="link">
                   <span className='logo-text'>CARTZA</span>
-                  <span className='logo-underline'></span>
                 </Link>
               </div>
 
-              {/* Center Search Bar */}
-              <div className='nav-center d-none d-lg-block'>
-                <div className='search-input-wrapper'>
-                  <span className='search-icon-left'>
-                    <Search size={18} strokeWidth={1.5} />
-                  </span>
-                  <Autosuggest
-                    suggestions={suggestions}
-                    onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                    onSuggestionsClearRequested={onSuggestionsClearRequested}
-                    getSuggestionValue={this.getSuggestionValue}
-                    renderSuggestion={this.renderSuggestion}
-                    inputProps={inputProps}
-                    onSuggestionSelected={(_, item) => {
-                      history.push(`/product/${item.suggestion.slug}`);
-                    }}
-                  />
-                  {searchValue && (
-                    <button className='search-clear-btn' onClick={() => onSearch('')} aria-label='Clear search'>
-                      <X size={16} strokeWidth={1.5} />
-                    </button>
-                  )}
-                </div>
-              </div>
+              {/* Center: Category Nav Links (Desktop) */}
+              <nav className='nav-links-center'>
+                <NavLink
+                  to='/shop'
+                  className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
+                  data-cursor="link"
+                >
+                  Shop
+                </NavLink>
+                {categories && categories.slice(0, 4).map((cat, index) => (
+                  <NavLink
+                    key={index}
+                    to={`/shop/category/${cat.slug}`}
+                    className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
+                    data-cursor="link"
+                  >
+                    {cat.name}
+                  </NavLink>
+                ))}
+                <NavLink
+                  to='/brands'
+                  className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
+                  data-cursor="link"
+                >
+                  Brands
+                </NavLink>
+              </nav>
 
               {/* Right Controls & Icons */}
               <div className='nav-right d-flex align-items-center'>
                 <div className='nav-icon-row d-flex align-items-center'>
                   {/* Search Icon for Mobile */}
-                  <button className='nav-icon-btn d-lg-none mobile-search-trigger' onClick={() => this.toggleMobileSearch()} aria-label='Search'>
-                    {this.state.isMobileSearchOpen ? <X size={22} strokeWidth={1.5} /> : <Search size={22} strokeWidth={1.5} />}
+                  <button className='nav-icon-btn d-lg-none mobile-search-trigger' onClick={() => this.toggleMobileSearch()} aria-label='Search' data-cursor="link">
+                    {this.state.isMobileSearchOpen ? <X size={18} strokeWidth={1.2} /> : <Search size={18} strokeWidth={1.2} />}
                   </button>
 
+                  {/* Desktop Search */}
+                  <div className='d-none d-lg-block'>
+                    <div className='search-input-wrapper' style={{ width: 260 }}>
+                      <span className='search-icon-left'>
+                        <Search size={16} strokeWidth={1.2} />
+                      </span>
+                      <Autosuggest
+                        suggestions={suggestions}
+                        onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+                        onSuggestionsClearRequested={onSuggestionsClearRequested}
+                        getSuggestionValue={this.getSuggestionValue}
+                        renderSuggestion={this.renderSuggestion}
+                        inputProps={inputProps}
+                        onSuggestionSelected={(_, item) => {
+                          history.push(`/product/${item.suggestion.slug}`);
+                        }}
+                      />
+                      {searchValue && (
+                        <button className='search-clear-btn' onClick={() => onSearch('')} aria-label='Clear search'>
+                          <X size={14} strokeWidth={1.2} />
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Wishlist Icon */}
-                  <Link to='/dashboard' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist'>
-                    <Heart className='nav-icon' size={22} strokeWidth={1.5} />
+                  <Link to='/dashboard' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist' data-cursor="link">
+                    <Heart size={18} strokeWidth={1.2} />
                   </Link>
 
                   {/* Account / User Menu Dropdown */}
                   <Dropdown isOpen={this.state.isDropdownOpen} toggle={this.toggleDropdown} className='account-dropdown-nav'>
-                    <DropdownToggle className='nav-icon-btn d-flex align-items-center' tag="button" aria-label='Account menu'>
-                      <User className='nav-icon' size={22} strokeWidth={1.5} />
+                    <DropdownToggle className='nav-icon-btn d-flex align-items-center' tag="button" aria-label='Account menu' data-cursor="link">
+                      <User size={18} strokeWidth={1.2} />
                     </DropdownToggle>
                     <DropdownMenu right>
                       {authenticated ? (
@@ -246,12 +333,12 @@ class Navigation extends React.PureComponent {
               </div>
             </div>
 
-            {/* Mobile-only Search Bar (Visible when collapsed on mobile) */}
+            {/* Mobile-only Search Bar */}
             {this.state.isMobileSearchOpen && (
               <div className='mobile-search-bar d-lg-none py-2'>
                 <div className='search-input-wrapper'>
                   <span className='search-icon-left'>
-                    <Search size={16} strokeWidth={1.5} />
+                    <Search size={16} strokeWidth={1.2} />
                   </span>
                   <Autosuggest
                     suggestions={suggestions}
@@ -269,33 +356,6 @@ class Navigation extends React.PureComponent {
             )}
           </Container>
         </div>
-
-        {/* Tier 3: Category Nav Strip */}
-        {categories && categories.length > 0 && (
-          <div className='category-nav-strip d-none d-md-block'>
-            <Container>
-              <div className='category-strip-inner d-flex align-items-center justify-content-center'>
-                <NavLink
-                  to='/shop'
-                  className={({ isActive }) => `category-strip-item${isActive ? ' active' : ''}`}
-                  end
-                >
-                  All Products
-                </NavLink>
-                {categories.map((link, index) => (
-                  <NavLink
-                    key={index}
-                    className={({ isActive }) => `category-strip-item${isActive ? ' active' : ''}`}
-                    to={'/shop/category/' + link.slug}
-                    end
-                  >
-                    {link.name}
-                  </NavLink>
-                ))}
-              </div>
-            </Container>
-          </div>
-        )}
 
         {/* hidden cart drawer */}
         <div
@@ -319,7 +379,7 @@ class Navigation extends React.PureComponent {
           <div className='menu-header-bar d-flex align-items-center justify-content-between px-4 py-3'>
             <span className='logo-text text-white'>CARTZA</span>
             <button className='menu-close-btn' onClick={() => this.toggleMenu()} aria-label='Close menu'>
-              <X size={24} strokeWidth={1.5} className="text-white" />
+              <X size={24} strokeWidth={1.2} className="text-white" />
             </button>
           </div>
           <div className='menu-body-overlay'>

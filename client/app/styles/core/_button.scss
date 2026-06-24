@@ -1,5 +1,9 @@
-/* Standardised Button System */
+/* ─────────────────────────────────────────────
+   CARTZA — Button System
+   Editorial sliding fill + ghost styles
+   ───────────────────────────────────────────── */
 
+/* ── Base Button ── */
 .ctz-btn {
   display: inline-flex;
   align-items: center;
@@ -7,25 +11,27 @@
   gap: var(--space-2);
   border: none;
   background: transparent;
-  font-family: var(--font-ui);
-  font-size: var(--text-base);
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
   text-decoration: none;
-  text-transform: capitalize;
-  cursor: pointer;
-  border-radius: var(--radius-md);
-  transition: all var(--duration-fast) var(--ease-out);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  cursor: none;
   position: relative;
   vertical-align: middle;
   line-height: 1;
+  overflow: hidden;
+  transition: color var(--duration-slow) var(--ease-out-expo),
+              border-color var(--duration-slow) var(--ease-out-expo);
 
   &:focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 1px solid var(--color-accent);
     outline-offset: 3px;
   }
 
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 
   &:disabled {
@@ -34,100 +40,189 @@
     pointer-events: none;
   }
 
-  span,
-  label,
-  p,
-  strong,
-  small,
-  i,
-  svg {
+  span, label, p, strong, small, i, svg {
     color: inherit !important;
   }
 }
 
-/* Variants */
-.ctz-btn--primary {
-  background-color: var(--color-accent);
-  color: var(--color-surface) !important;
-
-  &:hover {
-    background-color: var(--color-accent-dark);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-glow-accent);
-  }
-  
-  &:active {
-    transform: translateY(0) scale(0.97);
-  }
-}
-
-.ctz-btn--secondary {
-  background-color: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+/* ── Primary: Sliding fill on hover ── */
+.ctz-btn--primary,
+.btn-primary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid var(--color-ink);
+  background: transparent;
   color: var(--color-ink) !important;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+  cursor: none;
+  transition: color var(--duration-slow) var(--ease-out-expo),
+              border-color var(--duration-slow) var(--ease-out-expo);
+
+  /* The sliding fill layer */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-accent);
+    transform: translateX(-101%);
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+    z-index: 0;
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+    color: inherit !important;
+  }
 
   &:hover {
-    background-color: var(--color-ink);
-    border-color: var(--color-ink);
-    color: var(--color-surface) !important;
+    color: var(--color-ink) !important;
+    border-color: var(--color-accent);
+    &::before { transform: translateX(0); }
   }
-}
 
-.ctz-btn--dark {
-  background-color: var(--color-ink);
-  color: var(--color-surface) !important;
-
-  &:hover {
-    background-color: var(--color-accent);
-    color: var(--color-surface) !important;
-  }
-}
-
-.ctz-btn--danger {
-  background-color: #EF4444;
-  color: var(--color-surface) !important;
-
-  &:hover {
-    background-color: #DC2626;
-  }
-}
-
-.ctz-btn--ghost {
-  background-color: transparent;
-  border: 1.5px solid var(--color-ink);
-  color: var(--color-ink) !important;
-
-  &:hover {
-    background-color: var(--color-ink);
-    color: var(--color-surface) !important;
-  }
-}
-
-.ctz-btn--link {
-  background-color: transparent;
-  border: none;
-  color: var(--color-accent) !important;
-  padding: 0;
-  border-radius: 0;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-    color: var(--color-accent-dark) !important;
-  }
-  
   &:active {
     transform: none;
   }
 }
 
+/* ── Primary Dark (on dark backgrounds) ── */
+.ctz-btn--primary-dark,
+.btn-primary-dark {
+  @extend .ctz-btn--primary;
+  border-color: var(--color-canvas);
+  color: var(--color-canvas) !important;
+  &::before { background: var(--color-accent); }
+  
+  span {
+    position: relative;
+    z-index: 1;
+    color: inherit !important;
+  }
+
+  &:hover {
+    color: var(--color-ink) !important;
+    border-color: var(--color-accent);
+  }
+}
+
+/* ── Secondary (outline) ── */
+.ctz-btn--secondary {
+  background-color: transparent;
+  border: 1px solid var(--color-sand);
+  color: var(--color-ink) !important;
+  padding: 0.9rem 2.5rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+
+  &:hover {
+    background-color: var(--color-ink);
+    border-color: var(--color-ink);
+    color: var(--color-canvas) !important;
+  }
+}
+
+/* ── Ghost (underline + arrow) ── */
+.ctz-btn--ghost,
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: var(--tracking-wider);
+  text-transform: uppercase;
+  color: var(--color-ink) !important;
+  border: none;
+  border-bottom: 1px solid var(--color-sand);
+  padding: 0 0 2px;
+  background: transparent;
+  cursor: none;
+  transition: border-color var(--duration-base) var(--ease-out-expo),
+              color var(--duration-base) var(--ease-out-expo);
+
+  &:hover {
+    color: var(--color-accent) !important;
+    border-color: var(--color-accent);
+  }
+
+  .arrow {
+    display: inline-block;
+    transition: transform var(--duration-slow) var(--ease-out-expo);
+  }
+  &:hover .arrow { transform: translateX(6px); }
+}
+
+/* ── Dark variant ── */
+.ctz-btn--dark {
+  background-color: var(--color-ink);
+  color: var(--color-canvas) !important;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid var(--color-ink);
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+
+  &:hover {
+    background-color: var(--color-accent);
+    border-color: var(--color-accent);
+    color: var(--color-canvas) !important;
+  }
+}
+
+/* ── Danger ── */
+.ctz-btn--danger {
+  background-color: var(--color-red);
+  color: var(--color-canvas) !important;
+  padding: 0.9rem 2.5rem;
+  border: 1px solid var(--color-red);
+
+  &:hover {
+    background-color: #A83535;
+    border-color: #A83535;
+  }
+}
+
+/* ── Link variant ── */
+.ctz-btn--link {
+  background-color: transparent;
+  border: none;
+  color: var(--color-accent) !important;
+  padding: 0;
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+
+  &:hover {
+    color: var(--color-accent-dark) !important;
+    text-decoration: underline !important;
+  }
+}
+
+/* ── Empty (no visual) ── */
 .ctz-btn--empty {
   background-color: transparent;
   border: none;
   padding: 0;
-  border-radius: 0;
   color: inherit;
-  
+
   &:active {
     transform: scale(0.95);
   }
@@ -137,19 +232,19 @@
 .ctz-btn--sm {
   height: 32px;
   padding: 0 var(--space-3);
-  font-size: var(--text-sm);
+  font-size: var(--text-xs);
 }
 
 .ctz-btn--md {
   height: 40px;
   padding: 0 var(--space-4);
-  font-size: var(--text-base);
+  font-size: 0.72rem;
 }
 
 .ctz-btn--lg {
-  height: 48px;
+  height: 52px;
   padding: 0 var(--space-5);
-  font-size: var(--text-lg);
+  font-size: 0.72rem;
 }
 
 /* Custom Modifiers */
@@ -162,7 +257,7 @@
   border-color: transparent !important;
 }
 
-/* Loading State and Spinner */
+/* Loading State */
 .ctz-btn--loading {
   pointer-events: none;
   color: transparent !important;
@@ -176,7 +271,7 @@
   height: 18px;
   margin-left: -9px;
   margin-top: -9px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(245, 242, 238, 0.3);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
@@ -185,7 +280,7 @@
 .ctz-btn--secondary .ctz-btn__spinner,
 .ctz-btn--ghost .ctz-btn__spinner,
 .ctz-btn--empty .ctz-btn__spinner {
-  border-color: rgba(13, 13, 13, 0.1);
+  border-color: rgba(10, 10, 10, 0.1);
   border-top-color: var(--color-ink);
 }
 
@@ -194,7 +289,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  
+
   svg {
     width: 1.15em;
     height: 1.15em;
@@ -204,7 +299,7 @@
 /* Backward compatibility aliases */
 .input-btn {
   @extend .ctz-btn;
-  
+
   &.sm { @extend .ctz-btn--sm; }
   &.md { @extend .ctz-btn--md; }
   &.lg { @extend .ctz-btn--lg; }
@@ -212,7 +307,7 @@
   &.icon-only {
     padding: 0 !important;
     min-width: auto !important;
-    
+
     &.sm { width: 32px; height: 32px; border-radius: 50%; }
     &.md { width: 40px; height: 40px; border-radius: 50%; }
     &.lg { width: 48px; height: 48px; border-radius: 50%; }

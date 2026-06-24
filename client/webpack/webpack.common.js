@@ -6,7 +6,7 @@ const CURRENT_WORKING_DIR = process.cwd();
 module.exports = {
   entry: [path.join(CURRENT_WORKING_DIR, 'app/index.js')],
   resolve: {
-    extensions: ['.js', '.json', '.css', '.scss', '.html'],
+    extensions: ['.js', '.jsx', '.json', '.css', '.scss', '.html'],
     alias: {
       app: 'app',
       'lucide-react/dist/cjs/lucide-react.cjs': path.resolve(CURRENT_WORKING_DIR, 'node_modules/lucide-react/dist/cjs/lucide-react.cjs')

@@ -1,47 +1,279 @@
-/* Shop Page Redesign Styles */
+/* ─────────────────────────────────────────────
+   CARTZA — Shop Page Styles
+   Sticky filter bar, gold category pills
+   ───────────────────────────────────────────── */
 
 .shop {
-  font-family: var(--font-ui);
-  margin-top: var(--space-4);
+  font-family: var(--font-body);
 
+  /* Shop Toolbar / Top Bar */
   .shop-toolbar {
-    background-color: var(--color-surface) !important;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-canvas);
+    border-top: 1px solid var(--color-sand);
+    border-bottom: 1px solid var(--color-sand);
+    padding: var(--space-3) 0;
     margin-bottom: var(--space-5);
-    box-shadow: var(--shadow-sm);
-    color: var(--color-ink);
-    font-size: var(--text-sm);
-    font-weight: 500;
+    position: sticky;
+    top: 72px;
+    z-index: 50;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+
+    .toolbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: var(--space-3);
+    }
+
+    .results-count {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      font-weight: 300;
+      color: var(--color-muted);
+      letter-spacing: var(--tracking-wide);
+    }
+
+    .sort-select-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+
+      .sort-label {
+        font-family: var(--font-body);
+        font-size: 0.72rem;
+        font-weight: 300;
+        text-transform: uppercase;
+        letter-spacing: var(--tracking-wider);
+        color: var(--color-muted);
+      }
+
+      select {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid var(--color-sand);
+        font-family: var(--font-body);
+        font-size: 0.72rem;
+        font-weight: 400;
+        color: var(--color-ink);
+        letter-spacing: var(--tracking-wide);
+        padding: 0.25rem var(--space-5) 0.25rem 0;
+        cursor: none;
+        appearance: none;
+
+        &:focus {
+          outline: none;
+          border-color: var(--color-accent);
+        }
+      }
+
+      &::after {
+        content: '↓';
+        position: absolute;
+        right: 0;
+        font-size: 0.75rem;
+        color: var(--color-muted);
+        pointer-events: none;
+      }
+    }
+
+    .layout-toggle-btn {
+      background: none;
+      border: none;
+      color: var(--color-muted);
+      cursor: none;
+      padding: var(--space-1);
+      display: flex;
+      align-items: center;
+      transition: color 0.2s ease;
+
+      &:hover,
+      &.active {
+        color: var(--color-ink);
+      }
+    }
   }
 }
 
-/* Product Filter Sidebar cards */
+/* Product Filter Sidebar */
 .product-filter {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
 
+  .filter-section {
+    border-bottom: 1px solid var(--color-sand);
+    padding-bottom: var(--space-4);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  .filter-heading {
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-widest);
+    color: var(--color-ink);
+    margin-bottom: var(--space-3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: none;
+  }
+
+  /* Filter pills / checkboxes */
+  .filter-option-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) 0;
+    cursor: none;
+
+    label {
+      font-family: var(--font-body);
+      font-size: 0.82rem;
+      font-weight: 300;
+      color: var(--color-muted);
+      cursor: none;
+      transition: color 0.15s ease;
+    }
+
+    input[type='checkbox'] {
+      width: 14px;
+      height: 14px;
+      border: 1px solid var(--color-sand);
+      appearance: none;
+      -webkit-appearance: none;
+      cursor: none;
+      transition: all 0.15s ease;
+      background: transparent;
+
+      &:checked {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+      }
+    }
+
+    &:hover label {
+      color: var(--color-ink);
+    }
+  }
+
+  /* Price range slider */
+  .price-range-inputs {
+    display: flex;
+    gap: var(--space-3);
+
+    input[type='number'] {
+      flex: 1;
+      border: none;
+      border-bottom: 1px solid var(--color-sand);
+      background: transparent;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 300;
+      color: var(--color-ink);
+      padding: 0.3rem 0;
+
+      &:focus {
+        outline: none;
+        border-color: var(--color-accent);
+      }
+
+      &::placeholder {
+        color: var(--color-muted);
+      }
+    }
+  }
+
+  /* Category filter pills */
+  .category-pill-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+
+    .category-pill {
+      display: inline-flex;
+      padding: 0.3rem 0.9rem;
+      border: 1px solid var(--color-sand);
+      background: transparent;
+      font-family: var(--font-body);
+      font-size: 0.72rem;
+      font-weight: 400;
+      letter-spacing: var(--tracking-wide);
+      text-transform: uppercase;
+      color: var(--color-muted);
+      cursor: none;
+      transition: all 0.2s ease;
+
+      &:hover {
+        border-color: var(--color-ink);
+        color: var(--color-ink);
+      }
+
+      &.active {
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
+        color: var(--color-canvas);
+      }
+    }
+  }
+
+  /* Star Rating filter */
+  .rating-filter {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+
+    .rating-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      cursor: none;
+
+      .star-active {
+        color: var(--color-accent);
+      }
+
+      .star-inactive {
+        color: var(--color-sand);
+      }
+
+      .rating-label {
+        font-family: var(--font-mono);
+        font-size: 0.72rem;
+        color: var(--color-muted);
+      }
+    }
+  }
+}
+
+/* Card Bootstrap overrides for shop filter */
+.product-filter {
   .card {
-    background-color: var(--color-surface) !important;
-    border: 1px solid var(--color-border) !important;
-    border-radius: var(--radius-md) !important;
-    box-shadow: var(--shadow-sm) !important;
-    overflow: hidden;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
 
     .card-header {
-      background-color: var(--color-canvas) !important;
-      border-bottom: 1px solid var(--color-border) !important;
-      font-family: var(--font-brand);
-      font-size: var(--text-base) !important;
-      font-weight: 600;
+      background-color: transparent !important;
+      border-bottom: 1px solid var(--color-sand) !important;
+      font-family: var(--font-body) !important;
+      font-size: 0.72rem !important;
+      font-weight: 400 !important;
+      letter-spacing: var(--tracking-widest);
+      text-transform: uppercase;
       color: var(--color-ink) !important;
-      padding: var(--space-3) var(--space-4) !important;
+      padding: var(--space-3) 0 !important;
     }
 
     .card-body {
-      padding: var(--space-4) !important;
+      padding: var(--space-3) 0 !important;
     }
   }
 }

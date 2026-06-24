@@ -1,23 +1,35 @@
 /**
  *
- * Homepage
+ * Homepage — CARTZA Premium Editorial Experience
+ *
+ * 8 Sections:
+ * 1. Video/Ken Burns Hero (full viewport)
+ * 2. Marquee Strip
+ * 3. Category Editorial Grid (asymmetric)
+ * 4. Trending Now Carousel
+ * 5. Editorial Split — "The Cartza Story"
+ * 6. New Arrivals Grid
+ * 7. Recently Viewed (conditional)
+ * 8. Newsletter band
  *
  */
 
 import React from 'react';
 import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { Row, Col, Container } from 'reactstrap';
+import { Container } from 'reactstrap';
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { ArrowRight } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
+import Marquee from '../../components/ui/Marquee';
+import SectionHeader from '../../components/ui/SectionHeader';
 
 const getCategoryBanner = (name = '') => {
   const categoryName = (name || '').toLowerCase();
   if (categoryName.includes('fashion') || categoryName.includes('cloth') || categoryName.includes('wear') || categoryName.includes('apparel')) {
-    return '/images/banners/banner-1.jpg';
+    return '/images/banners/banner-1.png';
   }
   if (categoryName.includes('electron') || categoryName.includes('tech') || categoryName.includes('phone') || categoryName.includes('gadget')) {
     return '/images/banners/banner-3.jpg';
@@ -37,39 +49,36 @@ const getCategoryBanner = (name = '') => {
   return null;
 };
 
-const getSeason = () => {
-  const month = new Date().getMonth();
-  if (month >= 2 && month <= 4) return 'SPRING';
-  if (month >= 5 && month <= 7) return 'SUMMER';
-  if (month >= 8 && month <= 10) return 'AUTUMN';
-  return 'WINTER';
+const defaultImages = [
+  '/images/banners/banner-1.png',
+  '/images/banners/banner-2.jpg',
+  '/images/banners/banner-3.jpg',
+  '/images/banners/banner-4.jpg',
+  '/images/banners/banner-5.jpg',
+  '/images/banners/banner-6.jpg',
+  '/images/banners/banner-7.jpg'
+];
+
+// Animation variants
+const heroTextVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, delay: 0.3 + i * 0.2, ease: [0.16, 1, 0.3, 1] }
+  })
 };
 
-const brandContainerVariants = {
-  animate: {
-    transition: {
-      staggerChildren: 0.08
-    }
+const staggerContainer = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.1, delayChildren: 0.5 }
   }
 };
 
-const brandLetterVariants = {
-  initial: { y: '100%', opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: [0.25, 1, 0.5, 1] } }
-};
-
-const wordContainerVariants = {
-  animate: {
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.3
-    }
-  }
-};
-
-const wordVariants = {
-  initial: { y: 20, opacity: 0 },
-  animate: { y: 0, opacity: 1, transition: { duration: 0.5, ease: 'easeOut' } }
+const fadeUpItem = {
+  hidden: { opacity: 0, y: 40 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
 };
 
 class Homepage extends React.PureComponent {
@@ -80,137 +89,193 @@ class Homepage extends React.PureComponent {
   render() {
     const { categories, history } = this.props;
 
-    const defaultImages = [
-      '/images/banners/banner-1.jpg',
-      '/images/banners/banner-2.jpg',
-      '/images/banners/banner-3.jpg',
-      '/images/banners/banner-4.jpg',
-      '/images/banners/banner-5.jpg',
-      '/images/banners/banner-6.jpg',
-      '/images/banners/banner-7.jpg'
-    ];
-
     return (
       <div className='homepage-redesign'>
-        {/* Section 1: Full-viewport Hero */}
-        <section className='hero-section' data-animate="fade-up">
-          <Container className="h-100">
-            <Row className='align-items-center h-100'>
-              {/* Left Column: Headline and Content */}
-              <Col xs='12' lg='7' className='hero-left-content pr-lg-5'>
-                <div className='hero-eyebrow'>
-                  {`NEW ARRIVALS · ${getSeason()} ${new Date().getFullYear()}`}
-                </div>
+        {/* ═══════════════════════════════════════════
+            SECTION 1: HERO — Full viewport Ken Burns
+            ═══════════════════════════════════════════ */}
+        <section className='hero-section'>
+          {/* Background image with Ken Burns */}
+          <div className='hero-bg-image' style={{ backgroundImage: "url('/images/banners/banner-1.png')" }}></div>
+          <div className='hero-overlay'></div>
 
-                <h1 className='hero-headline'>
-                  <motion.div
-                    className='kinetic-brand tw-flex'
-                    variants={brandContainerVariants}
-                    initial="initial"
-                    animate="animate"
-                  >
-                    {"CARTZA".split("").map((letter, idx) => (
-                      <motion.span
-                        key={idx}
-                        className='kinetic-char tw-inline-block'
-                        variants={brandLetterVariants}
-                      >
-                        {letter}
-                      </motion.span>
-                    ))}
-                  </motion.div>
-                  <motion.div
-                    className='headline-lines'
-                    variants={wordContainerVariants}
-                    initial="initial"
-                    animate="animate"
-                  >
-                    <motion.span className='headline-word tw-block' variants={wordVariants}>Discover</motion.span>
-                    <motion.span className='headline-word tw-block' variants={wordVariants}>Style That</motion.span>
-                    <motion.span className='headline-word tw-block' variants={wordVariants}>Speaks.</motion.span>
-                  </motion.div>
-                </h1>
+          {/* Content layer */}
+          <div className='hero-content-layer'>
+            <Container>
+              <motion.div
+                className='hero-content-inner'
+                initial="hidden"
+                animate="visible"
+              >
+                {/* Mono tag */}
+                <motion.span className='hero-mono-tag' custom={0} variants={heroTextVariants}>
+                  — NEW COLLECTION SS'26
+                </motion.span>
 
-                <p className='hero-subtext'>
-                  Shop from 1,000+ curated products across fashion, electronics, home & more. Experiencing luxury, tailored for you.
-                </p>
+                {/* Headline */}
+                <motion.h1 className='hero-headline' custom={1} variants={heroTextVariants}>
+                  <span className='hero-line-italic'>Style Is</span>
+                  <span className='hero-line-roman'>Not Loud.</span>
+                </motion.h1>
 
-                <div className='hero-actions d-flex flex-column flex-sm-row align-items-sm-center'>
-                  <Link to='/shop' className='btn-primary-custom text-center mb-3 mb-sm-0 mr-sm-4'>
-                    Shop Now
+                {/* Sub-copy */}
+                <motion.p className='hero-subcopy' custom={2} variants={heroTextVariants}>
+                  Discover the season's most refined pieces — curated fashion, electronics & lifestyle for those who live with intention.
+                </motion.p>
+
+                {/* CTA Row */}
+                <motion.div className='hero-cta-row' custom={3} variants={heroTextVariants}>
+                  <Link to='/shop' className='btn-primary-dark' data-cursor="link">
+                    <span>EXPLORE COLLECTION</span>
                   </Link>
-                  <Link to='/brands' className='btn-secondary-custom text-center'>
-                    Explore Brands
+                  <Link to='/brands' className='btn-ghost-light' data-cursor="link">
+                    DISCOVER BRANDS <span className='arrow'>→</span>
                   </Link>
-                </div>
-
-                {/* Trust Row */}
-                <div className='hero-trust-row d-flex align-items-center flex-wrap'>
-                  <div className='trust-pill d-flex align-items-center'>
-                    <Check size={14} strokeWidth={3} className="mr-2 text-success" />
-                    <span>Free Returns</span>
-                  </div>
-                  <div className='trust-pill d-flex align-items-center'>
-                    <Check size={14} strokeWidth={3} className="mr-2 text-success" />
-                    <span>Secure Payment</span>
-                  </div>
-                  <div className='trust-pill d-flex align-items-center'>
-                    <Check size={14} strokeWidth={3} className="mr-2 text-success" />
-                    <span>10-day Guarantee</span>
-                  </div>
-                </div>
-              </Col>
-
-              {/* Right Column: Overlapping Image Mosaic */}
-              <Col xs='12' lg='5' className='hero-right-content mt-5 mt-lg-0 position-relative'>
-                <div className='hero-mosaic-container'>
-                  {/* Ambient background glow */}
-                  <div className='hero-ambient-glow'></div>
-
-                  {/* Overlapping images */}
-                  <div className='mosaic-item larger portrait shadow-lg' style={{ backgroundImage: "url('/images/banners/banner-1.jpg')" }}>
-                  </div>
-
-                  <div className='mosaic-item smaller square shadow-lg' style={{ backgroundImage: "url('/images/banners/banner-2.jpg')" }}></div>
-                </div>
-              </Col>
-            </Row>
-          </Container>
+                </motion.div>
+              </motion.div>
+            </Container>
+          </div>
         </section>
 
-        {/* Section 2: Category Strip */}
+        {/* ═══════════════════════════════════════════
+            SECTION 2: MARQUEE STRIP
+            ═══════════════════════════════════════════ */}
+        <Marquee speed={28} bg="accent" textColor="white">
+          FREE DELIVERY ON ₹999+  ✦  NEW ARRIVALS EVERY MONDAY  ✦  30-DAY RETURNS  ✦  4.9★ RATED  ✦  FREE DELIVERY ON ₹999+  ✦  NEW ARRIVALS EVERY MONDAY  ✦  30-DAY RETURNS  ✦  4.9★ RATED  ✦
+        </Marquee>
+
+        {/* ═══════════════════════════════════════════
+            SECTION 3: CATEGORY EDITORIAL GRID
+            ═══════════════════════════════════════════ */}
         {categories && categories.length > 0 && (
-          <section className='categories-strip-section py-5' data-animate="fade-up">
+          <section className='section-categories' data-animate="fade-up">
             <Container>
-              <div className='section-header mb-4 text-center text-md-left'>
-                <h2 className='section-title'>Shop by Category</h2>
-                <div className='section-title-line'></div>
+              <SectionHeader number="01" title="Shop by Category" link="/shop" linkText="View All" />
+
+              <div className='category-editorial-grid'>
+                {/* Large card (left 2/3) */}
+                {categories[0] && (
+                  <div
+                    className='cat-card cat-card-large'
+                    onClick={() => history.push(`/shop/category/${categories[0].slug}`)}
+                    data-cursor="product"
+                  >
+                    <div
+                      className='cat-card-image'
+                      style={{ backgroundImage: `url('${getCategoryBanner(categories[0].name) || defaultImages[0]}')` }}
+                    ></div>
+                    <div className='cat-card-overlay'></div>
+                    <div className='cat-card-content'>
+                      <span className='cat-card-name'>{categories[0].name}</span>
+                      <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Right stacked cards (1/3) */}
+                <div className='cat-card-stack'>
+                  {categories[1] && (
+                    <div
+                      className='cat-card cat-card-top'
+                      onClick={() => history.push(`/shop/category/${categories[1].slug}`)}
+                      data-cursor="product"
+                    >
+                      <div
+                        className='cat-card-image'
+                        style={{ backgroundImage: `url('${getCategoryBanner(categories[1].name) || defaultImages[1]}')` }}
+                      ></div>
+                      <div className='cat-card-overlay'></div>
+                      <div className='cat-card-content'>
+                        <span className='cat-card-name'>{categories[1].name}</span>
+                        <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
+                      </div>
+                    </div>
+                  )}
+                  {categories[2] && (
+                    <div
+                      className='cat-card cat-card-bottom'
+                      onClick={() => history.push(`/shop/category/${categories[2].slug}`)}
+                      data-cursor="product"
+                    >
+                      <div
+                        className='cat-card-image'
+                        style={{ backgroundImage: `url('${getCategoryBanner(categories[2].name) || defaultImages[2]}')` }}
+                      ></div>
+                      <div className='cat-card-overlay'></div>
+                      <div className='cat-card-content'>
+                        <span className='cat-card-name'>{categories[2].name}</span>
+                        <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className='category-cards-scroll-container'>
-                {categories.map((category, index) => (
-                  <motion.div
-                    key={category._id}
-                    className='category-scroll-card'
-                    onClick={() => history.push(`/shop/category/${category.slug}`)}
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    <div className='category-card-image-box'>
+              {/* Additional categories as smaller row */}
+              {categories.length > 3 && (
+                <div className='category-row-extra'>
+                  {categories.slice(3).map((category, index) => (
+                    <div
+                      key={category._id}
+                      className='cat-card cat-card-small'
+                      onClick={() => history.push(`/shop/category/${category.slug}`)}
+                      data-cursor="product"
+                    >
                       <div
-                        className='category-card-image'
-                        style={{ backgroundImage: `url('${getCategoryBanner(category.name) || defaultImages[index % defaultImages.length]}')` }}
+                        className='cat-card-image'
+                        style={{ backgroundImage: `url('${getCategoryBanner(category.name) || defaultImages[(index + 3) % defaultImages.length]}')` }}
                       ></div>
+                      <div className='cat-card-overlay'></div>
+                      <div className='cat-card-content'>
+                        <span className='cat-card-name'>{category.name}</span>
+                        <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
+                      </div>
                     </div>
-                    <div className='category-card-body text-center p-3'>
-                      <span className='category-card-name'>{category.name}</span>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </Container>
           </section>
         )}
+
+        {/* ═══════════════════════════════════════════
+            SECTION 5: EDITORIAL SPLIT — "THE STORY"
+            ═══════════════════════════════════════════ */}
+        <section className='section-editorial-split'>
+          <div className='editorial-left' data-animate="slide-left">
+            <span className='editorial-mono-tag'>— THE CARTZA STORY</span>
+            <h2 className='editorial-headline'>
+              Crafted for those who live with intention.
+            </h2>
+            <p className='editorial-body'>
+              Every piece in our collection tells a story — of skilled artisans, premium materials, and the belief that what you wear is a reflection of who you are. We don't follow trends. We curate timelessness.
+            </p>
+            <Link to='/contact' className='btn-primary-dark' data-cursor="link">
+              <span>DISCOVER MORE</span>
+            </Link>
+          </div>
+          <div className='editorial-right' data-animate="slide-right">
+            <div className='editorial-image' style={{ backgroundImage: "url('/images/banners/banner-5.jpg')" }}></div>
+          </div>
+        </section>
+
+        {/* ═══════════════════════════════════════════
+            SECTION 8: NEWSLETTER TRANSITION
+            ═══════════════════════════════════════════ */}
+        <section className='section-newsletter-band' data-animate="fade-up">
+          <Container>
+            <div className='newsletter-editorial-row'>
+              <h2 className='newsletter-headline-editorial'>Stay in the loop.</h2>
+              <p className='newsletter-sub'>Be the first to know about new arrivals, exclusive offers, and editorial drops.</p>
+              <div className='newsletter-input-editorial'>
+                <input type='email' placeholder='your@email.com' className='newsletter-email-field' data-cursor="text" />
+                <button className='newsletter-submit-btn' data-cursor="link">
+                  <span>SUBSCRIBE</span> <ArrowRight size={14} strokeWidth={1.2} />
+                </button>
+              </div>
+            </div>
+          </Container>
+        </section>
       </div>
     );
   }

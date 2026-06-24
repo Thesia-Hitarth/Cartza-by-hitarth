@@ -1,4 +1,7 @@
-/* Redesigned Input System */
+/* ─────────────────────────────────────────────
+   CARTZA — Input System
+   Bottom-border-only, gold focus, sharp corners
+   ───────────────────────────────────────────── */
 
 input[type='text'],
 input[type='number'],
@@ -7,37 +10,39 @@ input[type='file'],
 textarea,
 select {
   width: 100%;
-  padding: 10px 14px;
-  border: 1.5px solid var(--color-border);
-  font-family: var(--font-ui);
-  font-size: var(--text-base);
+  padding: 0.75rem 0;
+  border: none;
+  border-bottom: 1px solid var(--color-sand);
+  border-radius: 0;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 300;
   color: var(--color-ink);
-  border-radius: var(--radius-md);
-  background-color: var(--color-surface);
-  transition: border-color 150ms var(--ease-out), box-shadow 150ms var(--ease-out);
+  background-color: transparent;
+  transition: border-color var(--duration-base) var(--ease-out-expo);
   cursor: text;
   line-height: var(--leading-normal);
 
   &:hover:not(:focus):not(:disabled) {
-    border-color: rgba(13, 13, 13, 0.3);
+    border-color: var(--color-muted);
   }
 
   &:focus {
     outline: none;
-    border-color: var(--color-ink) !important;
-    box-shadow: 0 0 0 3px var(--color-ink-subtle);
+    border-color: var(--color-accent) !important;
+    box-shadow: none !important;
   }
 
   &:disabled {
-    background-color: var(--color-border);
-    opacity: 0.6;
+    background-color: transparent;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 
   &::placeholder {
     color: var(--color-muted);
-    font-style: italic;
-    text-transform: none;
+    font-style: normal;
+    font-weight: 300;
   }
 }
 
@@ -46,98 +51,130 @@ input[type='number'],
 input[type='password'],
 input[type='file'],
 select {
-  height: 44px;
+  height: 48px;
 }
 
 textarea {
-  min-height: 100px;
+  min-height: 120px;
   resize: vertical;
+  border: 1px solid var(--color-sand);
+  padding: var(--space-3);
+
+  &:focus {
+    border-color: var(--color-accent) !important;
+  }
 }
 
-/* Form Group Boxes */
+/* Form Group */
 .input-box,
 .select-box {
   margin-bottom: var(--space-4);
-  width: 100%;
 
   label {
     display: block;
-    margin-bottom: 6px;
+    font-family: var(--font-body);
+    font-size: 0.72rem;
+    font-weight: 300;
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-wider);
     color: var(--color-muted);
-    font-family: var(--font-ui);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    text-transform: none;
-    cursor: pointer;
-  }
-
-  .invalid-message {
-    display: block;
-    visibility: hidden;
-    opacity: 0;
-    color: var(--color-accent);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    margin-top: 4px;
-    height: 0;
-    overflow: hidden;
-    transition: all 150ms var(--ease-out);
-  }
-
-  &.invalid {
-    input[type='text'],
-    input[type='number'],
-    input[type='password'],
-    input[type='file'],
-    textarea,
-    select {
-      border-color: var(--color-accent) !important;
-      
-      &:focus {
-        box-shadow: 0 0 0 3px rgba(255, 61, 0, 0.1);
-      }
-    }
-
-    .invalid-message {
-      visibility: visible;
-      opacity: 1;
-      height: auto;
-      overflow: visible;
-    }
+    margin-bottom: var(--space-2);
   }
 }
 
-/* Inline Buttons */
-.inline-btn-box {
-  .input-text-block {
+/* Search input */
+.search-form-control {
+  border: none !important;
+  border-bottom: 1px solid var(--color-sand) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  padding-left: 2rem !important;
+
+  &:focus {
+    border-color: var(--color-accent) !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Quantity stepper */
+.quantity-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-sand);
+  width: fit-content;
+
+  .qty-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 1rem;
+    color: var(--color-ink);
+    cursor: none;
     display: flex;
-    flex-direction: row;
-    align-items: stretch;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: var(--color-surface);
+    }
   }
 
-  input[type='text'],
-  input[type='number'],
-  input[type='password'] {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    flex: 1;
-  }
-
-  .ctz-btn,
-  .input-btn {
-    border-left: none !important;
-    border-top-left-radius: 0 !important;
-    border-bottom-left-radius: 0 !important;
-    height: 44px;
+  .qty-value {
+    width: 48px;
+    height: 36px;
+    border: none;
+    border-left: 1px solid var(--color-sand);
+    border-right: 1px solid var(--color-sand);
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    font-weight: 400;
+    color: var(--color-ink);
+    text-align: center;
+    padding: 0;
   }
 }
 
-/* Select Box Overrides */
-.select-box {
-  .select-container {
-    .select-option__multi-value__label {
-      font-family: var(--font-ui);
-      font-size: var(--text-sm);
-    }
+/* Radio / Checkbox base style */
+input[type='checkbox'],
+input[type='radio'] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-accent);
+  cursor: none;
+}
+
+/* Select arrow override */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238A8278' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0 center;
+  padding-right: var(--space-5);
+  cursor: none;
+}
+
+/* Error state */
+.has-error {
+  input, select, textarea {
+    border-color: var(--color-red) !important;
+  }
+  .error-text {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--color-red);
+    margin-top: 0.25rem;
+    letter-spacing: var(--tracking-wide);
+  }
+}
+
+/* Success state */
+.has-success {
+  input, select, textarea {
+    border-color: var(--color-success) !important;
   }
 }

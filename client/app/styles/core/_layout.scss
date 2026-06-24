@@ -1,25 +1,43 @@
-// layout styles
+// ─────────────────────────────────────────────
+// CARTZA — Layout Styles
+// ─────────────────────────────────────────────
 
 html {
   overflow: visible;
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Custom cursor on desktop (hide browser default)
+@media (hover: hover) {
+  html { cursor: none; }
+}
+@media (hover: none) {
+  html { cursor: auto; }
 }
 
 body {
   background-color: var(--color-canvas) !important;
   color: var(--color-ink) !important;
-  font-family: var(--font-ui) !important;
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-normal);
+  font-family: var(--font-body) !important;
+  font-size: 1rem;
+  font-weight: 300;
   height: 100%;
   letter-spacing: normal;
-  line-height: var(--line-height);
+  line-height: var(--leading-normal);
   margin: 0;
   padding: 0;
   position: relative;
   text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-canvas);
 }
 
 .application {
@@ -32,10 +50,6 @@ main {
   flex: 1 0 auto;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
 html,
 body {
   height: 100%;
@@ -43,14 +57,22 @@ body {
 }
 
 .wrapper {
-  padding-top: 170px;
+  padding-top: 100px;
   padding-bottom: var(--space-7);
   @include media-breakpoint-up(md) {
-    padding-top: 160px;
+    padding-top: 100px;
     padding-bottom: var(--space-8);
   }
   @include media-breakpoint-up(lg) {
-    padding-top: 168px;
+    padding-top: 100px;
+  }
+}
+
+// Homepage has no padding-top (hero is full bleed)
+.homepage-redesign {
+  .wrapper,
+  & {
+    padding-top: 0;
   }
 }
 
@@ -64,30 +86,22 @@ label,
 a,
 p {
   font-size: $font-size-medium;
-  color: $font-custom-color;
+  color: var(--color-ink);
 }
 
 label {
   cursor: default;
-  // text-transform: capitalize;
   margin: 0;
   font-weight: $font-weight-normal;
 }
 
 a {
-  color: $font-color !important;
+  color: inherit !important;
   text-decoration: none !important;
-  -moz-transition: color $layout-transition-speed ease-in-out;
-  -webkit-transition: color $layout-transition-speed ease-in-out;
-  -ms-transition: color $layout-transition-speed ease-in-out;
-  transition: color $layout-transition-speed ease-in-out;
+  transition: color var(--duration-base) var(--ease-out-expo);
 
   &:hover {
-    color: $font-hover-color !important;
-    -moz-transition: color $layout-transition-speed ease-in-out;
-    -webkit-transition: color $layout-transition-speed ease-in-out;
-    -ms-transition: color $layout-transition-speed ease-in-out;
-    transition: color $layout-transition-speed ease-in-out;
+    color: var(--color-accent) !important;
   }
 
   &:focus {
@@ -97,119 +111,133 @@ a {
 
 body.user-is-tabbing a:focus {
   box-shadow: none;
-  outline: 1px dotted;
+  outline: 1px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-.h1,
-.h2,
-.h3,
-.h4,
-.h5,
-.h6 {
-  color: $font-heading-color !important;
-  font-family: $font-family-heading;
-  font-size: $font-size-heading-medium !important;
-  line-height: $line-height !important;
-  // text-transform: capitalize;
+:focus-visible {
+  outline: 1px solid var(--color-accent);
+  outline-offset: 3px;
 }
 
-h1,
-.h1 {
-  font-size: 2em !important;
-  font-weight: $font-weight-bold;
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  color: var(--color-ink) !important;
+  font-family: var(--font-display);
+  line-height: var(--leading-tight) !important;
 }
 
-h2,
-.h2 {
-  font-size: 1.4em !important;
-  font-weight: $font-weight-semibold;
+h1, .h1 {
+  font-size: var(--text-xl) !important;
+  font-weight: 400;
 }
 
-h3,
-.h3 {
-  font-size: 1.27em !important;
-  font-weight: $font-weight-medium;
+h2, .h2 {
+  font-size: var(--text-lg) !important;
+  font-weight: 400;
 }
 
-h4,
-.h4 {
-  font-size: 1.18em !important;
-  font-weight: $font-weight-medium;
+h3, .h3 {
+  font-size: var(--text-md) !important;
+  font-weight: 400;
 }
 
-h5,
-.h5 {
-  font-size: 1.12em !important;
-  font-weight: $font-weight-normal;
+h4, .h4 {
+  font-size: var(--text-base) !important;
+  font-weight: 400;
 }
 
-h6,
-.h6 {
-  font-size: 1em !important;
-  font-weight: $font-weight-normal;
+h5, .h5 {
+  font-size: var(--text-sm) !important;
+  font-weight: 400;
 }
 
-/* scrollbar styles */
+h6, .h6 {
+  font-size: var(--text-xs) !important;
+  font-weight: 300;
+}
+
+/* ── Scrollbar — minimal 2px gold ── */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 2px;
+  height: 2px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: $white;
-  border-left: $border-default;
-  border-color: $theme-light-white;
+  background: var(--color-accent);
+  border-radius: 1px;
 }
 
 ::-webkit-scrollbar-track {
-  background: $theme-dark-gray;
+  background: var(--color-surface);
 }
-/* scrollbar styles */
 
 body.user-is-tabbing *:focus {
-  // outline: 2px solid $outline-color !important;
-  // outline: 2px auto -webkit-focus-ring-color !important;
-  // outline: 1px dotted !important;
   outline: none;
   box-shadow: $outline-box-shadow;
-  border-radius: $border-radius-default;
 }
 
 .container {
-  max-width: 1340px !important;
+  max-width: var(--container-max) !important;
   width: 100%;
-  padding-left: var(--space-5) !important; // 24px
-  padding-right: var(--space-5) !important;
+  padding-left: var(--container-pad) !important;
+  padding-right: var(--container-pad) !important;
+}
 
-  @media (min-width: 768px) {
-    padding-left: var(--space-7) !important; // 48px
-    padding-right: var(--space-7) !important;
-  }
+/* ── Section Divider ── */
+.section-rule {
+  width: 100%;
+  height: 1px;
+  background: var(--color-sand);
+  margin-block: 1.5rem;
+}
 
-  @media (min-width: 1024px) {
-    padding-left: var(--space-8) !important; // 64px
-    padding-right: var(--space-8) !important;
-  }
+/* ── Container Site (supplement .container) ── */
+.container-site {
+  width: 100%;
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: var(--container-pad);
 }
 
 /* Scroll Trigger Reveal Animations */
 [data-animate="fade-up"] {
   opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-              transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform: translateY(30px);
+  transition: opacity var(--duration-slower) var(--ease-out-expo),
+              transform var(--duration-slower) var(--ease-out-expo);
   will-change: opacity, transform;
 }
 
 [data-animate="fade-up"].is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+[data-animate="slide-left"] {
+  opacity: 0;
+  transform: translateX(-60px);
+  transition: opacity var(--duration-slower) var(--ease-out-expo),
+              transform var(--duration-slower) var(--ease-out-expo);
+  will-change: opacity, transform;
+}
+
+[data-animate="slide-left"].is-visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+[data-animate="slide-right"] {
+  opacity: 0;
+  transform: translateX(60px);
+  transition: opacity var(--duration-slower) var(--ease-out-expo),
+              transform var(--duration-slower) var(--ease-out-expo);
+  will-change: opacity, transform;
+}
+
+[data-animate="slide-right"].is-visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Accessibility: Respect user-preferred reduced motion */
@@ -224,7 +252,9 @@ body.user-is-tabbing *:focus {
     clip-path: none !important;
   }
 
-  [data-animate="fade-up"] {
+  [data-animate="fade-up"],
+  [data-animate="slide-left"],
+  [data-animate="slide-right"] {
     opacity: 1 !important;
     transform: none !important;
     transition: none !important;

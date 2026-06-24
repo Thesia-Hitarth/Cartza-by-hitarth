@@ -1,30 +1,53 @@
-// overrides styles
+// ─────────────────────────────────────────────
+// CARTZA — Bootstrap Overrides
+// Replace all blue Bootstrap defaults with our
+// warm gold + cream + charcoal system
+// ─────────────────────────────────────────────
 
-// start bootstrap overrides
+// ── Form Controls ──
 .form-control {
   height: auto;
+  border: 1px solid var(--color-sand) !important;
+  border-radius: 0 !important;
+  background-color: transparent !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.9rem !important;
+  color: var(--color-ink) !important;
 
   &:focus {
-    box-shadow: $box-shadow;
+    border-color: var(--color-accent) !important;
+    box-shadow: none !important;
+    outline: none !important;
+    background-color: transparent !important;
+  }
+
+  &::placeholder {
+    color: var(--color-muted) !important;
   }
 }
 
+// ── Dropdowns ──
 .dropdown-item {
-  font-weight: $font-weight-normal !important;
-  padding: 12px;
-  border-radius: $border-radius-default;
+  font-family: var(--font-body) !important;
+  font-weight: 300 !important;
+  font-size: 0.82rem !important;
+  padding: 0.6rem 1rem;
+  border-radius: 0 !important;
+  color: var(--color-ink) !important;
 
   &:focus {
     outline: none;
   }
 
-  &:active {
-    background-color: $secondary-bg;
+  &:active,
+  &.active {
+    background-color: var(--color-surface) !important;
+    color: var(--color-accent) !important;
   }
 
-  &.active {
-    background-color: $secondary-bg;
-    font-weight: $font-weight-normal !important;
+  &:hover {
+    background-color: var(--color-surface) !important;
+    color: var(--color-accent) !important;
   }
 
   a {
@@ -36,10 +59,12 @@
 .dropdown-menu {
   position: absolute !important;
   z-index: 1001;
-  border: none;
-  box-shadow: $box-shadow;
-  padding: 10px;
+  border: 1px solid var(--color-sand) !important;
+  border-radius: 0 !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: var(--space-2) 0;
   font-size: unset;
+  background-color: var(--color-canvas) !important;
 }
 
 .dropdown,
@@ -65,42 +90,208 @@
   }
 }
 
+// ── Buttons (Bootstrap override — defer to .ctz-btn system) ──
 .btn {
-  &:hover {
-    color: $white !important;
-  }
+  border-radius: 0 !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+
   &:focus {
-    box-shadow: none;
+    box-shadow: none !important;
   }
 }
 
+.btn-primary {
+  background-color: transparent !important;
+  border: 1px solid var(--color-ink) !important;
+  color: var(--color-ink) !important;
+
+  &:hover {
+    background-color: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--color-canvas) !important;
+  }
+}
+
+.btn-secondary {
+  background-color: transparent !important;
+  border: 1px solid var(--color-sand) !important;
+  color: var(--color-ink) !important;
+
+  &:hover {
+    background-color: var(--color-ink) !important;
+    border-color: var(--color-ink) !important;
+    color: var(--color-canvas) !important;
+  }
+}
+
+.btn-danger {
+  background-color: transparent !important;
+  border: 1px solid var(--color-red) !important;
+  color: var(--color-red) !important;
+
+  &:hover {
+    background-color: var(--color-red) !important;
+    color: var(--color-canvas) !important;
+  }
+}
+
+.btn-success {
+  background-color: transparent !important;
+  border: 1px solid var(--color-success) !important;
+  color: var(--color-success) !important;
+
+  &:hover {
+    background-color: var(--color-success) !important;
+    color: var(--color-canvas) !important;
+  }
+}
+
+// ── Badge overrides ──
+.badge {
+  border-radius: 0 !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.55rem !important;
+  font-weight: 300 !important;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+.badge-primary,
+.badge-info { background-color: var(--color-accent) !important; }
+.badge-success   { background-color: var(--color-success) !important; }
+.badge-danger    { background-color: var(--color-red) !important; }
+.badge-secondary { background-color: var(--color-muted) !important; }
+.badge-dark      { background-color: var(--color-charcoal) !important; }
+
+// ── HR ──
 hr {
-  border-color: $border-color-primary;
+  border-color: var(--color-sand);
 }
 
 .lead {
-  font-size: $font-size-medium;
+  font-size: var(--text-base);
 }
-// end bootstrap overrides
 
-// start react-notification-system-redux overrides
-.notification {
-  .notification-title {
-    font-weight: $font-weight-normal !important;
+// ── Alert overrides ──
+.alert {
+  border-radius: 0 !important;
+  border: none !important;
+  border-left: 3px solid currentColor !important;
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  font-weight: 300;
+}
+
+.alert-success {
+  background: rgba(74, 122, 90, 0.1) !important;
+  color: var(--color-success) !important;
+}
+
+.alert-danger {
+  background: rgba(201, 64, 64, 0.08) !important;
+  color: var(--color-red) !important;
+}
+
+.alert-warning {
+  background: rgba(200, 169, 126, 0.12) !important;
+  color: var(--color-accent-dark) !important;
+}
+
+.alert-info {
+  background: rgba(200, 169, 126, 0.08) !important;
+  color: var(--color-accent) !important;
+}
+
+// ── Card ──
+.card {
+  border-radius: 0 !important;
+  border: 1px solid var(--color-sand) !important;
+  background-color: var(--color-surface) !important;
+  box-shadow: none !important;
+}
+
+.card-header {
+  border-bottom: 1px solid var(--color-sand) !important;
+  background-color: var(--color-canvas) !important;
+  border-radius: 0 !important;
+}
+
+// ── Pagination ──
+.page-item {
+  .page-link {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--color-muted) !important;
+    border: 1px solid var(--color-sand);
+    border-radius: 0 !important;
+    background: transparent;
+    padding: 0.4rem 0.7rem;
+
+    &:hover {
+      background: var(--color-surface);
+      color: var(--color-ink) !important;
+      border-color: var(--color-ink);
+    }
+  }
+
+  &.active .page-link {
+    background: var(--color-accent) !important;
+    border-color: var(--color-accent) !important;
+    color: var(--color-canvas) !important;
+  }
+
+  &.disabled .page-link {
+    opacity: 0.4;
   }
 }
-// end react-notification-system-redux overrides
 
-// start carousel styles
+// ── React Notification System ──
+.notification {
+  .notification-title {
+    font-family: var(--font-body);
+    font-weight: 400 !important;
+    font-size: 0.82rem !important;
+  }
+
+  .notification-message {
+    font-family: var(--font-body);
+    font-size: 0.75rem !important;
+    font-weight: 300 !important;
+  }
+}
+
+// ── Carousel ──
 .carousel-container {
   .react-multiple-carousel__arrow {
     z-index: 900;
+    background: rgba(245, 242, 238, 0.9);
+    border: 1px solid var(--color-sand);
+    border-radius: 0 !important;
+
+    &::before {
+      color: var(--color-ink);
+    }
+
+    &:hover {
+      background: var(--color-accent);
+      border-color: var(--color-accent);
+
+      &::before { color: var(--color-canvas); }
+    }
   }
 
   .carousel-dot-list-style {
     .react-multi-carousel-dot {
       button {
-        border-color: $border-color-primary;
+        border-color: var(--color-sand);
+        background: transparent;
+        border-radius: 0;
+        width: 24px;
+        height: 2px;
 
         &:focus {
           outline: none;
@@ -110,22 +301,74 @@ hr {
 
     .react-multi-carousel-dot--active {
       button {
-        background-color: $secondary-bg;
+        background-color: var(--color-accent);
+        border-color: var(--color-accent);
       }
     }
   }
 }
 
-// end carousel styles
-
-// start popover styles
+// ── Popover ──
 .popover {
-  border-color: $border-color-default;
-  font-family: $font-family;
+  border-color: var(--color-sand);
+  border-radius: 0;
+  font-family: var(--font-body);
 }
 
 .popover-header {
-  font-size: $font-size-medium !important;
-  background-color: $secondary-bg;
+  font-size: var(--text-sm) !important;
+  background-color: var(--color-canvas);
+  border-radius: 0;
 }
-// end popover styles
+
+// ── Modal ──
+.modal-content {
+  border-radius: 0 !important;
+  border: 1px solid var(--color-sand) !important;
+}
+
+.modal-header {
+  border-bottom: 1px solid var(--color-sand) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--color-sand) !important;
+}
+
+// ── Table ──
+.table {
+  th {
+    font-family: var(--font-mono) !important;
+    font-size: 0.65rem !important;
+    font-weight: 300 !important;
+    letter-spacing: var(--tracking-widest);
+    text-transform: uppercase;
+    color: var(--color-muted) !important;
+    border-bottom: 1px solid var(--color-sand) !important;
+    padding: var(--space-2) var(--space-3) !important;
+  }
+
+  td {
+    font-family: var(--font-body) !important;
+    font-size: 0.82rem !important;
+    font-weight: 300 !important;
+    border-bottom: 1px solid var(--color-sand) !important;
+    color: var(--color-ink) !important;
+    padding: var(--space-3) !important;
+    vertical-align: middle !important;
+  }
+
+  tbody tr:hover {
+    background-color: var(--color-surface) !important;
+  }
+}
+
+// ── Input Group ──
+.input-group-text {
+  border-radius: 0 !important;
+  background-color: var(--color-surface) !important;
+  border: 1px solid var(--color-sand) !important;
+  color: var(--color-muted) !important;
+  font-family: var(--font-body) !important;
+  font-size: 0.82rem !important;
+}
