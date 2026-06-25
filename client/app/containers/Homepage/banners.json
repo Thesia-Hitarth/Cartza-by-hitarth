@@ -1,14 +1,14 @@
 [
   {
-    "imageUrl": "/images/banners/banner-3.png",
+    "imageUrl": "/images/banners/banner-1.jpg",
     "link": "/shop",
-    "title": "Summer Tech Sale",
-    "content": "<p>Get up to 30% off on top categories like electronics and smart appliances.</p>\n"
+    "title": "Summer Essentials Collection",
+    "content": "<p>Explore our latest premium arrivals designed for comfort and style.</p>\n"
   },
   {
-    "imageUrl": "/images/banners/banner-4.jpg",
+    "imageUrl": "/images/banners/banner-2.jpg",
     "link": "/shop",
-    "title": "Modern Living Essentials",
-    "content": "<p>Discover premium home & garden collections tailored for your style.</p>\n"
+    "title": "Editorial Linen Collection",
+    "content": "<p>Crafted from pure linen, designed for effortless elegance.</p>\n"
   }
 ]

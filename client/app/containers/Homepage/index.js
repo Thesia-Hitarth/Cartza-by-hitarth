@@ -28,36 +28,17 @@ import SectionHeader from '../../components/ui/SectionHeader';
 
 const getCategoryBanner = (name = '') => {
   const categoryName = (name || '').toLowerCase();
-  if (categoryName.includes('fashion') || categoryName.includes('cloth') || categoryName.includes('wear') || categoryName.includes('apparel')) {
-    return '/images/banners/banner-1.png';
+  if (categoryName.includes('women')) {
+    return '/images/banners/women.jpg';
   }
-  if (categoryName.includes('electron') || categoryName.includes('tech') || categoryName.includes('phone') || categoryName.includes('gadget')) {
-    return '/images/banners/banner-3.png';
+  if (categoryName.includes('men')) {
+    return '/images/banners/men.jpg';
   }
-  if (categoryName.includes('home') || categoryName.includes('garden') || categoryName.includes('furnit') || categoryName.includes('kitchen') || categoryName.includes('living')) {
-    return '/images/banners/banner-4.jpg';
-  }
-  if (categoryName.includes('sport') || categoryName.includes('outdoor') || categoryName.includes('fitness')) {
-    return '/images/banners/banner-2.png';
-  }
-  if (categoryName.includes('beauty') || categoryName.includes('cosmetic') || categoryName.includes('makeup')) {
-    return '/images/banners/banner-7.jpg';
-  }
-  if (categoryName.includes('bag') || categoryName.includes('shoe') || categoryName.includes('accessor')) {
-    return '/images/banners/banner-5.jpg';
+  if (categoryName.includes('kid')) {
+    return '/images/banners/kids.jpg';
   }
   return null;
 };
-
-const defaultImages = [
-  '/images/banners/banner-1.png',
-  '/images/banners/banner-2.png',
-  '/images/banners/banner-3.png',
-  '/images/banners/banner-4.jpg',
-  '/images/banners/banner-5.jpg',
-  '/images/banners/banner-6.jpg',
-  '/images/banners/banner-7.jpg'
-];
 
 // Animation variants
 const heroTextVariants = {
@@ -108,7 +89,7 @@ class Homepage extends React.PureComponent {
             ═══════════════════════════════════════════ */}
         <section className='hero-section'>
           {/* Background image with Ken Burns */}
-          <div className='hero-bg-image' style={{ backgroundImage: "url('/images/banners/banner-1.png')" }}></div>
+          <div className='hero-bg-image' style={{ backgroundImage: "url('/images/banners/banner-1.jpg')" }}></div>
           <div className='hero-overlay'></div>
 
           {/* Content layer */}
@@ -174,7 +155,7 @@ class Homepage extends React.PureComponent {
                   >
                     <div
                       className='cat-card-image'
-                      style={{ backgroundImage: `url('${getCategoryBanner(categories[0].name) || defaultImages[0]}')` }}
+                      style={{ backgroundImage: `url('${getCategoryBanner(categories[0].name) || '/images/banners/men.jpg'}')` }}
                     ></div>
                     <div className='cat-card-overlay'></div>
                     <div className='cat-card-content'>
@@ -194,7 +175,7 @@ class Homepage extends React.PureComponent {
                     >
                       <div
                         className='cat-card-image'
-                        style={{ backgroundImage: `url('${getCategoryBanner(categories[1].name) || defaultImages[1]}')` }}
+                        style={{ backgroundImage: `url('${getCategoryBanner(categories[1].name) || '/images/banners/women.jpg'}')` }}
                       ></div>
                       <div className='cat-card-overlay'></div>
                       <div className='cat-card-content'>
@@ -211,7 +192,7 @@ class Homepage extends React.PureComponent {
                     >
                       <div
                         className='cat-card-image'
-                        style={{ backgroundImage: `url('${getCategoryBanner(categories[2].name) || defaultImages[2]}')` }}
+                        style={{ backgroundImage: `url('${getCategoryBanner(categories[2].name) || '/images/banners/kids.jpg'}')` }}
                       ></div>
                       <div className='cat-card-overlay'></div>
                       <div className='cat-card-content'>
@@ -222,30 +203,6 @@ class Homepage extends React.PureComponent {
                   )}
                 </div>
               </div>
-
-              {/* Additional categories as smaller row */}
-              {categories.length > 3 && (
-                <div className='category-row-extra'>
-                  {categories.slice(3).map((category, index) => (
-                    <div
-                      key={category._id}
-                      className='cat-card cat-card-small'
-                      onClick={() => history.push(`/shop/category/${category.slug}`)}
-                      data-cursor="product"
-                    >
-                      <div
-                        className='cat-card-image'
-                        style={{ backgroundImage: `url('${getCategoryBanner(category.name) || defaultImages[(index + 3) % defaultImages.length]}')` }}
-                      ></div>
-                      <div className='cat-card-overlay'></div>
-                      <div className='cat-card-content'>
-                        <span className='cat-card-name'>{category.name}</span>
-                        <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
             </Container>
           </section>
         )}
@@ -267,7 +224,7 @@ class Homepage extends React.PureComponent {
             </Link>
           </div>
           <div className='editorial-right' data-animate="slide-right">
-            <div className='editorial-image' style={{ backgroundImage: "url('/images/banners/banner-2.png')" }}></div>
+            <div className='editorial-image' style={{ backgroundImage: "url('/images/banners/banner-2.jpg')" }}></div>
           </div>
         </section>
 

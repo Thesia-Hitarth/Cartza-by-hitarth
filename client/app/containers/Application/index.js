@@ -38,7 +38,10 @@ import Page404 from '../../components/Common/Page404';
 import CustomCursor from '../../components/ui/CustomCursor';
 import { CART_ITEMS } from '../../constants';
 
+import WishList from '../WishList';
+
 const AuthenticatedDashboard = Authentication(Dashboard);
+const AuthenticatedWishList = Authentication(WishList);
 
 // Wrapper that provides padding-top for pages that need it (non-homepage)
 const PageWrapper = ({ children, isFullBleed }) => {
@@ -207,6 +210,10 @@ class Application extends React.PureComponent {
                 <Route
                   path='/auth/success'
                   element={<div className='wrapper'><AuthSuccess /></div>}
+                />
+                 <Route
+                  path='/wishlist'
+                  element={<div className='wrapper'><AuthenticatedWishList /></div>}
                 />
                 <Route
                   path='/dashboard/*'

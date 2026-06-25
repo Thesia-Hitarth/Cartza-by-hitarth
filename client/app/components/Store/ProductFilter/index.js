@@ -5,6 +5,7 @@
  */
 
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import { Card, CardHeader, CardBody } from 'reactstrap';
 import { Star } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
@@ -78,7 +79,7 @@ const rating = v => {
 };
 
 const ProductFilter = props => {
-  const { filterProducts } = props;
+  const { filterProducts, categories } = props;
 
   return (
     <div className='product-filter'>
@@ -97,7 +98,7 @@ const ProductFilter = props => {
           </div>
         </CardBody>
       </Card>
-      <Card>
+      <Card className='mb-4'>
         <CardHeader tag='h3'>Rating</CardHeader>
         <CardBody>
           <div className='mx-2 mb-4'>
@@ -110,6 +111,23 @@ const ProductFilter = props => {
                 filterProducts('rating', rating(v));
               }}
             />
+          </div>
+        </CardBody>
+      </Card>
+      <Card className='mb-4'>
+        <CardHeader tag='h3'>Categories</CardHeader>
+        <CardBody>
+          <div className='category-pill-row'>
+            {categories && categories.map((cat, index) => (
+              <NavLink
+                key={index}
+                to={`/shop/category/${cat.slug}`}
+                className={({ isActive }) => `category-pill${isActive ? ' active' : ''}`}
+                data-cursor="link"
+              >
+                {cat.name}
+              </NavLink>
+            ))}
           </div>
         </CardBody>
       </Card>

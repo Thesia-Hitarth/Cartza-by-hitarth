@@ -178,3 +178,24 @@ select {
     border-color: var(--color-success) !important;
   }
 }
+
+/* Inline Button / Search Box Layout */
+.inline-btn-box {
+  .input-text-block {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+
+    .input-text, input[type='text'] {
+      flex: 1;
+      width: auto;
+      margin-bottom: 0;
+    }
+
+    .ctz-btn, button {
+      margin-left: 1rem;
+      flex-shrink: 0;
+    }
+  }
+}
+

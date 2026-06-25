@@ -41,10 +41,10 @@ const AccountMenu = props => {
               const isProviderAllowed = getAllowedProvider(link);
               if (!isProviderAllowed) return;
               return (
-                <li key={index}>
+                <li key={index} className='panel-link-item'>
                   <NavLink
                     to={PREFIX + link.to}
-                    className={({ isActive }) => isActive ? 'active-link' : ''}
+                    className={({ isActive }) => (isActive ? 'active-link' : '') + ' nav-link'}
                     end
                   >
                     {link.name}

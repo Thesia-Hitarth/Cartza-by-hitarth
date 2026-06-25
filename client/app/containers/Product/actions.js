@@ -94,7 +94,7 @@ export const filterProducts = (n, v) => {
       dispatch({ type: SET_ADVANCED_FILTERS, payload });
       const sortOrder = getSortOrder(payload.order);
       const response = await axios.get(`${API_URL}/product/list`, {
-        params: { ...payload, sortOrder }
+        params: { ...payload, sortOrder: JSON.stringify(sortOrder) }
       });
       const { products, totalPages, currentPage, count } = response.data;
 

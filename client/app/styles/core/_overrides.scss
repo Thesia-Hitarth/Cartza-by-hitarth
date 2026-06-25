@@ -26,6 +26,21 @@
   }
 }
 
+// ── Global Focus Ring Override (Prevents ugly browser outline boxes on click) ──
+button,
+a,
+input,
+select,
+textarea,
+.btn,
+.form-control {
+  &:focus,
+  &:active {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+}
+
 // ── Dropdowns ──
 .dropdown-item {
   font-family: var(--font-body) !important;

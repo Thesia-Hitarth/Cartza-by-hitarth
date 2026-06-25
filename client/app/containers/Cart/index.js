@@ -13,6 +13,7 @@ import actions from '../../actions';
 import CartList from '../../components/Store/CartList';
 import CartSummary from '../../components/Store/CartSummary';
 import Checkout from '../../components/Store/Checkout';
+import Button from '../../components/Common/Button';
 import { BagIcon } from '../../components/Common/Icon';
 
 class Cart extends React.PureComponent {
@@ -67,8 +68,20 @@ class Cart extends React.PureComponent {
           </div>
         ) : (
           <div className='empty-cart'>
-            <BagIcon />
-            <p>Your shopping cart is empty</p>
+            <div className='empty-cart-icon-wrapper'>
+              <BagIcon />
+            </div>
+            <h2 className='empty-cart-title'>Your Cart is Empty</h2>
+            <p className='empty-cart-text mb-4'>Explore our collections and add items to your cart!</p>
+            <Button
+              variant='primary'
+              size='md'
+              text='Explore Shop'
+              onClick={() => {
+                toggleCart();
+                handleShopping();
+              }}
+            />
           </div>
         )}
         {cartItems.length > 0 && (

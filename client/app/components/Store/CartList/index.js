@@ -43,7 +43,7 @@ const CartList = props => {
               </h4>
 
               {/* Quantity Stepper Pill */}
-              <div className='cart-item-stepper-pill d-flex align-items-center'>
+              <div className='cart-item-stepper-pill d-inline-flex align-items-center'>
                 <button
                   className='stepper-btn minus'
                   onClick={() => {

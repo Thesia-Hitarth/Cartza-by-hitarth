@@ -40,7 +40,6 @@
     },
     { "to": "/address", "name": "Address", "prefix": "/dashboard" },
     { "to": "/orders", "name": "Orders", "prefix": "/dashboard" },
-    { "to": "/wishlist", "name": "WishList", "prefix": "/dashboard" },
     { "to": "/complaints", "name": "My Complaints", "prefix": "/dashboard" },
     { "to": "/contact", "name": "Contact" }
   ]

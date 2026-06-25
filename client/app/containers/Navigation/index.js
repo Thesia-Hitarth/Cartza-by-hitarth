@@ -249,14 +249,7 @@ class Navigation extends React.PureComponent {
 
               {/* Center: Category Nav Links (Desktop) */}
               <nav className='nav-links-center'>
-                <NavLink
-                  to='/shop'
-                  className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
-                  data-cursor="link"
-                >
-                  Shop
-                </NavLink>
-                {categories && categories.slice(0, 4).map((cat, index) => (
+                {categories && categories.slice(0, 3).map((cat, index) => (
                   <NavLink
                     key={index}
                     to={`/shop/category/${cat.slug}`}
@@ -309,7 +302,7 @@ class Navigation extends React.PureComponent {
                   </div>
 
                   {/* Wishlist Icon */}
-                  <Link to='/dashboard' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist' data-cursor="link">
+                  <Link to='/wishlist' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist' data-cursor="link">
                     <Heart size={18} strokeWidth={1.2} />
                   </Link>
 
