@@ -164,16 +164,31 @@ export const fetchProductsSelect = () => {
 };
 
 // fetch products api
-export const fetchProducts = () => {
+export const fetchProducts = (page = 1) => {
   return async (dispatch, getState) => {
     try {
       dispatch(setProductLoading(true));
 
-      const response = await axios.get(`${API_URL}/product`);
+      const response = await axios.get(`${API_URL}/product`, {
+        params: {
+          page,
+          limit: 10
+        }
+      });
 
       dispatch({
         type: FETCH_PRODUCTS,
         payload: response.data.products
+      });
+
+      dispatch({
+        type: SET_ADVANCED_FILTERS,
+        payload: {
+          totalPages: response.data.totalPages,
+          currentPage: response.data.currentPage,
+          count: response.data.count,
+          limit: 10
+        }
       });
     } catch (error) {
       handleError(error, dispatch);

@@ -12,12 +12,15 @@ import { withRouter } from '../../utils/withRouter';
 
 import actions from '../../actions';
 import Input from '../../components/Common/Input';
-import Button from '../../components/Common/Button';
 import Checkbox from '../../components/Common/Checkbox';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import SignupProvider from '../../components/Common/SignupProvider';
 
 class Signup extends React.PureComponent {
+  componentDidMount() {
+    document.title = 'Sign Up | CARTZA';
+  }
+
   render() {
     const {
       authenticated,
@@ -50,10 +53,10 @@ class Signup extends React.PureComponent {
               <div className='banner-quote-box text-center px-5'>
                 <h2 className='quote-title mb-3'>CARTZA</h2>
                 <p className='quote-text'>
-                  "<i>Style is a way to say who you are without having to speak.</i>"
+                  "<i>Fashion changes, but style endures.</i>"
                 </p>
                 <div className='quote-divider mx-auto'></div>
-                <span className='quote-sub'>Est. 2025</span>
+                <span className='quote-sub'>Est. {new Date().getFullYear()}</span>
               </div>
             </Col>
 
@@ -77,7 +80,7 @@ class Signup extends React.PureComponent {
                 {/* Email Input */}
                 <div className={`auth-input-group ${formErrors['email'] ? 'has-error' : signupFormData.email ? 'has-success' : ''}`}>
                   <Input
-                    type={'text'}
+                    type={'email'}
                     error={formErrors['email']}
                     label={'Email Address'}
                     name={'email'}
@@ -170,13 +173,12 @@ class Signup extends React.PureComponent {
                     {isSubmitting ? 'Signing Up...' : 'Sign Up'}
                   </button>
                   
-                  <button
-                    type='button'
-                    className='btn-auth-toggle mt-3'
-                    onClick={() => this.props.history.push('/login')}
+                  <Link
+                    className='btn-auth-toggle text-center d-block'
+                    to='/login'
                   >
                     Already have an account? Login
-                  </button>
+                  </Link>
                 </div>
               </form>
             </Col>

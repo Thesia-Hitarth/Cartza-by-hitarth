@@ -43,13 +43,14 @@ class Cart extends React.PureComponent {
       addresses,
       isPlacingOrder
     } = this.props;
+    const totalUnits = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
     return (
       <div className='cart'>
         <div className='cart-header'>
           <span className='cart-header-title'>
             Your Cart
-            {cartItems.length > 0 && <span className='cart-header-count'> ({cartItems.length})</span>}
+            {totalUnits > 0 && <span className='cart-header-count'> ({totalUnits})</span>}
           </span>
           {isCartOpen && (
             <button className='cart-close-btn' aria-label='Close cart' onClick={toggleCart}>
@@ -68,9 +69,10 @@ class Cart extends React.PureComponent {
           </div>
         ) : (
           <div className='empty-cart'>
-            <div className='empty-cart-icon-wrapper'>
+            <div className='empty-cart-icon-wrapper' aria-hidden="true">
               <BagIcon />
             </div>
+            <span className="sr-only">Your shopping bag is empty</span>
             <h2 className='empty-cart-title'>Your Cart is Empty</h2>
             <p className='empty-cart-text mb-4'>Explore our collections and add items to your cart!</p>
             <Button

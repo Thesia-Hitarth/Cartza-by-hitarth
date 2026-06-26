@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const keys = require('../config/keys');
 
 const checkAuth = async req => {
   try {
@@ -6,15 +7,13 @@ const checkAuth = async req => {
       return null;
     }
 
-    const token =
-      (await jwt.decode(req.headers.authorization.split(' ')[1])) ||
-      req.headers.authorization;
-
+    const token = req.headers.authorization.split(' ')[1];
     if (!token) {
       return null;
     }
 
-    return token;
+    const decoded = jwt.verify(token, keys.jwt.secret);
+    return decoded;
   } catch (error) {
     return null;
   }

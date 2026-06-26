@@ -15,6 +15,7 @@ import BrandList from '../../components/Store/BrandList';
 class BrandsPage extends React.PureComponent {
   componentDidMount() {
     this.props.fetchStoreBrands();
+    document.title = 'Brands | CARTZA';
   }
 
   render() {

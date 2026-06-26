@@ -27,6 +27,8 @@ const Input = props => {
     inlineElement
   } = props;
 
+  const inputId = name ? `input-${name}` : undefined;
+
   const _onChange = e => {
     if (e.target.name == 'image') {
       onInputChange(e.target.name, e.target.files[0]);
@@ -40,8 +42,9 @@ const Input = props => {
 
     return (
       <div className={styles}>
-        {label && <label>{label}</label>}
+        {label && <label htmlFor={inputId}>{label}</label>}
         <textarea
+          id={inputId}
           onChange={e => {
             _onChange(e);
           }}
@@ -64,8 +67,9 @@ const Input = props => {
     };
     return (
       <div className={styles}>
-        {label && <label>{label}</label>}
+        {label && <label htmlFor={inputId}>{label}</label>}
         <input
+          id={inputId}
           autoComplete={autoComplete}
           step={step}
           min={min || 0}
@@ -116,9 +120,10 @@ const Input = props => {
 
     return (
       <div className={styles}>
-        {label && <label>{label}</label>}
+        {label && <label htmlFor={inputId}>{label}</label>}
         <div className='input-text-block'>
           <input
+            id={inputId}
             className={'input-text'}
             autoComplete={autoComplete}
             type={type}

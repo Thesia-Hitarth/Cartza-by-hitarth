@@ -12,7 +12,7 @@ router.post('/add', auth, async (req, res) => {
     const user = req.user._id;
     const items = req.body.products;
 
-    const products = store.caculateItemsSalesTax(items);
+    const products = store.calculateItemsSalesTax(items);
 
     const cart = new Cart({
       user,
@@ -58,7 +58,7 @@ router.post('/add/:cartId', auth, async (req, res) => {
     }
 
     const rawProduct = req.body.product;
-    const [product] = store.caculateItemsSalesTax([rawProduct]);
+    const [product] = store.calculateItemsSalesTax([rawProduct]);
 
     await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
     res.status(200).json({ success: true });

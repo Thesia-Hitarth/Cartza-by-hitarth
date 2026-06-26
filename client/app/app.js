@@ -11,10 +11,12 @@ import { ReduxRouter } from '@lagunovsky/redux-react-router';
 import store, { history } from './store';
 import { SET_AUTH } from './containers/Authentication/constants';
 import Application from './containers/Application';
+import ErrorBoundary from './components/Common/ErrorBoundary';
 import ScrollToTop from './scrollToTop';
 import setToken from './utils/token';
 import axios from 'axios';
 import { signOut } from './containers/Login/actions';
+
 
 // Global Axios response interceptor to catch 401s and sign out the user
 axios.interceptors.response.use(
@@ -57,7 +59,9 @@ const app = () => (
   <Provider store={store}>
     <ReduxRouter history={history}>
       <ScrollToTop>
-        <Application />
+        <ErrorBoundary>
+          <Application />
+        </ErrorBoundary>
       </ScrollToTop>
     </ReduxRouter>
   </Provider>

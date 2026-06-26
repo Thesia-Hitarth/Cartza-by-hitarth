@@ -11,13 +11,23 @@ const auth = require('../../middleware/auth');
 const User = require('../../models/user');
 const smtp = require('../../services/smtp');
 const keys = require('../../config/keys');
+const Newsletter = require('../../models/newsletter');
+const rateLimiter = require('../../middleware/rateLimiter');
 const { EMAIL_PROVIDER, JWT_COOKIE } = require('../../constants');
 
 const { secret, tokenLife } = keys.jwt;
 
-router.post('/login', async (req, res) => {
+const authLimiter = rateLimiter({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5,
+  message: 'Too many attempts, please try again after 15 minutes.'
+});
+
+
+router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
+
 
     if (!email) {
       return res
@@ -30,15 +40,9 @@ router.post('/login', async (req, res) => {
     }
 
     const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res
-        .status(400)
-        .send({ error: 'No user found for this email address.' });
-    }
-
-    if (user && user.provider !== EMAIL_PROVIDER.Email) {
-      return res.status(400).send({
-        error: `That email address is already in use using ${user.provider} provider.`
+    if (!user || user.provider !== EMAIL_PROVIDER.Email) {
+      return res.status(400).json({
+        error: 'Invalid email or password.'
       });
     }
 
@@ -46,8 +50,7 @@ router.post('/login', async (req, res) => {
 
     if (!isMatch) {
       return res.status(400).json({
-        success: false,
-        error: 'Password Incorrect'
+        error: 'Invalid email or password.'
       });
     }
 
@@ -79,9 +82,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-router.post('/register', async (req, res) => {
+router.post('/register', authLimiter, async (req, res) => {
   try {
     const { email, firstName, lastName, password, isSubscribed } = req.body;
+
 
     if (!email) {
       return res
@@ -106,6 +110,15 @@ router.post('/register', async (req, res) => {
     }
 
     let subscribed = false;
+    if (isSubscribed === true) {
+      const emailLower = email.trim().toLowerCase();
+      const existingSubscription = await Newsletter.findOne({ email: emailLower });
+      if (!existingSubscription) {
+        const subscription = new Newsletter({ email: emailLower });
+        await subscription.save();
+        subscribed = true;
+      }
+    }
 
     const user = new User({
       email,
@@ -152,7 +165,7 @@ router.post('/register', async (req, res) => {
   }
 });
 
-router.post('/forgot', async (req, res) => {
+router.post('/forgot', authLimiter, async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -164,16 +177,20 @@ router.post('/forgot', async (req, res) => {
 
     const existingUser = await User.findOne({ email });
 
+    const genericResponse = {
+      success: true,
+      message: 'Please check your email for the link to reset your password.'
+    };
+
     if (!existingUser) {
-      return res
-        .status(400)
-        .send({ error: 'No user found for this email address.' });
+      return res.status(200).json(genericResponse);
     }
 
     const buffer = crypto.randomBytes(48);
     const resetToken = buffer.toString('hex');
 
-    existingUser.resetPasswordToken = resetToken;
+    const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
+    existingUser.resetPasswordToken = resetTokenHash;
     existingUser.resetPasswordExpires = Date.now() + 3600000;
 
     await existingUser.save();
@@ -185,10 +202,7 @@ router.post('/forgot', async (req, res) => {
       resetToken
     );
 
-    res.status(200).json({
-      success: true,
-      message: 'Please check your email for the link to reset your password.'
-    });
+    res.status(200).json(genericResponse);
   } catch (error) {
     res.status(400).json({
       error: 'Your request could not be processed. Please try again.'
@@ -204,8 +218,9 @@ router.post('/reset/:token', async (req, res) => {
       return res.status(400).json({ error: 'You must enter a password.' });
     }
 
+    const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
     const resetUser = await User.findOne({
-      resetPasswordToken: req.params.token,
+      resetPasswordToken: tokenHash,
       resetPasswordExpires: { $gt: Date.now() }
     }).select('+resetPasswordToken +resetPasswordExpires');
 
@@ -314,7 +329,8 @@ router.get(
     // TODO find another way to send the token to frontend
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
     const jwtToken = `Bearer ${token}`;
-    res.redirect(`${keys.app.clientURL}/auth/success?token=${jwtToken}`);
+    res.cookie('token', encodeURIComponent(jwtToken), { maxAge: 15000, httpOnly: false, path: '/' });
+    res.redirect(`${keys.app.clientURL}/auth/success`);
   }
 );
 

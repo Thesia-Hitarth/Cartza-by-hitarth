@@ -1,8 +1,8 @@
 module.exports = {
   app: {
     name: 'Cartza',
-    apiURL: `${process.env.BASE_API_URL}`,
-    clientURL: process.env.CLIENT_URL
+    apiURL: `${process.env.BASE_API_URL || 'api'}`,
+    clientURL: process.env.CLIENT_URL || 'http://localhost:8080'
   },
   port: process.env.PORT || 3000,
   database: {

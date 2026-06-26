@@ -14,15 +14,21 @@ import actions from '../../actions';
 import setToken from '../../utils/token';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 
+const getCookie = (name) => {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+};
+
 class AuthSuccess extends React.PureComponent {
   componentDidMount() {
-    const tokenParam = this.props.location.search;
-    const jwtCookie = tokenParam
-      .slice(tokenParam.indexOf('=') + 1)
-      .replace('%20', ' ');
-    if (jwtCookie) {
-      setToken(jwtCookie);
-      localStorage.setItem('token', jwtCookie);
+    const token = getCookie('token');
+    if (token) {
+      const jwtToken = decodeURIComponent(token);
+      setToken(jwtToken);
+      localStorage.setItem('token', jwtToken);
+      // Clear the cookie immediately
+      document.cookie = 'token=; Max-Age=0; path=/;';
       this.props.setAuth();
     }
   }

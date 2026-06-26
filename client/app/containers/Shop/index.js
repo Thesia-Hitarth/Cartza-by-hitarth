@@ -24,6 +24,7 @@ import SelectOption from '../../components/Common/SelectOption';
 
 class Shop extends React.PureComponent {
   componentDidMount() {
+    document.title = 'Shop | CARTZA';
     document.body.classList.add('shop-page');
     this.props.fetchStoreCategories();
   }
@@ -66,10 +67,7 @@ class Shop extends React.PureComponent {
                 className='text-center text-md-left mt-3 mt-md-0 mb-1 mb-md-0'
               >
                 <span className='results-count'>
-                  Showing:{' '}
-                  {totalProducts > 0
-                    ? `${left}-${right} products of ${count} products`
-                    : `${count} products`}
+                  {count > 0 ? `Showing: ${left}-${right} products of ${count} products` : 'No products found'}
                 </span>
               </Col>
               <Col

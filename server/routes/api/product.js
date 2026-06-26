@@ -11,6 +11,7 @@ const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const checkAuth = require('../../utils/auth');
 const { uploadImage } = require('../../utils/storage');
+const { sanitizeHtml } = require('../../utils/sanitize');
 const {
   getStoreProductsQuery,
   getStoreProductsWishListQuery
@@ -215,7 +216,7 @@ router.post(
     try {
       const sku = req.body.sku;
       const name = req.body.name;
-      const description = req.body.description;
+      const description = sanitizeHtml(req.body.description);
       const quantity = req.body.quantity;
       const price = req.body.price;
       const compareAtPrice = req.body.compareAtPrice || null;
@@ -308,7 +309,10 @@ router.get(
   role.check(ROLES.Admin, ROLES.Merchant),
   async (req, res) => {
     try {
+      const { page = 1, limit = 50 } = req.query;
       let products = [];
+      let count = 0;
+      let query = {};
 
       if (req.user.merchant) {
         const brands = await Brand.find({
@@ -316,27 +320,27 @@ router.get(
         }).populate('merchant', '_id');
 
         const brandIds = brands.map(b => b._id);
+        query = { brand: { $in: brandIds } };
+      }
 
-        products = await Product.find({ brand: { $in: brandIds } })
-          .populate({
-            path: 'brand',
-            populate: {
-              path: 'merchant',
-              model: 'Merchant'
-            }
-          });
-      } else {
-        products = await Product.find({}).populate({
+      products = await Product.find(query)
+        .limit(limit * 1)
+        .skip((page - 1) * limit)
+        .populate({
           path: 'brand',
           populate: {
             path: 'merchant',
             model: 'Merchant'
           }
         });
-      }
+
+      count = await Product.countDocuments(query);
 
       res.status(200).json({
-        products
+        products,
+        totalPages: Math.ceil(count / limit),
+        currentPage: Number(page),
+        count
       });
     } catch (error) {
       res.status(400).json({
@@ -399,9 +403,20 @@ router.put(
   async (req, res) => {
     try {
       const productId = req.params.id;
-      const update = req.body.product;
       const query = { _id: productId };
-      const { sku, slug } = req.body.product;
+      const {
+        sku,
+        name,
+        description,
+        quantity,
+        price,
+        compareAtPrice,
+        taxable,
+        isActive,
+        brand,
+        colors,
+        sizes
+      } = req.body.product || {};
 
       if (req.user.role === ROLES.Merchant) {
         const productDoc = await Product.findById(productId).populate('brand');
@@ -410,15 +425,35 @@ router.put(
         }
       }
 
-      const foundProduct = await Product.findOne({
-        $or: [{ slug }, { sku }]
-      });
+      const orQuery = [];
+      if (sku) orQuery.push({ sku });
+      if (req.body.product?.slug) orQuery.push({ slug: req.body.product.slug });
 
-      if (foundProduct && foundProduct._id != productId) {
-        return res
-          .status(400)
-          .json({ error: 'Sku or slug is already in use.' });
+      if (orQuery.length > 0) {
+        const foundProduct = await Product.findOne({
+          $or: orQuery
+        });
+
+        if (foundProduct && String(foundProduct._id) !== String(productId)) {
+          return res
+            .status(400)
+            .json({ error: 'Sku or slug is already in use.' });
+        }
       }
+
+      const update = {};
+      if (sku !== undefined) update.sku = sku;
+      if (name !== undefined) update.name = name;
+      if (description !== undefined) update.description = sanitizeHtml(description);
+      if (quantity !== undefined) update.quantity = quantity;
+      if (price !== undefined) update.price = price;
+      if (compareAtPrice !== undefined) update.compareAtPrice = compareAtPrice;
+      if (taxable !== undefined) update.taxable = taxable;
+      if (isActive !== undefined) update.isActive = isActive;
+      if (brand !== undefined) update.brand = brand;
+      if (colors !== undefined) update.colors = colors;
+      if (sizes !== undefined) update.sizes = sizes;
+      update.updated = Date.now();
 
       await Product.findOneAndUpdate(query, update, {
         new: true

@@ -55,10 +55,14 @@ class Application extends React.PureComponent {
     this.handleStorage = this.handleStorage.bind(this);
   }
 
-  componentDidMount() {
+  async componentDidMount() {
     const token = localStorage.getItem('token');
     if (token) {
-      this.props.fetchProfile();
+      try {
+        await this.props.fetchProfile();
+      } catch (e) {
+        console.error(e);
+      }
     }
 
     this.props.handleCart();
@@ -86,8 +90,17 @@ class Application extends React.PureComponent {
 
       document.querySelectorAll('[data-animate]').forEach(el => observer.observe(el));
 
-      this.mutationObserver = new MutationObserver(() => {
-        document.querySelectorAll('[data-animate]:not(.is-visible)').forEach(el => observer.observe(el));
+      this.mutationObserver = new MutationObserver((mutations) => {
+        let hasAddedNodes = false;
+        for (const mutation of mutations) {
+          if (mutation.addedNodes.length > 0) {
+            hasAddedNodes = true;
+            break;
+          }
+        }
+        if (hasAddedNodes) {
+          document.querySelectorAll('[data-animate]:not(.is-visible)').forEach(el => observer.observe(el));
+        }
       });
       this.mutationObserver.observe(document.body, { childList: true, subtree: true });
     } else {
@@ -145,7 +158,7 @@ class Application extends React.PureComponent {
         <Navigation />
 
         <main className='main'>
-          <AnimatePresence exitBeforeEnter={true}>
+          <AnimatePresence exitBeforeEnter mode="wait">
             <motion.div
               key={location.pathname}
               variants={pageVariants}

@@ -19,6 +19,18 @@ import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react/d
 import ProductReviews from '../../components/Store/ProductReviews';
 import SocialShare from '../../components/Store/SocialShare';
 
+const updateMetaTag = (property, content) => {
+  if (typeof window === 'undefined') return;
+  let element = document.querySelector(`meta[property="${property}"]`);
+  if (!element) {
+    element = document.createElement('meta');
+    element.setAttribute('property', property);
+    document.head.appendChild(element);
+  }
+  element.setAttribute('content', content);
+};
+
+
 class ProductPage extends React.PureComponent {
   constructor(props) {
     super(props);
@@ -41,6 +53,7 @@ class ProductPage extends React.PureComponent {
     this.props.fetchStoreProduct(slug);
     this.props.fetchProductReviews(slug);
     document.body.classList.add('product-page');
+    this.updatePageMeta();
   }
 
   componentDidUpdate(prevProps) {
@@ -56,6 +69,22 @@ class ProductPage extends React.PureComponent {
         selectedColor: colors.length > 0 ? colors[0] : 'Default',
         selectedSize: sizes.length > 0 ? sizes[0] : 'Default'
       });
+      this.updatePageMeta();
+    }
+  }
+
+  updatePageMeta() {
+    const { product } = this.props;
+    if (product && Object.keys(product).length > 0) {
+      document.title = `${product.name} | CARTZA`;
+      updateMetaTag('og:title', `${product.name} | CARTZA`);
+      updateMetaTag('og:description', product.description || '');
+      updateMetaTag('og:image', product.imageUrl || '/images/placeholder-image.png');
+      
+      const recentlyViewed = JSON.parse(localStorage.getItem('cartza_recently_viewed') || '[]');
+      const filtered = recentlyViewed.filter(p => p._id !== product._id);
+      filtered.unshift(product);
+      localStorage.setItem('cartza_recently_viewed', JSON.stringify(filtered.slice(0, 4)));
     }
   }
 
@@ -113,9 +142,12 @@ class ProductPage extends React.PureComponent {
     const productImages = product.imageUrl ? [product.imageUrl] : ['/images/placeholder-image.png'];
     const currentImage = productImages[activeThumbIdx] || productImages[0];
 
-    // Mock discount elements
-    const discountPercentage = 15;
-    const originalPrice = parseFloat((product.price / (1 - discountPercentage / 100)).toFixed(2));
+    // Dynamic discount calculations
+    const hasDiscount = product.compareAtPrice && product.compareAtPrice > product.price;
+    const discountPercentage = hasDiscount
+      ? Math.round(((product.compareAtPrice - product.price) / product.compareAtPrice) * 100)
+      : 0;
+    const originalPrice = hasDiscount ? product.compareAtPrice : null;
 
     return (
       <div className='product-shop-redesign py-4'>
@@ -124,15 +156,23 @@ class ProductPage extends React.PureComponent {
         ) : Object.keys(product).length > 0 ? (
           <Container>
             {/* Breadcrumb / Top Bar */}
-            <div className='product-breadcrumb mb-4'>
-              <Link to='/shop'>Shop</Link> &gt;{' '}
-              {product.brand && (
-                <>
-                  <Link to={`/shop/brand/${product.brand.slug}`}>{product.brand.name}</Link> &gt;{' '}
-                </>
-              )}
-              <span>{product.name}</span>
-            </div>
+            <nav aria-label="breadcrumb" className='product-breadcrumb mb-4'>
+              <ol className="breadcrumb-list d-flex align-items-center list-unstyled mb-0">
+                <li className="breadcrumb-item"><Link to='/shop'>Shop</Link></li>
+                {product.brand && (
+                  <>
+                    <li className="breadcrumb-separator mx-2" aria-hidden="true">/</li>
+                    <li className="breadcrumb-item">
+                      <Link to={`/shop/brand/${product.brand.slug}`}>{product.brand.name}</Link>
+                    </li>
+                  </>
+                )}
+                <li className="breadcrumb-separator mx-2" aria-hidden="true">/</li>
+                <li className="breadcrumb-item active" aria-current="page">
+                  <span>{product.name}</span>
+                </li>
+              </ol>
+            </nav>
 
             <Row className='flex-row'>
               {/* Left Column: Image Gallery (60% split) */}
@@ -153,8 +193,8 @@ class ProductPage extends React.PureComponent {
                         backgroundSize: isZoomed ? '200%' : 'contain',
                         backgroundRepeat: 'no-repeat'
                       }}
-                    ></div>
-                    {product.inventory <= 0 && !shopFormErrors['quantity'] ? (
+                    />
+                    {product.quantity <= 0 ? (
                       <span className='stock-badge out-of-stock'>Sold Out</span>
                     ) : (
                       <span className='stock-badge in-stock'>In Stock</span>
@@ -196,9 +236,13 @@ class ProductPage extends React.PureComponent {
 
                   {/* Rating summary */}
                   <div className='rating-reviews-line d-flex align-items-center mb-3' onClick={this.scrollToReviews}>
-                    <div className='rating-stars-row mr-2 d-flex align-items-center'>
+                    <div
+                      className='rating-stars-row mr-2 d-flex align-items-center'
+                      role='img'
+                      aria-label={`Rating: ${reviews.length > 0 ? (reviewsSummary?.ratingAverage || 0) : 0} out of 5 stars`}
+                    >
                       {Array.from({ length: 5 }).map((_, i) => {
-                        const active = i < Math.round(reviewsSummary?.ratingAverage || 4);
+                        const active = i < Math.round(reviews.length > 0 ? (reviewsSummary?.ratingAverage || 0) : 0);
                         return (
                           <Star
                             key={i}
@@ -207,20 +251,31 @@ class ProductPage extends React.PureComponent {
                             className="mr-0.5"
                             fill={active ? '#FF3D00' : 'none'}
                             color={active ? '#FF3D00' : '#E5E5E3'}
+                            aria-hidden='true'
                           />
                         );
                       })}
                     </div>
                     <span className='reviews-link'>
-                      {parseFloat(reviewsSummary?.ratingAverage || 4.2).toFixed(1)} ({reviews.length || 12} customer reviews)
+                      {reviews.length > 0 ? (
+                        <>
+                          {parseFloat(reviewsSummary?.ratingAverage || 0).toFixed(1)} ({reviews.length} customer reviews)
+                        </>
+                      ) : (
+                        'No reviews yet'
+                      )}
                     </span>
                   </div>
 
                   {/* Price */}
                   <div className='price-row-display d-flex align-items-center mb-4'>
                     <span className='current-price mr-3'>₹{product.price}</span>
-                    <span className='original-price strike-through mr-3'>₹{originalPrice}</span>
-                    <span className='badge-discount'>-{discountPercentage}% Off</span>
+                    {hasDiscount && (
+                      <>
+                        <span className='original-price strike-through mr-3'>₹{originalPrice}</span>
+                        <span className='badge-discount'>-{discountPercentage}% Off</span>
+                      </>
+                    )}
                   </div>
 
                   <p className='product-description-short mb-4'>{product.description}</p>
@@ -236,7 +291,7 @@ class ProductPage extends React.PureComponent {
                         {product.colors.map((col, idx) => (
                           <button
                             key={idx}
-                            className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(' ', '-')}`}
+                            className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(/\s+/g, '-')}`}
                             onClick={() => this.setState({ selectedColor: col })}
                             title={col}
                             aria-label={`Select color ${col}`}
@@ -274,9 +329,9 @@ class ProductPage extends React.PureComponent {
                       name={'quantity'}
                       decimals={false}
                       min={1}
-                      max={product.inventory}
+                      max={product.quantity}
                       placeholder={'Product Quantity'}
-                      disabled={product.inventory <= 0 && !shopFormErrors['quantity']}
+                      disabled={product.quantity <= 0 && !shopFormErrors['quantity']}
                       value={productShopData.quantity}
                       onInputChange={(name, value) => {
                         productShopChange(name, value);
@@ -289,7 +344,7 @@ class ProductPage extends React.PureComponent {
                     {itemInCart ? (
                       <button
                         className='btn-cart-page-remove d-flex align-items-center justify-content-center'
-                        disabled={product.inventory <= 0 && !shopFormErrors['quantity']}
+                        disabled={product.quantity <= 0 && !shopFormErrors['quantity']}
                         onClick={() => handleRemoveFromCart(product)}
                       >
                         <ShoppingBag size={20} strokeWidth={1.5} />
@@ -298,7 +353,7 @@ class ProductPage extends React.PureComponent {
                     ) : (
                       <button
                         className='btn-cart-page-add d-flex align-items-center justify-content-center'
-                        disabled={product.inventory <= 0}
+                        disabled={product.quantity <= 0}
                         onClick={() => {
                           const shopQuantity = Number(productShopData.quantity || 1);
                           handleAddToCart({ ...product, quantity: shopQuantity });
@@ -341,7 +396,11 @@ class ProductPage extends React.PureComponent {
                   <div className='accordion-section-block'>
                     {/* Description */}
                     <div className='accordion-card'>
-                      <button className='accordion-header-btn d-flex justify-content-between align-items-center' onClick={() => this.toggleAccordion('description')}>
+                      <button
+                        className='accordion-header-btn d-flex justify-content-between align-items-center'
+                        onClick={() => this.toggleAccordion('description')}
+                        aria-expanded={openAccordion === 'description'}
+                      >
                         <span>Description</span>
                         <span className='accordion-arrow'>{openAccordion === 'description' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
                       </button>
@@ -354,7 +413,11 @@ class ProductPage extends React.PureComponent {
 
                     {/* Specifications */}
                     <div className='accordion-card'>
-                      <button className='accordion-header-btn d-flex justify-content-between align-items-center' onClick={() => this.toggleAccordion('specs')}>
+                      <button
+                        className='accordion-header-btn d-flex justify-content-between align-items-center'
+                        onClick={() => this.toggleAccordion('specs')}
+                        aria-expanded={openAccordion === 'specs'}
+                      >
                         <span>Specifications</span>
                         <span className='accordion-arrow'>{openAccordion === 'specs' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
                       </button>
@@ -372,7 +435,7 @@ class ProductPage extends React.PureComponent {
                               </tr>
                               <tr>
                                 <td>Inventory</td>
-                                <td className='text-right'>{product.inventory || 'Out of stock'}</td>
+                                <td className='text-right'>{product.quantity || 'Out of stock'}</td>
                               </tr>
                             </tbody>
                           </table>
@@ -382,7 +445,11 @@ class ProductPage extends React.PureComponent {
 
                     {/* Shipping & Returns */}
                     <div className='accordion-card'>
-                      <button className='accordion-header-btn d-flex justify-content-between align-items-center' onClick={() => this.toggleAccordion('shipping')}>
+                      <button
+                        className='accordion-header-btn d-flex justify-content-between align-items-center'
+                        onClick={() => this.toggleAccordion('shipping')}
+                        aria-expanded={openAccordion === 'shipping'}
+                      >
                         <span>Shipping & Returns</span>
                         <span className='accordion-arrow'>{openAccordion === 'shipping' ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</span>
                       </button>

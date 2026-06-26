@@ -11,7 +11,7 @@ exports.disableProducts = async function(products) {
   await Product.bulkWrite(bulkOptions);
 };
 
-exports.caculateTaxAmount = function(order) {
+exports.calculateTaxAmount = function(order) {
   try {
     const taxRate = taxConfig.stateTaxRate;
 
@@ -39,12 +39,12 @@ exports.caculateTaxAmount = function(order) {
 
     const hasCancelledItems = order.products.filter(item => item.status === 'Cancelled');
     if (hasCancelledItems.length > 0) {
-      order.total = this.caculateOrderTotal(order);
+      order.total = this.calculateOrderTotal(order);
     }
 
-    const currentTotal = this.caculateOrderTotal(order);
+    const currentTotal = this.calculateOrderTotal(order);
     if (currentTotal !== order.total) {
-      order.total = this.caculateOrderTotal(order);
+      order.total = this.calculateOrderTotal(order);
     }
 
     order.totalWithTax = order.total + order.totalTax;
@@ -57,14 +57,14 @@ exports.caculateTaxAmount = function(order) {
   }
 };
 
-exports.caculateOrderTotal = function(order) {
+exports.calculateOrderTotal = function(order) {
   const total = order.products
     .filter(item => item.status !== 'Cancelled')
     .reduce((sum, current) => sum + current.totalPrice, 0);
   return total;
 };
 
-exports.caculateItemsSalesTax = function(items) {
+exports.calculateItemsSalesTax = function(items) {
   const taxRate = taxConfig.stateTaxRate;
 
   return items.map(item => {
@@ -96,6 +96,6 @@ exports.formatOrders = function(orders) {
   }));
 
   return newOrders.map(order =>
-    order?.products ? this.caculateTaxAmount(order) : order
+    order?.products ? this.calculateTaxAmount(order) : order
   );
 };

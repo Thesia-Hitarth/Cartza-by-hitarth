@@ -15,6 +15,10 @@ import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
 class Contact extends React.PureComponent {
+  componentDidMount() {
+    document.title = 'Contact Us | CARTZA';
+  }
+
   render() {
     const { contactFormData, contactFormChange, contactUs, formErrors } =
       this.props;

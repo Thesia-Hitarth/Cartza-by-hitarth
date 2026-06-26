@@ -25,6 +25,27 @@ import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
 import Marquee from '../../components/ui/Marquee';
 import SectionHeader from '../../components/ui/SectionHeader';
+import CarouselSlider from '../../components/Common/CarouselSlider';
+import ProductList from '../../components/Store/ProductList';
+
+const responsive = {
+  desktop: {
+    breakpoint: { max: 3000, min: 1024 },
+    items: 4,
+    slidesToSlide: 1
+  },
+  tablet: {
+    breakpoint: { max: 1024, min: 464 },
+    items: 2,
+    slidesToSlide: 1
+  },
+  mobile: {
+    breakpoint: { max: 464, min: 0 },
+    items: 1,
+    slidesToSlide: 1
+  }
+};
+
 
 const getCategoryBanner = (name = '') => {
   const categoryName = (name || '').toLowerCase();
@@ -63,18 +84,32 @@ const fadeUpItem = {
 };
 
 class Homepage extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      recentlyViewed: []
+    };
+  }
+
   componentDidMount() {
+    document.title = 'CARTZA | Premium Curated Fashion & Electronics';
     this.props.fetchStoreCategories();
+    this.props.filterProducts('all', 'all');
+
+    const recentlyViewed = JSON.parse(localStorage.getItem('cartza_recently_viewed') || '[]');
+    this.setState({ recentlyViewed });
   }
 
   render() {
     const {
       categories,
+      products,
       history,
       email,
       formErrors,
       newsletterChange,
-      subscribeToNewsletter
+      subscribeToNewsletter,
+      authenticated
     } = this.props;
 
     const handleSubmit = event => {
@@ -148,9 +183,9 @@ class Homepage extends React.PureComponent {
               <div className='category-editorial-grid'>
                 {/* Large card (left 2/3) */}
                 {categories[0] && (
-                  <div
+                  <Link
+                    to={`/shop/category/${categories[0].slug}`}
                     className='cat-card cat-card-large'
-                    onClick={() => history.push(`/shop/category/${categories[0].slug}`)}
                     data-cursor="product"
                   >
                     <div
@@ -162,15 +197,15 @@ class Homepage extends React.PureComponent {
                       <span className='cat-card-name'>{categories[0].name}</span>
                       <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
                     </div>
-                  </div>
+                  </Link>
                 )}
 
                 {/* Right stacked cards (1/3) */}
                 <div className='cat-card-stack'>
                   {categories[1] && (
-                    <div
+                    <Link
+                      to={`/shop/category/${categories[1].slug}`}
                       className='cat-card cat-card-top'
-                      onClick={() => history.push(`/shop/category/${categories[1].slug}`)}
                       data-cursor="product"
                     >
                       <div
@@ -182,12 +217,12 @@ class Homepage extends React.PureComponent {
                         <span className='cat-card-name'>{categories[1].name}</span>
                         <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
                       </div>
-                    </div>
+                    </Link>
                   )}
                   {categories[2] && (
-                    <div
+                    <Link
+                      to={`/shop/category/${categories[2].slug}`}
                       className='cat-card cat-card-bottom'
-                      onClick={() => history.push(`/shop/category/${categories[2].slug}`)}
                       data-cursor="product"
                     >
                       <div
@@ -199,10 +234,33 @@ class Homepage extends React.PureComponent {
                         <span className='cat-card-name'>{categories[2].name}</span>
                         <span className='cat-card-cta'>EXPLORE <span className='arrow'>→</span></span>
                       </div>
-                    </div>
+                    </Link>
                   )}
                 </div>
               </div>
+            </Container>
+          </section>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            SECTION 4: TRENDING NOW CAROUSEL
+            ═══════════════════════════════════════════ */}
+        {products && products.length > 0 && (
+          <section className='section-trending py-5' data-animate="fade-up">
+            <Container>
+              <SectionHeader number="02" title="Trending Now" link="/shop" linkText="See All" />
+              <CarouselSlider responsive={responsive} infinite={true} autoPlay={true}>
+                {products.slice(0, 6).map((product, idx) => (
+                  <div key={product._id || idx} className="carousel-product-card px-2">
+                    <ProductList
+                      products={[product]}
+                      authenticated={authenticated}
+                      updateWishlist={this.props.updateWishlist}
+                      handleAddToCart={this.props.handleAddToCart}
+                    />
+                  </div>
+                ))}
+              </CarouselSlider>
             </Container>
           </section>
         )}
@@ -227,6 +285,40 @@ class Homepage extends React.PureComponent {
             <div className='editorial-image' style={{ backgroundImage: "url('/images/banners/banner-2.jpg')" }}></div>
           </div>
         </section>
+
+        {/* ═══════════════════════════════════════════
+            SECTION 6: NEW ARRIVALS GRID
+            ═══════════════════════════════════════════ */}
+        {products && products.length > 4 && (
+          <section className='section-new-arrivals py-5' data-animate="fade-up">
+            <Container>
+              <SectionHeader number="03" title="New Arrivals" link="/shop" linkText="Shop New" />
+              <ProductList
+                products={products.slice(4, 8)}
+                authenticated={authenticated}
+                updateWishlist={this.props.updateWishlist}
+                handleAddToCart={this.props.handleAddToCart}
+              />
+            </Container>
+          </section>
+        )}
+
+        {/* ═══════════════════════════════════════════
+            SECTION 7: RECENTLY VIEWED (conditional)
+            ═══════════════════════════════════════════ */}
+        {this.state.recentlyViewed && this.state.recentlyViewed.length > 0 && (
+          <section className='section-recently-viewed py-5' data-animate="fade-up">
+            <Container>
+              <SectionHeader number="04" title="Recently Viewed" />
+              <ProductList
+                products={this.state.recentlyViewed}
+                authenticated={authenticated}
+                updateWishlist={this.props.updateWishlist}
+                handleAddToCart={this.props.handleAddToCart}
+              />
+            </Container>
+          </section>
+        )}
 
         {/* ═══════════════════════════════════════════
             SECTION 8: NEWSLETTER TRANSITION
@@ -270,7 +362,9 @@ const mapStateToProps = state => {
   return {
     categories: state.category.storeCategories,
     email: state.newsletter.email,
-    formErrors: state.newsletter.formErrors
+    formErrors: state.newsletter.formErrors,
+    products: state.product.storeProducts,
+    authenticated: state.authentication.authenticated
   };
 };
 

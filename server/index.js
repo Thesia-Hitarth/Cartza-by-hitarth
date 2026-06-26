@@ -21,7 +21,9 @@ app.use(
         connectSrc: ["'self'", "*"],
         fontSrc: ["'self'", "fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "res.cloudinary.com"],
-        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        scriptSrc: process.env.NODE_ENV === 'production'
+          ? ["'self'", "https://checkout.razorpay.com"]
+          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"]
       }
     },
@@ -31,7 +33,7 @@ app.use(
 );
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  'http://localhost:8080'
+  process.env.NODE_ENV !== 'production' ? 'http://localhost:8080' : null
 ].filter(Boolean);
 
 app.use(cors({

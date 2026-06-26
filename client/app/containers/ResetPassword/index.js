@@ -14,6 +14,10 @@ import actions from '../../actions';
 import ResetPasswordForm from '../../components/Common/ResetPasswordForm';
 
 class ResetPassword extends React.PureComponent {
+  componentDidMount() {
+    document.title = 'Reset Password | CARTZA';
+  }
+
   handleResetPassword() {
     const token = this.props.match.params.token;
     this.props.resetPassword(token);

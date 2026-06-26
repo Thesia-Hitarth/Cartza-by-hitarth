@@ -15,6 +15,10 @@ import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import AddMerchant from '../../components/Manager/AddMerchant';
 
 class Sell extends React.PureComponent {
+  componentDidMount() {
+    document.title = 'Sell on CARTZA | Grow Your Business';
+  }
+
   render() {
     const {
       merchantFormData,

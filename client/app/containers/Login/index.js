@@ -12,11 +12,14 @@ import { withRouter } from '../../utils/withRouter';
 
 import actions from '../../actions';
 import Input from '../../components/Common/Input';
-import Button from '../../components/Common/Button';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import SignupProvider from '../../components/Common/SignupProvider';
 
 class Login extends React.PureComponent {
+  componentDidMount() {
+    document.title = 'Login | CARTZA';
+  }
+
   render() {
     const {
       authenticated,
@@ -54,7 +57,7 @@ class Login extends React.PureComponent {
                   "<i>Style is a way to say who you are without having to speak.</i>"
                 </p>
                 <div className='quote-divider mx-auto'></div>
-                <span className='quote-sub'>Est. 2025</span>
+                <span className='quote-sub'>Est. {new Date().getFullYear()}</span>
               </div>
             </Col>
 
@@ -78,7 +81,7 @@ class Login extends React.PureComponent {
                 {/* Email Input */}
                 <div className={`auth-input-group ${formErrors['email'] ? 'has-error' : loginFormData.email ? 'has-success' : ''}`}>
                   <Input
-                    type={'text'}
+                    type={'email'}
                     error={formErrors['email']}
                     label={'Email Address'}
                     name={'email'}
@@ -137,13 +140,12 @@ class Login extends React.PureComponent {
                     {isSubmitting ? 'Logging in...' : 'Login'}
                   </button>
                   
-                  <button
-                    type='button'
-                    className='btn-auth-toggle mt-3'
-                    onClick={registerLink}
+                  <Link
+                    className='btn-auth-toggle text-center d-block'
+                    to='/register'
                   >
                     Create an Account
-                  </button>
+                  </Link>
                 </div>
               </form>
             </Col>

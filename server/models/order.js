@@ -20,6 +20,15 @@ const OrderSchema = new Schema({
     type: Number,
     default: 0
   },
+  status: {
+    type: String,
+    default: 'Not_processed',
+    enum: ['Not_processed', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+  },
+  isCancelled: {
+    type: Boolean,
+    default: false
+  },
   updated: Date,
   created: {
     type: Date,

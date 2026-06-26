@@ -39,25 +39,31 @@ class Navigation extends React.PureComponent {
       ? window.location.pathname === '/'
       : true;
     this.state = {
-      showAnnouncement: localStorage.getItem('cartza_announcement_dismissed') !== 'true',
+      showAnnouncement: typeof window !== 'undefined' ? localStorage.getItem('cartza_announcement_dismissed') !== 'true' : true,
       isDropdownOpen: false,
       isMobileSearchOpen: false,
       scrolled: !isHome,
       navHidden: false,
+      isMobile: typeof window !== 'undefined' ? window.innerWidth < 992 : false,
     };
     this.lastScrollY = 0;
     this.dismissAnnouncement = this.dismissAnnouncement.bind(this);
     this.toggleDropdown = this.toggleDropdown.bind(this);
     this.toggleMobileSearch = this.toggleMobileSearch.bind(this);
     this.handleScroll = this.handleScroll.bind(this);
+    this.handleResize = this.handleResize.bind(this);
+    this.handleFocusTrap = this.handleFocusTrap.bind(this);
   }
 
   componentDidMount() {
     this.props.fetchStoreBrands();
     this.props.fetchStoreCategories();
     window.addEventListener('scroll', this.handleScroll, { passive: true });
+    window.addEventListener('resize', this.handleResize, { passive: true });
+    window.addEventListener('keydown', this.handleFocusTrap);
     // Immediately sync scroll state (handles direct URL navigation)
     this.handleScroll();
+    this.handleResize();
   }
 
   componentDidUpdate(prevProps) {
@@ -72,15 +78,89 @@ class Navigation extends React.PureComponent {
     if (this.props.isCartOpen !== prevProps.isCartOpen) {
       if (this.props.isCartOpen) {
         document.body.classList.add('no-scroll');
+        this.cartTrigger = document.activeElement;
+        setTimeout(() => {
+          const container = document.querySelector('.mini-cart-open');
+          if (container) {
+            const focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+            if (focusables.length > 0) focusables[0].focus();
+          }
+        }, 50);
       } else {
         document.body.classList.remove('no-scroll');
+        if (this.cartTrigger) {
+          this.cartTrigger.focus();
+        }
+      }
+    }
+
+    if (this.props.isMenuOpen !== prevProps.isMenuOpen) {
+      if (this.props.isMenuOpen) {
+        this.menuTrigger = document.activeElement;
+        setTimeout(() => {
+          const container = document.querySelector('.mobile-full-screen-menu');
+          if (container) {
+            const focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+            if (focusables.length > 0) focusables[0].focus();
+          }
+        }, 50);
+      } else {
+        if (this.menuTrigger) {
+          this.menuTrigger.focus();
+        }
       }
     }
   }
 
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('keydown', this.handleFocusTrap);
     document.body.classList.remove('no-scroll');
+  }
+
+  handleResize() {
+    if (typeof window !== 'undefined') {
+      this.setState({ isMobile: window.innerWidth < 992 });
+    }
+  }
+
+  handleFocusTrap(e) {
+    const { isCartOpen, isMenuOpen } = this.props;
+    if (!isCartOpen && !isMenuOpen) return;
+
+    if (e.key !== 'Tab') return;
+
+    let container = null;
+    if (isCartOpen) {
+      container = document.querySelector('.mini-cart-open');
+    } else if (isMenuOpen) {
+      container = document.querySelector('.mobile-full-screen-menu');
+    }
+    if (!container) return;
+
+    const focusables = container.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    if (focusables.length === 0) {
+      e.preventDefault();
+      return;
+    }
+
+    const firstElement = focusables[0];
+    const lastElement = focusables[focusables.length - 1];
+
+    if (e.shiftKey) {
+      if (document.activeElement === firstElement) {
+        lastElement.focus();
+        e.preventDefault();
+      }
+    } else {
+      if (document.activeElement === lastElement) {
+        firstElement.focus();
+        e.preventDefault();
+      }
+    }
   }
 
   handleScroll() {
@@ -277,29 +357,31 @@ class Navigation extends React.PureComponent {
                   </button>
 
                   {/* Desktop Search */}
-                  <div className='d-none d-lg-block'>
-                    <div className='search-input-wrapper' style={{ width: 260 }}>
-                      <span className='search-icon-left'>
-                        <Search size={16} strokeWidth={1.2} />
-                      </span>
-                      <Autosuggest
-                        suggestions={suggestions}
-                        onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                        onSuggestionsClearRequested={onSuggestionsClearRequested}
-                        getSuggestionValue={this.getSuggestionValue}
-                        renderSuggestion={this.renderSuggestion}
-                        inputProps={inputProps}
-                        onSuggestionSelected={(_, item) => {
-                          history.push(`/product/${item.suggestion.slug}`);
-                        }}
-                      />
-                      {searchValue && (
-                        <button className='search-clear-btn' onClick={() => onSearch('')} aria-label='Clear search'>
-                          <X size={14} strokeWidth={1.2} />
-                        </button>
-                      )}
+                  {!this.state.isMobile && (
+                    <div className='d-none d-lg-block'>
+                      <div className='search-input-wrapper' style={{ width: 260 }}>
+                        <span className='search-icon-left'>
+                          <Search size={16} strokeWidth={1.2} />
+                        </span>
+                        <Autosuggest
+                          suggestions={suggestions}
+                          onSuggestionsFetchRequested={onSuggestionsFetchRequested}
+                          onSuggestionsClearRequested={onSuggestionsClearRequested}
+                          getSuggestionValue={this.getSuggestionValue}
+                          renderSuggestion={this.renderSuggestion}
+                          inputProps={inputProps}
+                          onSuggestionSelected={(_, item) => {
+                            history.push(`/product/${item.suggestion.slug}`);
+                          }}
+                        />
+                        {searchValue && (
+                          <button className='search-clear-btn' onClick={() => onSearch('')} aria-label='Clear search'>
+                            <X size={14} strokeWidth={1.2} />
+                          </button>
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Wishlist Icon */}
                   <Link to='/wishlist' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist' data-cursor="link">
@@ -337,7 +419,7 @@ class Navigation extends React.PureComponent {
             </div>
 
             {/* Mobile-only Search Bar */}
-            {this.state.isMobileSearchOpen && (
+            {this.state.isMobile && this.state.isMobileSearchOpen && (
               <div className='mobile-search-bar d-lg-none py-2'>
                 <div className='search-input-wrapper'>
                   <span className='search-icon-left'>

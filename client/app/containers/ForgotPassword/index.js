@@ -16,6 +16,10 @@ import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
 class ForgotPassword extends React.PureComponent {
+  componentDidMount() {
+    document.title = 'Forgot Password | CARTZA';
+  }
+
   render() {
     const {
       authenticated,
@@ -40,7 +44,7 @@ class ForgotPassword extends React.PureComponent {
           <Row>
             <Col xs='12' md='6'>
               <Input
-                type={'text'}
+                type={'email'}
                 error={formErrors['email']}
                 label={'Email Address'}
                 name={'email'}
