@@ -28,6 +28,10 @@ router.post('/add', auth, async (req, res) => {
     if (!zipCode || typeof zipCode !== 'string' || !zipCode.trim()) {
       return res.status(400).json({ error: 'Zip Code is required.' });
     }
+    const cleanZip = zipCode.trim().toUpperCase();
+    if (!/^[A-Z0-9]{3,10}(-[A-Z0-9]{3,6})?$/.test(cleanZip)) {
+      return res.status(400).json({ error: 'Please enter a valid zip / postal code.' });
+    }
 
     const newAddress = new Address({
       address: address.trim(),
@@ -46,7 +50,7 @@ router.post('/add', auth, async (req, res) => {
       address: addressDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -61,7 +65,7 @@ router.get('/', auth, async (req, res) => {
       addresses
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -86,7 +90,7 @@ router.get('/:id', auth, async (req, res) => {
       address: addressDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -152,7 +156,7 @@ router.put('/:id', auth, async (req, res) => {
       message: 'Address has been updated successfully!'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -177,7 +181,7 @@ router.delete('/delete/:id', auth, async (req, res) => {
       address
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

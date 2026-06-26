@@ -13,12 +13,13 @@ const smtp = require('../../services/smtp');
 const keys = require('../../config/keys');
 const Newsletter = require('../../models/newsletter');
 const rateLimiter = require('../../middleware/rateLimiter');
-const { EMAIL_PROVIDER, JWT_COOKIE } = require('../../constants');
+const { EMAIL_PROVIDER } = require('../../constants');
+const validator = require('validator');
 
 const { secret, tokenLife } = keys.jwt;
 
 const authLimiter = rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 15 * 60 * 1000,
   max: 5,
   message: 'Too many attempts, please try again after 15 minutes.'
 });
@@ -28,11 +29,10 @@ router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
 
-
-    if (!email) {
+    if (!email || !validator.isEmail(String(email))) {
       return res
         .status(400)
-        .json({ error: 'You must enter an email address.' });
+        .json({ error: 'You must enter a valid email address.' });
     }
 
     if (!password) {
@@ -76,7 +76,7 @@ router.post('/login', authLimiter, async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -86,11 +86,10 @@ router.post('/register', authLimiter, async (req, res) => {
   try {
     const { email, firstName, lastName, password, isSubscribed } = req.body;
 
-
-    if (!email) {
+    if (!email || !validator.isEmail(String(email))) {
       return res
         .status(400)
-        .json({ error: 'You must enter an email address.' });
+        .json({ error: 'You must enter a valid email address.' });
     }
 
     if (!firstName || !lastName) {
@@ -99,6 +98,12 @@ router.post('/register', authLimiter, async (req, res) => {
 
     if (!password) {
       return res.status(400).json({ error: 'You must enter a password.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9!@#$%^&*]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one letter and one number or special character.' });
     }
 
     const existingUser = await User.findOne({ email });
@@ -159,7 +164,7 @@ router.post('/register', authLimiter, async (req, res) => {
       }
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -204,7 +209,7 @@ router.post('/forgot', authLimiter, async (req, res) => {
 
     res.status(200).json(genericResponse);
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -248,7 +253,7 @@ router.post('/reset/:token', async (req, res) => {
         'Password changed successfully. Please login with your new password.'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -299,7 +304,7 @@ router.post('/reset', auth, async (req, res) => {
         'Password changed successfully. Please login with your new password.'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -326,10 +331,15 @@ router.get(
       id: req.user.id
     };
 
-    // TODO find another way to send the token to frontend
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
     const jwtToken = `Bearer ${token}`;
-    res.cookie('token', encodeURIComponent(jwtToken), { maxAge: 15000, httpOnly: false, path: '/' });
+    res.cookie('token', encodeURIComponent(jwtToken), {
+      maxAge: 10000,          // 10-second hand-off window
+      httpOnly: true,         // Not accessible by JS — prevents XSS theft
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
+      sameSite: 'lax',        // Prevents CSRF on the OAuth redirect flow
+      path: '/'
+    });
     res.redirect(`${keys.app.clientURL}/auth/success`);
   }
 );

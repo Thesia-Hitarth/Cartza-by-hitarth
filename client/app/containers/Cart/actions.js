@@ -75,10 +75,10 @@ export const handleAddToCart = product => {
       newCartItems = existingItems.map((item, idx) =>
         idx === existingIndex
           ? {
-              ...item,
-              quantity: cappedQty,
-              totalPrice: parseFloat((cappedQty * (item.purchasePrice || item.price)).toFixed(2))
-            }
+            ...item,
+            quantity: cappedQty,
+            totalPrice: parseFloat((cappedQty * (item.purchasePrice || item.price)).toFixed(2))
+          }
           : item
       );
       dispatch({
@@ -157,17 +157,27 @@ export const handleCart = () => {
   };
 };
 
+
 export const handleCheckout = () => {
   return (dispatch, getState) => {
-    const successfulOptions = {
-      title: `Please Login to proceed to checkout`,
-      position: 'tr',
-      autoDismiss: 1
-    };
+    const isAuthenticated = getState().authentication?.authenticated;
 
     dispatch(toggleCart());
-    dispatch(push('/login'));
-    dispatch(success(successfulOptions));
+
+    if (isAuthenticated) {
+      // Authenticated users proceed directly to checkout
+      dispatch(push('/checkout'));
+    } else {
+      // Unauthenticated users are redirected to login with a helpful message
+      const loginOptions = {
+        title: 'Login Required',
+        message: 'Please login to proceed to checkout.',
+        position: 'tr',
+        autoDismiss: 3
+      };
+      dispatch(success(loginOptions));
+      dispatch(push('/login'));
+    }
   };
 };
 

@@ -57,7 +57,7 @@ class Login extends React.PureComponent {
                   "<i>Style is a way to say who you are without having to speak.</i>"
                 </p>
                 <div className='quote-divider mx-auto'></div>
-                <span className='quote-sub'>Est. {new Date().getFullYear()}</span>
+                <span className='quote-sub'>Est. 2024</span>
               </div>
             </Col>
 

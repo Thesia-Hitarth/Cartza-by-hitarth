@@ -75,7 +75,7 @@ export const signUp = () => {
       const successfulOptions = {
         title: `You have signed up successfully! You will be receiving an email as well. Thank you!`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       localStorage.setItem('token', response.data.token);

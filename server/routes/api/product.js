@@ -59,7 +59,7 @@ router.get('/item/:slug', async (req, res) => {
       product: productDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -97,7 +97,7 @@ router.get('/list/search/:name', async (req, res) => {
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -185,8 +185,8 @@ router.get('/list', async (req, res) => {
       count
     });
   } catch (error) {
-    console.log('error', error);
-    res.status(400).json({
+    console.error('Product listing error:', error);
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -200,7 +200,7 @@ router.get('/list/select', auth, async (req, res) => {
       products
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -251,6 +251,9 @@ router.post(
         const parsedCompare = Number(compareAtPrice);
         if (isNaN(parsedCompare) || parsedCompare < 0) {
           return res.status(400).json({ error: 'Compare At Price must be a valid number greater than or equal to 0.' });
+        }
+        if (parsedCompare <= parsedPrice) {
+          return res.status(400).json({ error: 'Compare At Price must be greater than the sale Price.' });
         }
       }
 
@@ -478,7 +481,11 @@ router.put(
   async (req, res) => {
     try {
       const productId = req.params.id;
-      const update = req.body.product;
+      const isActive = req.body.product?.isActive;
+      if (typeof isActive !== 'boolean') {
+        return res.status(400).json({ error: 'isActive must be a boolean.' });
+      }
+      const update = { isActive };
       const query = { _id: productId };
 
       if (req.user.role === ROLES.Merchant) {

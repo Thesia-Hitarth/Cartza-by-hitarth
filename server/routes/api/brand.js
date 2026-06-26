@@ -37,7 +37,7 @@ router.post('/add', auth, role.check(ROLES.Admin), async (req, res) => {
       brand: brandDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -54,7 +54,7 @@ router.get('/list', async (req, res) => {
       brands
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -107,7 +107,7 @@ router.get('/:id', async (req, res) => {
       brand: brandDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

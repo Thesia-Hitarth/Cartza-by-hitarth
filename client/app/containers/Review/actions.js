@@ -93,7 +93,7 @@ export const deleteReview = id => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success == true) {
@@ -179,7 +179,7 @@ export const addProductReview = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {

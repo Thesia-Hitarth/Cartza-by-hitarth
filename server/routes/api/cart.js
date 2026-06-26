@@ -7,12 +7,45 @@ const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
 const store = require('../../utils/store');
 
+async function validateAndEnrichProduct(productId, requestedQty) {
+  const dbProduct = await Product.findById(productId);
+  if (!dbProduct) {
+    throw Object.assign(new Error(`Product not found: ${productId}`), { status: 404 });
+  }
+  if (!dbProduct.isActive) {
+    throw Object.assign(new Error(`Product is no longer available.`), { status: 400 });
+  }
+  const qty = Number(requestedQty) || 1;
+  if (dbProduct.quantity < qty) {
+    throw Object.assign(
+      new Error(`Only ${dbProduct.quantity} unit(s) of "${dbProduct.name}" available.`),
+      { status: 400 }
+    );
+  }
+  return {
+    product: dbProduct._id,
+    purchasePrice: dbProduct.price,
+    price: dbProduct.price,
+    quantity: qty,
+    taxable: dbProduct.taxable
+  };
+}
+
 router.post('/add', auth, async (req, res) => {
   try {
     const user = req.user._id;
     const items = req.body.products;
 
-    const products = store.calculateItemsSalesTax(items);
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Cart must contain at least one product.' });
+    }
+
+    // Validate and enrich each product from DB
+    const enrichedItems = await Promise.all(
+      items.map(item => validateAndEnrichProduct(item._id || item.product, item.quantity))
+    );
+
+    const products = store.calculateItemsSalesTax(enrichedItems);
 
     const cart = new Cart({
       user,
@@ -26,8 +59,8 @@ router.post('/add', auth, async (req, res) => {
       cartId: cartDoc.id
     });
   } catch (error) {
-    res.status(400).json({
-      error: 'Your request could not be processed. Please try again.'
+    res.status(error.status || 400).json({
+      error: error.message || 'Your request could not be processed. Please try again.'
     });
   }
 });
@@ -58,12 +91,15 @@ router.post('/add/:cartId', auth, async (req, res) => {
     }
 
     const rawProduct = req.body.product;
-    const [product] = store.calculateItemsSalesTax([rawProduct]);
+    const productId = rawProduct?._id || rawProduct?.product;
+
+    const enriched = await validateAndEnrichProduct(productId, rawProduct?.quantity || 1);
+    const [product] = store.calculateItemsSalesTax([enriched]);
 
     await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
     res.status(200).json({ success: true });
   } catch (error) {
-    res.status(400).json({ error: 'Your request could not be processed. Please try again.' });
+    res.status(error.status || 400).json({ error: error.message || 'Your request could not be processed. Please try again.' });
   }
 });
 
@@ -99,6 +135,16 @@ router.put('/update-quantity/:cartId', auth, async (req, res) => {
     const parsedQty = Number(quantity);
     if (isNaN(parsedQty) || parsedQty < 1) {
       return res.status(400).json({ error: 'Quantity must be at least 1.' });
+    }
+
+    const dbProduct = await Product.findById(productId);
+    if (!dbProduct) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+    if (dbProduct.quantity < parsedQty) {
+      return res.status(400).json({
+        error: `Only ${dbProduct.quantity} unit(s) available for "${dbProduct.name}".`
+      });
     }
 
     const productItem = cart.products.find(item => String(item.product) === String(productId));

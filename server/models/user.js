@@ -8,20 +8,24 @@ const { Schema } = Mongoose;
 const UserSchema = new Schema({
   email: {
     type: String,
-    required: function() {
+    required: function () {
       return this.provider === EMAIL_PROVIDER.Email;
     },
     unique: true,
-    index: true
+    index: true,
+    maxlength: [254, 'Email must be 254 characters or fewer']
   },
   phoneNumber: {
-    type: String
+    type: String,
+    maxlength: [20, 'Phone number must be 20 characters or fewer']
   },
   firstName: {
-    type: String
+    type: String,
+    maxlength: [50, 'First name must be 50 characters or fewer']
   },
   lastName: {
-    type: String
+    type: String,
+    maxlength: [50, 'Last name must be 50 characters or fewer']
   },
   password: {
     type: String,

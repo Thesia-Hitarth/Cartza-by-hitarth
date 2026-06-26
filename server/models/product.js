@@ -5,11 +5,13 @@ const { generateUniqueSlug } = require('../utils/slugify');
 // Product Schema
 const ProductSchema = new Schema({
   sku: {
-    type: String
+    type: String,
+    maxlength: [100, 'SKU must be 100 characters or fewer']
   },
   name: {
     type: String,
-    trim: true
+    trim: true,
+    maxlength: [200, 'Product name must be 200 characters or fewer']
   },
   slug: {
     type: String,
@@ -23,7 +25,8 @@ const ProductSchema = new Schema({
   },
   description: {
     type: String,
-    trim: true
+    trim: true,
+    maxlength: [5000, 'Description must be 5000 characters or fewer']
   },
   quantity: {
     type: Number
@@ -69,5 +72,9 @@ ProductSchema.pre('save', async function (next) {
   }
   next();
 });
+
+ProductSchema.index({ brand: 1, isActive: 1 });
+ProductSchema.index({ sku: 1 });
+ProductSchema.index({ name: 'text' });
 
 module.exports = Mongoose.model('Product', ProductSchema);

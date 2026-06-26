@@ -3,13 +3,21 @@ const router = express.Router();
 
 const Newsletter = require('../../models/newsletter');
 const smtp = require('../../services/smtp');
+const rateLimiter = require('../../middleware/rateLimiter');
+const validator = require('validator');
 
-router.post('/subscribe', async (req, res) => {
+const newsletterLimiter = rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: 'Too many subscription attempts, please try again later.'
+});
+
+router.post('/subscribe', newsletterLimiter, async (req, res) => {
   try {
     const email = req.body.email;
 
-    if (!email || typeof email !== 'string' || !email.trim()) {
-      return res.status(400).json({ error: 'You must enter an email address.' });
+    if (!email || !validator.isEmail(String(email))) {
+      return res.status(400).json({ error: 'You must enter a valid email address.' });
     }
 
     const emailLower = email.trim().toLowerCase();
@@ -30,7 +38,7 @@ router.post('/subscribe', async (req, res) => {
       message: 'You have successfully subscribed to the newsletter'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

@@ -6,11 +6,13 @@ const User = require('../../models/user');
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const { ROLES } = require('../../constants');
+const validator = require('validator');
 
 // search users api
 router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { search, page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
 
     const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escapeRegExp(search || ''), 'i');
@@ -25,20 +27,20 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
 
     const users = await User.find(query, { password: 0, _id: 0 })
       .populate('merchant', 'name')
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await User.countDocuments(query);
 
     res.status(200).json({
       users,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -65,7 +67,7 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -87,7 +89,7 @@ router.get('/me', auth, async (req, res) => {
       user: userDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -97,9 +99,37 @@ router.put('/', auth, async (req, res) => {
   try {
     const user = req.user._id;
     const { firstName, lastName, phoneNumber } = req.body.profile || {};
-    const update = { firstName, lastName, phoneNumber };
-    const query = { _id: user };
 
+    if (firstName !== undefined) {
+      if (typeof firstName !== 'string' || firstName.trim().length === 0) {
+        return res.status(400).json({ error: 'First name cannot be empty.' });
+      }
+      if (firstName.trim().length > 50) {
+        return res.status(400).json({ error: 'First name must be 50 characters or fewer.' });
+      }
+    }
+    if (lastName !== undefined) {
+      if (typeof lastName !== 'string' || lastName.trim().length === 0) {
+        return res.status(400).json({ error: 'Last name cannot be empty.' });
+      }
+      if (lastName.trim().length > 50) {
+        return res.status(400).json({ error: 'Last name must be 50 characters or fewer.' });
+      }
+    }
+    if (phoneNumber !== undefined && phoneNumber !== '') {
+      const cleanPhone = String(phoneNumber).trim();
+      // Basic phone validation: 7-15 digits with optional leading +
+      if (!/^\+?[0-9]{7,15}$/.test(cleanPhone)) {
+        return res.status(400).json({ error: 'Please enter a valid phone number.' });
+      }
+    }
+
+    const update = {};
+    if (firstName !== undefined) update.firstName = firstName.trim();
+    if (lastName !== undefined) update.lastName = lastName.trim();
+    if (phoneNumber !== undefined) update.phoneNumber = String(phoneNumber).trim();
+
+    const query = { _id: user };
     const userDoc = await User.findOneAndUpdate(query, update, {
       new: true
     });
@@ -110,7 +140,32 @@ router.put('/', auth, async (req, res) => {
       user: userDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
+      error: 'Your request could not be processed. Please try again.'
+    });
+  }
+});
+
+router.delete('/me', auth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    // Anonymize rather than hard-delete to preserve order history integrity
+    await User.findByIdAndUpdate(userId, {
+      firstName: 'Deleted',
+      lastName: 'User',
+      email: `deleted_${userId}@deleted.invalid`,
+      password: undefined,
+      googleId: undefined,
+      phoneNumber: undefined,
+      resetPasswordToken: undefined,
+      resetPasswordExpires: undefined
+    });
+    res.status(200).json({
+      success: true,
+      message: 'Your account has been successfully deleted.'
+    });
+  } catch (error) {
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

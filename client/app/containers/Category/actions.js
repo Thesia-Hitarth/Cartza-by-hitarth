@@ -150,7 +150,7 @@ export const addCategory = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -213,7 +213,7 @@ export const updateCategory = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -240,7 +240,7 @@ export const activateCategory = (id, value) => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -261,7 +261,7 @@ export const deleteCategory = id => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success == true) {

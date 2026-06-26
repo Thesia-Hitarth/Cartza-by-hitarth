@@ -51,7 +51,7 @@ router.get('/list', async (req, res) => {
       categories
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -65,7 +65,7 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
       categories
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -91,7 +91,7 @@ router.get('/:id', async (req, res) => {
       category: categoryDoc
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -121,7 +121,7 @@ router.put('/:id', auth, role.check(ROLES.Admin), async (req, res) => {
       message: 'Category has been updated successfully!'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -154,7 +154,7 @@ router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
       message: 'Category has been updated successfully!'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

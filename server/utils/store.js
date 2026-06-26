@@ -1,7 +1,7 @@
 const Product = require('../models/product');
 const taxConfig = require('../config/tax');
 
-exports.disableProducts = async function(products) {
+exports.disableProducts = async function (products) {
   let bulkOptions = products.map(item => ({
     updateOne: {
       filter: { _id: item._id },
@@ -11,13 +11,13 @@ exports.disableProducts = async function(products) {
   await Product.bulkWrite(bulkOptions);
 };
 
-exports.calculateTaxAmount = function(order) {
+exports.calculateTaxAmount = function (order) {
   try {
     const taxRate = taxConfig.stateTaxRate;
 
     order.totalTax = 0;
     if (order.products && order.products.length > 0) {
-      order.products.map(item => {
+      order.products.forEach(item => {
         const price = item.purchasePrice || (item?.product?.price ?? 0);
         const quantity = item.quantity;
         item.totalPrice = price * quantity;
@@ -57,14 +57,14 @@ exports.calculateTaxAmount = function(order) {
   }
 };
 
-exports.calculateOrderTotal = function(order) {
+exports.calculateOrderTotal = function (order) {
   const total = order.products
     .filter(item => item.status !== 'Cancelled')
     .reduce((sum, current) => sum + current.totalPrice, 0);
   return total;
 };
 
-exports.calculateItemsSalesTax = function(items) {
+exports.calculateItemsSalesTax = function (items) {
   const taxRate = taxConfig.stateTaxRate;
 
   return items.map(item => {
@@ -87,11 +87,12 @@ exports.calculateItemsSalesTax = function(items) {
   });
 };
 
-exports.formatOrders = function(orders) {
+exports.formatOrders = function (orders) {
   const newOrders = orders.map(order => ({
     _id: order._id,
     total: parseFloat(Number(order.total.toFixed(2))),
     created: order.created,
+    status: order.status,
     products: order?.cart?.products
   }));
 

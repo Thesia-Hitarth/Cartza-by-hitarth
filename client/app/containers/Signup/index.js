@@ -56,7 +56,7 @@ class Signup extends React.PureComponent {
                   "<i>Fashion changes, but style endures.</i>"
                 </p>
                 <div className='quote-divider mx-auto'></div>
-                <span className='quote-sub'>Est. {new Date().getFullYear()}</span>
+                <span className='quote-sub'>Est. 2024</span>
               </div>
             </Col>
 

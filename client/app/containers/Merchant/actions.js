@@ -101,7 +101,7 @@ export const addMerchant = (isBack = false) => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -246,7 +246,7 @@ export const merchantSignUp = token => {
       const successfulOptions = {
         title: `You have signed up successfully! Please sign in with the email and password. Thank you!`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       dispatch(signOut());
@@ -271,7 +271,7 @@ export const deleteMerchant = (merchant, search, page) => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {

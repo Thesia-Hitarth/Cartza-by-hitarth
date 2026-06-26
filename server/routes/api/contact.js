@@ -8,23 +8,31 @@ const smtp = require('../../services/smtp');
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const { ROLES } = require('../../constants');
+const rateLimiter = require('../../middleware/rateLimiter');
+const validator = require('validator');
 
-router.post('/add', async (req, res) => {
+const contactLimiter = rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Too many contact requests, please try again later.'
+});
+
+router.post('/add', contactLimiter, async (req, res) => {
   try {
     const name = req.body.name;
     const email = req.body.email;
     const message = req.body.message;
 
-    if (!email) {
+    if (!email || !validator.isEmail(String(email))) {
       return res
         .status(400)
-        .json({ error: 'You must enter an email address.' });
+        .json({ error: 'You must enter a valid email address.' });
     }
 
     if (!name) {
       return res
         .status(400)
-        .json({ error: 'You must enter description & name.' });
+        .json({ error: 'You must enter your name.' });
     }
 
     if (!message) {
@@ -39,7 +47,7 @@ router.post('/add', async (req, res) => {
         .json({ error: 'A request already existed for same email address' });
     }
 
-    const userDoc = await User.findOne({ email: { $regex: new RegExp('^' + email + '$', 'i') } });
+    const userDoc = await User.findOne({ email: email.trim().toLowerCase() });
     const userRole = userDoc ? userDoc.role : 'Guest';
 
     const contact = new Contact({
@@ -55,11 +63,11 @@ router.post('/add', async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `We receved your message, we will reach you on your email address ${email}!`,
+      message: `We received your message, we will reach you at your email address ${email}!`,
       contact: contactDoc
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -106,7 +114,7 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
       contacts
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -122,7 +130,7 @@ router.get('/me', auth, async (req, res) => {
       contacts
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -162,7 +170,7 @@ router.put('/reply/:id', auth, role.check(ROLES.Admin), async (req, res) => {
       contact: updatedContact
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

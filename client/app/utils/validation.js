@@ -11,7 +11,7 @@ export const allFieldsValidation = (data, rules, options) => {
   return validationResponse;
 };
 
-export const santizeFields = data => {
+export const sanitizeFields = data => {
   const fields = { ...data };
 
   for (const field in fields) {
@@ -23,3 +23,6 @@ export const santizeFields = data => {
   }
   return fields;
 };
+
+// Backward-compatible alias — removes broken references across the codebase over time
+export const santizeFields = sanitizeFields;

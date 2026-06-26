@@ -304,7 +304,7 @@ export const addProduct = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -383,7 +383,7 @@ export const updateProduct = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -410,7 +410,7 @@ export const activateProduct = (id, value) => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -431,7 +431,7 @@ export const deleteProduct = id => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {

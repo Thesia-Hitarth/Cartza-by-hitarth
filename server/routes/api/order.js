@@ -119,7 +119,7 @@ router.post('/add', auth, async (req, res) => {
       order: { _id: orderDoc._id }
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -200,7 +200,7 @@ router.get('/search', auth, async (req, res) => {
       });
     }
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -210,6 +210,7 @@ router.get('/search', auth, async (req, res) => {
 router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
     const ordersDoc = await Order.find()
       .sort('-created')
       .populate({
@@ -221,8 +222,8 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
           }
         }
       })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await Order.countDocuments();
@@ -230,12 +231,12 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
 
     res.status(200).json({
       orders,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -245,6 +246,7 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
 router.get('/me', auth, async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
     const user = req.user._id;
     const query = { user };
 
@@ -259,8 +261,8 @@ router.get('/me', auth, async (req, res) => {
           }
         }
       })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await Order.countDocuments(query);
@@ -268,12 +270,12 @@ router.get('/me', auth, async (req, res) => {
 
     res.status(200).json({
       orders,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -331,7 +333,7 @@ router.get('/:orderId', auth, async (req, res) => {
       order
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -397,7 +399,7 @@ router.delete('/cancel/:orderId', auth, async (req, res) => {
       success: true
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -481,9 +483,8 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
       return res.status(200).json({
         success: true,
         orderCancelled: true,
-        message: `${
-          req.user.role === ROLES.Admin ? 'Order' : 'Your order'
-        } has been cancelled successfully`
+        message: `${req.user.role === ROLES.Admin ? 'Order' : 'Your order'
+          } has been cancelled successfully`
       });
     }
 
@@ -492,7 +493,7 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
       message: status === CART_ITEM_STATUS.Cancelled ? 'Item has been cancelled successfully!' : 'Item status has been updated successfully!'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -516,23 +517,6 @@ const increaseQuantity = async products => {
   }
 };
 
-const decreaseQuantity = async products => {
-  let bulkOptions = products
-    .filter(item => item && item.product)
-    .map(item => {
-      const productId = item.product._id || item.product;
-      return {
-        updateOne: {
-          filter: { _id: productId },
-          update: { $inc: { quantity: -item.quantity } }
-        }
-      };
-    });
-
-  if (bulkOptions.length > 0) {
-    await Product.bulkWrite(bulkOptions);
-  }
-};
 
 const updateOrderOverallStatus = async (orderId, cartId) => {
   const cart = await Cart.findById(cartId);
@@ -542,7 +526,7 @@ const updateOrderOverallStatus = async (orderId, cartId) => {
   if (!order) return;
 
   const statuses = cart.products.map(p => p.status);
-  
+
   if (statuses.every(s => s === 'Cancelled')) {
     order.status = 'Cancelled';
     order.isCancelled = true;

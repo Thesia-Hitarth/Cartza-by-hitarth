@@ -19,9 +19,12 @@ router.post('/add', auth, async (req, res) => {
     if (!product) {
       return res.status(400).json({ error: 'Product is required.' });
     }
-    if (!rating) {
-      return res.status(400).json({ error: 'Rating is required.' });
+
+    const parsedRating = Number(rating);
+    if (isNaN(parsedRating) || parsedRating < 1 || parsedRating > 5) {
+      return res.status(400).json({ error: 'Rating must be a number between 1 and 5.' });
     }
+
     if (!review) {
       return res.status(400).json({ error: 'Review text is required.' });
     }
@@ -62,7 +65,7 @@ router.post('/add', auth, async (req, res) => {
       review: reviewDoc
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -72,6 +75,7 @@ router.post('/add', auth, async (req, res) => {
 router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
 
     const reviews = await Review.find()
       .sort('-created')
@@ -83,20 +87,20 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
         path: 'product',
         select: 'name slug imageUrl'
       })
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await Review.countDocuments();
 
     res.status(200).json({
       reviews,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -129,7 +133,7 @@ router.get('/:slug', async (req, res) => {
       reviews
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -138,7 +142,17 @@ router.get('/:slug', async (req, res) => {
 router.put('/:id', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const reviewId = req.params.id;
-    const update = req.body;
+    const { title, rating: updateRating, review: updateReview, isRecommended, status } = req.body;
+    const parsedUpdateRating = updateRating !== undefined ? Number(updateRating) : undefined;
+    if (parsedUpdateRating !== undefined && (isNaN(parsedUpdateRating) || parsedUpdateRating < 1 || parsedUpdateRating > 5)) {
+      return res.status(400).json({ error: 'Rating must be a number between 1 and 5.' });
+    }
+    const update = {};
+    if (title !== undefined) update.title = title;
+    if (parsedUpdateRating !== undefined) update.rating = parsedUpdateRating;
+    if (updateReview !== undefined) update.review = updateReview;
+    if (isRecommended !== undefined) update.isRecommended = isRecommended;
+    if (status !== undefined) update.status = status;
     const query = { _id: reviewId };
 
     await Review.findOneAndUpdate(query, update, {
@@ -147,10 +161,10 @@ router.put('/:id', auth, role.check(ROLES.Admin), async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: 'review has been updated successfully!'
+      message: 'Review has been updated successfully!'
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -175,7 +189,7 @@ router.put('/approve/:reviewId', auth, role.check(ROLES.Admin), async (req, res)
       success: true
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -199,7 +213,7 @@ router.put('/reject/:reviewId', auth, role.check(ROLES.Admin), async (req, res) 
       success: true
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -211,11 +225,11 @@ router.delete('/delete/:id', auth, role.check(ROLES.Admin), async (req, res) => 
 
     res.status(200).json({
       success: true,
-      message: `review has been deleted successfully!`,
+      message: `Review has been deleted successfully!`,
       review
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }

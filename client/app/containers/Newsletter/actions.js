@@ -50,7 +50,7 @@ export const subscribeToNewsletter = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       dispatch({ type: NEWSLETTER_RESET });

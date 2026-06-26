@@ -20,15 +20,19 @@ const ReviewSchema = new Schema({
   },
   title: {
     type: String,
-    trim: true
+    trim: true,
+    maxlength: [150, 'Review title must be 150 characters or fewer']
   },
   rating: {
     type: Number,
-    default: 0
+    default: 0,
+    min: [1, 'Rating must be at least 1'],
+    max: [5, 'Rating must be 5 or less']
   },
   review: {
     type: String,
-    trim: true
+    trim: true,
+    maxlength: [2000, 'Review must be 2000 characters or fewer']
   },
   isRecommended: {
     type: Boolean,

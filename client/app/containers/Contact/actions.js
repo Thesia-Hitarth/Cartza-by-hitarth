@@ -54,7 +54,7 @@ export const contactUs = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       dispatch({ type: CONTACT_FORM_RESET });

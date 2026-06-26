@@ -24,7 +24,7 @@ export const forgotPasswordChange = (name, value) => {
   };
 };
 
-export const forgotPassowrd = () => {
+export const forgotPassword = () => {
   return async (dispatch, getState) => {
     try {
       const rules = {
@@ -48,7 +48,7 @@ export const forgotPassowrd = () => {
       const successfulOptions = {
         title: `${response.data.message}`,
         position: 'tr',
-        autoDismiss: 1
+        autoDismiss: 3
       };
 
       if (response.data.success === true) {
@@ -63,3 +63,5 @@ export const forgotPassowrd = () => {
     }
   };
 };
+
+export const forgotPassowrd = forgotPassword;

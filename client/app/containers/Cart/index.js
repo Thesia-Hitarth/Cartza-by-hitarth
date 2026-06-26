@@ -72,7 +72,6 @@ class Cart extends React.PureComponent {
             <div className='empty-cart-icon-wrapper' aria-hidden="true">
               <BagIcon />
             </div>
-            <span className="sr-only">Your shopping bag is empty</span>
             <h2 className='empty-cart-title'>Your Cart is Empty</h2>
             <p className='empty-cart-text mb-4'>Explore our collections and add items to your cart!</p>
             <Button

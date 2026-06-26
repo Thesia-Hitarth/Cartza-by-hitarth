@@ -59,11 +59,11 @@ router.post('/add', async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: `We received your request! we will reach you on your phone number ${phoneNumber}!`,
+      message: `We received your request! We will contact you at ${phoneNumber}.`,
       merchant: merchantDoc
     });
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -73,8 +73,10 @@ router.post('/add', async (req, res) => {
 router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { search, page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
 
-    const regex = new RegExp(search, 'i');
+    const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapeRegExp(search || ''), 'i');
     const query = {
       $or: [
         { phoneNumber: { $regex: regex } },
@@ -87,20 +89,20 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
 
     const merchants = await Merchant.find(query)
       .populate('brand', 'name')
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await Merchant.countDocuments(query);
 
     res.status(200).json({
       merchants,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -127,7 +129,7 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
       count
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -154,7 +156,7 @@ router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
       success: true
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -209,7 +211,7 @@ router.put('/reject/:id', auth, role.check(ROLES.Admin), async (req, res) => {
       success: true
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -233,9 +235,11 @@ router.post('/signup/:token', async (req, res) => {
       return res.status(400).json({ error: 'You must enter a password.' });
     }
 
+    const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
     const userDoc = await User.findOne({
       email,
-      resetPasswordToken: req.params.token
+      resetPasswordToken: tokenHash,
+      resetPasswordExpires: { $gt: Date.now() }
     });
 
     if (!userDoc) {
@@ -268,7 +272,7 @@ router.post('/signup/:token', async (req, res) => {
       success: true
     });
   } catch (error) {
-    res.status(400).json({
+    res.status(500).json({
       error: 'Your request could not be processed. Please try again.'
     });
   }
@@ -366,13 +370,16 @@ const createMerchantUser = async (email, name, merchant, host) => {
   } else {
     const buffer = await crypto.randomBytes(48);
     const resetToken = buffer.toString('hex');
-    const resetPasswordToken = resetToken;
+
+    const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const resetPasswordExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
     const user = new User({
       email,
       firstName,
-      lastName,
+      lastName: null,
       resetPasswordToken,
+      resetPasswordExpires,
       merchant,
       role: ROLES.Merchant
     });

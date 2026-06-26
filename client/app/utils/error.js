@@ -1,8 +1,3 @@
-/**
- *
- * error.js
- * This is a generic error handler, it receives the error returned from the server and present it on a pop up
- */
 
 import { error } from 'react-notification-system-redux';
 
@@ -13,7 +8,7 @@ const handleError = (err, dispatch, title = '') => {
     title: `${title}`,
     message: ``,
     position: 'tr',
-    autoDismiss: 1
+    autoDismiss: 4
   };
 
   if (err.response) {
@@ -22,10 +17,12 @@ const handleError = (err, dispatch, title = '') => {
       unsuccessfulOptions.message = err.response.data.error;
       dispatch(error(unsuccessfulOptions));
     } else if (err.response.status === 404) {
-      // unsuccessfulOptions.title =
-      //   err.response.data.message ||
-      //   'Your request could not be processed. Please try again.';
-      // dispatch(error(unsuccessfulOptions));
+      unsuccessfulOptions.title = title ? title : 'Not Found';
+      unsuccessfulOptions.message =
+        err.response.data?.message ||
+        err.response.data?.error ||
+        'The requested resource could not be found. Please try again.';
+      dispatch(error(unsuccessfulOptions));
     } else if (err.response.status === 401) {
       unsuccessfulOptions.message = 'Unauthorized Access! Please login again';
       dispatch(signOut());
@@ -34,14 +31,20 @@ const handleError = (err, dispatch, title = '') => {
       unsuccessfulOptions.message =
         'Forbidden! You are not allowed to access this resource.';
       dispatch(error(unsuccessfulOptions));
+    } else if (err.response.status >= 500) {
+      unsuccessfulOptions.title = 'Server Error';
+      unsuccessfulOptions.message =
+        'Something went wrong on our end. Please try again shortly.';
+      dispatch(error(unsuccessfulOptions));
     }
   } else if (err.message) {
     unsuccessfulOptions.message = err.message;
     dispatch(error(unsuccessfulOptions));
   } else {
-    // fallback
+    unsuccessfulOptions.title = 'Connection Error';
     unsuccessfulOptions.message =
-      'Your request could not be processed. Please try again.';
+      'Unable to reach the server. Please check your connection and try again.';
+    dispatch(error(unsuccessfulOptions));
   }
 };
 
