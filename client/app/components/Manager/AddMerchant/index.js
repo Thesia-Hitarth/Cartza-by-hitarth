@@ -98,7 +98,7 @@ const AddMerchant = props => {
         </Row>
         <hr />
         <div className='add-merchant-actions'>
-          <Button type='submit' text={submitTitle} disabled={isSubmitting} />
+          <Button type='submit' text={submitTitle} loading={isSubmitting} />
         </div>
       </form>
     </div>

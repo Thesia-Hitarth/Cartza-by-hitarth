@@ -15,6 +15,10 @@ import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
 class MerchantSignup extends React.PureComponent {
+  state = {
+    isSubmitting: false
+  };
+
   componentDidMount() {
     const search = this.props.location.search;
     const email = search ? search.split('=')[1] : '';
@@ -29,11 +33,15 @@ class MerchantSignup extends React.PureComponent {
       merchantSignUp
     } = this.props;
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
       const token = this.props.match.params.token;
       event.preventDefault();
-
-      merchantSignUp(token);
+      this.setState({ isSubmitting: true });
+      try {
+        await merchantSignUp(token);
+      } finally {
+        this.setState({ isSubmitting: false });
+      }
     };
 
     return (
@@ -104,6 +112,7 @@ class MerchantSignup extends React.PureComponent {
                   type='submit'
                   variant='primary'
                   text='Get Started'
+                  loading={this.state.isSubmitting}
                 />
               </Col>
             </Col>

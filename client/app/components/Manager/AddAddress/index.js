@@ -13,11 +13,17 @@ import Input from '../../Common/Input';
 import Button from '../../Common/Button';
 
 const AddAddress = props => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { addressFormData, formErrors, addressChange, addAddress } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    addAddress();
+    setIsSubmitting(true);
+    try {
+      await addAddress();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -103,7 +109,7 @@ const AddAddress = props => {
         </Row>
         <hr />
         <div className='add-address-actions'>
-          <Button type='submit' text='Add Address' />
+          <Button type='submit' text='Add Address' loading={isSubmitting} />
         </div>
       </form>
     </div>

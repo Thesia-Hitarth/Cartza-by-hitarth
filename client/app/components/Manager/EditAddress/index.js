@@ -13,12 +13,28 @@ import Input from '../../Common/Input';
 import Button from '../../Common/Button';
 
 const EditAddress = props => {
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const { address, addressChange, formErrors, updateAddress, deleteAddress } =
     props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    updateAddress();
+    setIsSaving(true);
+    try {
+      await updateAddress();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteAddress(address._id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -108,11 +124,13 @@ const EditAddress = props => {
             type='submit'
             text='Save'
             className='mb-3 mb-md-0 mr-0 mr-md-3'
+            loading={isSaving}
           />
           <Button
             variant='danger'
             text='Delete'
-            onClick={() => deleteAddress(address._id)}
+            onClick={handleDelete}
+            loading={isDeleting}
           />
         </div>
       </form>

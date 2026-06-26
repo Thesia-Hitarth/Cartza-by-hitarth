@@ -15,6 +15,10 @@ import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
 class Contact extends React.PureComponent {
+  state = {
+    isSubmitting: false
+  };
+
   componentDidMount() {
     document.title = 'Contact Us | CARTZA';
   }
@@ -23,9 +27,14 @@ class Contact extends React.PureComponent {
     const { contactFormData, contactFormChange, contactUs, formErrors } =
       this.props;
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
       event.preventDefault();
-      contactUs();
+      this.setState({ isSubmitting: true });
+      try {
+        await contactUs();
+      } finally {
+        this.setState({ isSubmitting: false });
+      }
     };
 
     return (
@@ -33,6 +42,7 @@ class Contact extends React.PureComponent {
         <h3 className='text-uppercase'>Contact Information</h3>
         <hr />
         <form onSubmit={handleSubmit}>
+          {/* ... input fields stay same ... */}
           <Row>
             <Col xs='12' md='6'>
               <Input
@@ -76,7 +86,7 @@ class Contact extends React.PureComponent {
           </Row>
           <hr />
           <div className='contact-actions'>
-            <Button type='submit' text='Submit' />
+            <Button type='submit' text='Submit' loading={this.state.isSubmitting} />
           </div>
         </form>
       </div>

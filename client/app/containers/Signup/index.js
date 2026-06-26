@@ -15,6 +15,7 @@ import Input from '../../components/Common/Input';
 import Checkbox from '../../components/Common/Checkbox';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import SignupProvider from '../../components/Common/SignupProvider';
+import Button from '../../components/Common/Button';
 
 class Signup extends React.PureComponent {
   componentDidMount() {
@@ -165,13 +166,13 @@ class Signup extends React.PureComponent {
                 </div>
 
                 <div className='auth-action-btn-row d-flex flex-column gap-3 mt-4'>
-                  <button
+                  <Button
                     type='submit'
+                    variant='primary'
+                    text='Sign Up'
                     className='btn-auth-submit'
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Signing Up...' : 'Sign Up'}
-                  </button>
+                    loading={isSubmitting}
+                  />
                   
                   <Link
                     className='btn-auth-toggle text-center d-block'

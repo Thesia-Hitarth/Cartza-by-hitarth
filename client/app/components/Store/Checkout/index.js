@@ -73,12 +73,13 @@ class Checkout extends React.Component {
           </button>
           {authenticated ? (
             <button
-              className='btn-checkout'
-              style={{ height: '56px' }}
+              className={`btn-checkout ${isPlacingOrder ? 'ctz-btn--loading' : ''}`}
+              style={{ height: '56px', position: 'relative' }}
               disabled={!selectedAddressId || isPlacingOrder}
               onClick={() => placeOrder(selectedAddressId)}
             >
-              {isPlacingOrder ? 'Placing Order...' : 'Place Order'}
+              {isPlacingOrder && <span className='ctz-btn__spinner' aria-hidden='true' />}
+              {!isPlacingOrder && 'Place Order'}
             </button>
           ) : (
             <button className='btn-checkout' style={{ height: '56px' }} onClick={() => handleCheckout()}>

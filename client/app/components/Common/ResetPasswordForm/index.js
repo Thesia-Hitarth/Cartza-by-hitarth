@@ -12,6 +12,7 @@ import Input from '../Input';
 import Button from '../Button';
 
 const ResetPasswordForm = props => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const {
     resetFormData,
     formErrors,
@@ -20,14 +21,20 @@ const ResetPasswordForm = props => {
     resetPassword
   } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    resetPassword();
+    setIsSubmitting(true);
+    try {
+      await resetPassword();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className='reset-password-form'>
       <form onSubmit={handleSubmit} noValidate>
+          {/* ... inputs stay the same ... */}
           {isToken ? (
             <Row>
               <Col xs='12' lg='6'>
@@ -102,7 +109,7 @@ const ResetPasswordForm = props => {
           )}
         <hr />
         <div className='reset-actions'>
-          <Button type='submit' text='Reset Password' />
+          <Button type='submit' text='Reset Password' loading={isSubmitting} />
         </div>
       </form>
     </div>

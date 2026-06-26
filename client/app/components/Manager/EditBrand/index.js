@@ -15,6 +15,8 @@ import Switch from '../../Common/Switch';
 import { ROLES } from '../../../constants';
 
 const EditBrand = props => {
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const {
     user,
     brand,
@@ -25,9 +27,23 @@ const EditBrand = props => {
     activateBrand
   } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    updateBrand();
+    setIsSaving(true);
+    try {
+      await updateBrand();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteBrand(brand._id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -98,12 +114,14 @@ const EditBrand = props => {
             type='submit'
             text='Save'
             className='mb-3 mb-md-0 mr-0 mr-md-3'
+            loading={isSaving}
           />
           <Button
             variant='danger'
             text='Delete'
-            disabled={user.role === ROLES.Merchant}
-            onClick={() => deleteBrand(brand._id)}
+            disabled={user.role === ROLES.Merchant || isDeleting}
+            onClick={handleDelete}
+            loading={isDeleting}
           />
         </div>
       </form>

@@ -26,8 +26,13 @@
   inset: 0;
   background-size: cover;
   background-position: center;
+  background-image: url('/images/banners/hero.jpg');
   animation: kenburns 12s ease-out forwards;
   z-index: 0;
+
+  @media (max-width: 767px) {
+    background-image: url('/images/banners/Mobile-hero.png');
+  }
 }
 
 .hero-overlay {

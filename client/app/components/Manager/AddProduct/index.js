@@ -20,6 +20,7 @@ const taxableSelect = [
 ];
 
 const AddProduct = props => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const {
     user,
     productFormData,
@@ -30,9 +31,14 @@ const AddProduct = props => {
     image
   } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    addProduct();
+    setIsSubmitting(true);
+    try {
+      await addProduct();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -158,7 +164,7 @@ const AddProduct = props => {
         </Row>
         <hr />
         <div className='add-product-actions'>
-          <Button type='submit' text='Add Product' />
+          <Button type='submit' text='Add Product' loading={isSubmitting} />
         </div>
       </form>
     </div>

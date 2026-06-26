@@ -15,6 +15,8 @@ import SelectOption from '../../Common/SelectOption';
 import Switch from '../../Common/Switch';
 
 const EditCategory = props => {
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const {
     products,
     category,
@@ -25,9 +27,23 @@ const EditCategory = props => {
     activateCategory
   } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    updateCategory();
+    setIsSaving(true);
+    try {
+      await updateCategory();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteCategory(category._id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -112,11 +128,13 @@ const EditCategory = props => {
             type='submit'
             text='Save'
             className='mb-3 mb-md-0 mr-0 mr-md-3'
+            loading={isSaving}
           />
           <Button
             variant='danger'
             text='Delete'
-            onClick={() => deleteCategory(category._id)}
+            onClick={handleDelete}
+            loading={isDeleting}
           />
         </div>
       </form>

@@ -14,6 +14,7 @@ import actions from '../../actions';
 import Input from '../../components/Common/Input';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import SignupProvider from '../../components/Common/SignupProvider';
+import Button from '../../components/Common/Button';
 
 class Login extends React.PureComponent {
   componentDidMount() {
@@ -132,13 +133,13 @@ class Login extends React.PureComponent {
                 </div>
 
                 <div className='auth-action-btn-row d-flex flex-column gap-3 mt-4'>
-                  <button
+                  <Button
                     type='submit'
+                    variant='primary'
+                    text='Login'
                     className='btn-auth-submit'
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Logging in...' : 'Login'}
-                  </button>
+                    loading={isSubmitting}
+                  />
                   
                   <Link
                     className='btn-auth-toggle text-center d-block'

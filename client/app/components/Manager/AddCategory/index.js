@@ -14,6 +14,7 @@ import Button from '../../Common/Button';
 import SelectOption from '../../Common/SelectOption';
 
 const AddCategory = props => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const {
     products,
     categoryFormData,
@@ -22,9 +23,14 @@ const AddCategory = props => {
     addCategory
   } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    addCategory();
+    setIsSubmitting(true);
+    try {
+      await addCategory();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,7 +87,7 @@ const AddCategory = props => {
         </Row>
         <hr />
         <div className='add-category-actions'>
-          <Button type='submit' text='Add Category' />
+          <Button type='submit' text='Add Category' loading={isSubmitting} />
         </div>
       </form>
     </div>

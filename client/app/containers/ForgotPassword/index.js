@@ -16,6 +16,10 @@ import Input from '../../components/Common/Input';
 import Button from '../../components/Common/Button';
 
 class ForgotPassword extends React.PureComponent {
+  state = {
+    isSubmitting: false
+  };
+
   componentDidMount() {
     document.title = 'Forgot Password | CARTZA';
   }
@@ -31,9 +35,14 @@ class ForgotPassword extends React.PureComponent {
 
     if (authenticated) return <Navigate to='/dashboard' replace />;
 
-    const handleSubmit = event => {
+    const handleSubmit = async event => {
       event.preventDefault();
-      forgotPassowrd();
+      this.setState({ isSubmitting: true });
+      try {
+        await forgotPassowrd();
+      } finally {
+        this.setState({ isSubmitting: false });
+      }
     };
 
     return (
@@ -63,6 +72,7 @@ class ForgotPassword extends React.PureComponent {
               variant='primary'
               text='Send Email'
               className='mb-3 mb-md-0'
+              loading={this.state.isSubmitting}
             />
             <Link className='redirect-link' to={'/login'}>
               Back to login

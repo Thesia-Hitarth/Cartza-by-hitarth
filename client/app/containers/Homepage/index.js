@@ -124,7 +124,7 @@ class Homepage extends React.PureComponent {
             ═══════════════════════════════════════════ */}
         <section className='hero-section'>
           {/* Background image with Ken Burns */}
-          <div className='hero-bg-image' style={{ backgroundImage: "url('/images/banners/banner-1.jpg')" }}></div>
+          <div className='hero-bg-image'></div>
           <div className='hero-overlay'></div>
 
           {/* Content layer */}

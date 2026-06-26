@@ -21,6 +21,8 @@ const taxableSelect = [
 ];
 
 const EditProduct = props => {
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
   const {
     user,
     product,
@@ -32,9 +34,23 @@ const EditProduct = props => {
     activateProduct
   } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    updateProduct();
+    setIsSaving(true);
+    try {
+      await updateProduct();
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteProduct(product._id);
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -134,7 +150,7 @@ const EditProduct = props => {
               label={'Taxable'}
               multi={false}
               name={'taxable'}
-              value={[product.taxable ? taxableSelect[0] : taxableSelect[1]]}
+              value={product.taxable ? { value: 1, label: 'Yes' } : { value: 0, label: 'No' }}
               options={taxableSelect}
               handleSelectChange={value => {
                 productChange('taxable', value.value);
@@ -174,11 +190,13 @@ const EditProduct = props => {
             type='submit'
             text='Save'
             className='mb-3 mb-md-0 mr-0 mr-md-3'
+            loading={isSaving}
           />
           <Button
             variant='danger'
             text='Delete'
-            onClick={() => deleteProduct(product._id)}
+            onClick={handleDelete}
+            loading={isDeleting}
           />
         </div>
       </form>

@@ -13,11 +13,17 @@ import Switch from '../../Common/Switch';
 import Button from '../../Common/Button';
 
 const AddBrand = props => {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const { brandFormData, formErrors, brandChange, addBrand } = props;
 
-  const handleSubmit = event => {
+  const handleSubmit = async event => {
     event.preventDefault();
-    addBrand();
+    setIsSubmitting(true);
+    try {
+      await addBrand();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -62,7 +68,7 @@ const AddBrand = props => {
         </Row>
         <hr />
         <div className='add-brand-actions'>
-          <Button type='submit' text='Add Brand' />
+          <Button type='submit' text='Add Brand' loading={isSubmitting} />
         </div>
       </form>
     </div>
