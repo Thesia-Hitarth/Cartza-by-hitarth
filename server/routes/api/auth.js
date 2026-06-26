@@ -333,7 +333,7 @@ router.get(
 
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
     const jwtToken = `Bearer ${token}`;
-    res.cookie('token', encodeURIComponent(jwtToken), {
+    res.cookie('token', jwtToken, {
       maxAge: 10000,          // 10-second hand-off window
       httpOnly: true,         // Not accessible by JS — prevents XSS theft
       secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
@@ -345,5 +345,34 @@ router.get(
 );
 
 
+
+const getCookieFromHeaders = (cookieHeader, name) => {
+  if (!cookieHeader) return null;
+  const value = `; ${cookieHeader}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+};
+
+router.get('/google/success', (req, res) => {
+  const cookieHeader = req.headers.cookie;
+  const token = getCookieFromHeaders(cookieHeader, 'token');
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication token not found.' });
+  }
+
+  // Clear the cookie immediately
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/'
+  });
+
+  return res.status(200).json({
+    success: true,
+    token: decodeURIComponent(token)
+  });
+});
 
 module.exports = router;

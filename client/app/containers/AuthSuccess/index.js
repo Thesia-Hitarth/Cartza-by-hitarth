@@ -10,26 +10,29 @@ import { connect } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { withRouter } from '../../utils/withRouter';
 
+import axios from 'axios';
+import { API_URL } from '../../constants';
 import actions from '../../actions';
 import setToken from '../../utils/token';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 
-const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
-};
-
 class AuthSuccess extends React.PureComponent {
-  componentDidMount() {
-    const token = getCookie('token');
-    if (token) {
-      const jwtToken = decodeURIComponent(token);
-      setToken(jwtToken);
-      localStorage.setItem('token', jwtToken);
-      // Clear the cookie immediately
-      document.cookie = 'token=; Max-Age=0; path=/;';
-      this.props.setAuth();
+  async componentDidMount() {
+    try {
+      const response = await axios.get(`${API_URL}/auth/google/success`, {
+        withCredentials: true
+      });
+      const token = response.data.token;
+      if (token) {
+        setToken(token);
+        localStorage.setItem('token', token);
+        this.props.setAuth();
+      } else {
+        this.props.history.replace('/login');
+      }
+    } catch (error) {
+      console.error('Google login verification failed:', error);
+      this.props.history.replace('/login');
     }
   }
 

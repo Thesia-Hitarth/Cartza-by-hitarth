@@ -34,7 +34,6 @@ const CarouselSlider = props => {
       autoPlaySpeed={autoPlaySpeed}
       ssr={ssr}
       responsive={responsive}
-      customTransition='all 1s'
       transitionDuration={500}
       containerClass='carousel-container'
       dotListClass='carousel-dot-list-style'

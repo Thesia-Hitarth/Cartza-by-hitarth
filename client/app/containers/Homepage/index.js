@@ -31,7 +31,7 @@ import ProductList from '../../components/Store/ProductList';
 const responsive = {
   desktop: {
     breakpoint: { max: 3000, min: 1024 },
-    items: 4,
+    items: 3,
     slidesToSlide: 1
   },
   tablet: {
@@ -249,18 +249,20 @@ class Homepage extends React.PureComponent {
           <section className='section-trending py-5' data-animate="fade-up">
             <Container>
               <SectionHeader number="02" title="Trending Now" link="/shop" linkText="See All" />
-              <CarouselSlider responsive={responsive} infinite={true} autoPlay={true}>
-                {products.slice(0, 6).map((product, idx) => (
-                  <div key={product._id || idx} className="carousel-product-card px-2">
-                    <ProductList
-                      products={[product]}
-                      authenticated={authenticated}
-                      updateWishlist={this.props.updateWishlist}
-                      handleAddToCart={this.props.handleAddToCart}
-                    />
-                  </div>
-                ))}
-              </CarouselSlider>
+              <div className="carousel-wrapper-custom">
+                <CarouselSlider responsive={responsive} infinite={products && products.length > 3} autoPlay={true}>
+                  {products.slice(0, 6).map((product, idx) => (
+                    <div key={product._id || idx} className="carousel-product-card px-2">
+                      <ProductList
+                        products={[product]}
+                        authenticated={authenticated}
+                        updateWishlist={this.props.updateWishlist}
+                        handleAddToCart={this.props.handleAddToCart}
+                      />
+                    </div>
+                  ))}
+                </CarouselSlider>
+              </div>
             </Container>
           </section>
         )}
