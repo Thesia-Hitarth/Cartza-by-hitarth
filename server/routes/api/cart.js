@@ -93,10 +93,19 @@ router.post('/add/:cartId', auth, async (req, res) => {
     const rawProduct = req.body.product;
     const productId = rawProduct?._id || rawProduct?.product;
 
-    const enriched = await validateAndEnrichProduct(productId, rawProduct?.quantity || 1);
-    const [product] = store.calculateItemsSalesTax([enriched]);
+    const existingIndex = cart.products.findIndex(p => String(p.product) === String(productId));
 
-    await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
+    if (existingIndex > -1) {
+      const newQty = cart.products[existingIndex].quantity + (Number(rawProduct?.quantity) || 1);
+      const enriched = await validateAndEnrichProduct(productId, newQty);
+      const [product] = store.calculateItemsSalesTax([enriched]);
+      cart.products[existingIndex] = product;
+      await cart.save();
+    } else {
+      const enriched = await validateAndEnrichProduct(productId, rawProduct?.quantity || 1);
+      const [product] = store.calculateItemsSalesTax([enriched]);
+      await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
+    }
     res.status(200).json({ success: true });
   } catch (error) {
     res.status(error.status || 400).json({ error: error.message || 'Your request could not be processed. Please try again.' });

@@ -50,19 +50,20 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
 router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
 
     const users = await User.find({}, { password: 0, _id: 0, googleId: 0 })
       .sort('-created')
       .populate('merchant', 'name')
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await User.countDocuments();
 
     res.status(200).json({
       users,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });

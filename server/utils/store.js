@@ -2,6 +2,7 @@ const Product = require('../models/product');
 const taxConfig = require('../config/tax');
 
 exports.disableProducts = async function (products) {
+  if (!products || products.length === 0) return;
   let bulkOptions = products.map(item => ({
     updateOne: {
       filter: { _id: item._id },

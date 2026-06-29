@@ -18,6 +18,13 @@ const {
 } = require('../../utils/queries');
 const { ROLES } = require('../../constants');
 
+router.param('id', (req, res, next, id) => {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid product ID format.' });
+  }
+  next();
+});
+
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
@@ -421,16 +428,33 @@ router.put(
         sizes
       } = req.body.product || {};
 
+      const productDoc = await Product.findById(productId);
+      if (!productDoc) {
+        return res.status(404).json({ error: 'No product found.' });
+      }
+
       if (req.user.role === ROLES.Merchant) {
-        const productDoc = await Product.findById(productId).populate('brand');
-        if (!productDoc || !productDoc.brand || String(productDoc.brand.merchant) !== String(req.user.merchant)) {
+        const brandDoc = await Brand.findById(productDoc.brand);
+        if (!brandDoc || String(brandDoc.merchant) !== String(req.user.merchant)) {
           return res.status(403).json({ error: 'Unauthorized to edit this product.' });
         }
       }
 
+      const update = {};
+      if (sku !== undefined) update.sku = sku;
+      if (name !== undefined) update.name = name;
+
+      if (name) {
+        const { generateUniqueSlug } = require('../../utils/slugify');
+        update.slug = await generateUniqueSlug(Product, name, productId);
+      } else if (req.body.product?.slug) {
+        const { slugify } = require('../../utils/slugify');
+        update.slug = slugify(req.body.product.slug);
+      }
+
       const orQuery = [];
       if (sku) orQuery.push({ sku });
-      if (req.body.product?.slug) orQuery.push({ slug: req.body.product.slug });
+      if (update.slug) orQuery.push({ slug: update.slug });
 
       if (orQuery.length > 0) {
         const foundProduct = await Product.findOne({
@@ -444,13 +468,39 @@ router.put(
         }
       }
 
-      const update = {};
-      if (sku !== undefined) update.sku = sku;
-      if (name !== undefined) update.name = name;
       if (description !== undefined) update.description = sanitizeHtml(description);
-      if (quantity !== undefined) update.quantity = quantity;
-      if (price !== undefined) update.price = price;
-      if (compareAtPrice !== undefined) update.compareAtPrice = compareAtPrice;
+      if (quantity !== undefined) {
+        const parsedQuantity = Number(quantity);
+        if (isNaN(parsedQuantity) || parsedQuantity < 0) {
+          return res.status(400).json({ error: 'Quantity must be a valid number greater than or equal to 0.' });
+        }
+        update.quantity = parsedQuantity;
+      }
+      if (price !== undefined) {
+        const parsedPrice = Number(price);
+        if (isNaN(parsedPrice) || parsedPrice < 0) {
+          return res.status(400).json({ error: 'Price must be a valid number greater than or equal to 0.' });
+        }
+        update.price = parsedPrice;
+      }
+
+      const finalPrice = price !== undefined ? Number(price) : productDoc.price;
+      const finalCompareAtPrice = compareAtPrice !== undefined ? (compareAtPrice === null || compareAtPrice === '' ? null : Number(compareAtPrice)) : productDoc.compareAtPrice;
+
+      if (finalCompareAtPrice !== null && finalCompareAtPrice !== undefined) {
+        if (isNaN(finalCompareAtPrice) || finalCompareAtPrice < 0) {
+          return res.status(400).json({ error: 'Compare At Price must be a valid number greater than or equal to 0.' });
+        }
+        if (finalCompareAtPrice <= finalPrice) {
+          return res.status(400).json({ error: 'Compare At Price must be greater than the sale Price.' });
+        }
+        if (compareAtPrice !== undefined) {
+          update.compareAtPrice = finalCompareAtPrice;
+        }
+      } else if (compareAtPrice !== undefined) {
+        update.compareAtPrice = null;
+      }
+
       if (taxable !== undefined) update.taxable = taxable;
       if (isActive !== undefined) update.isActive = isActive;
       if (brand !== undefined) update.brand = brand;

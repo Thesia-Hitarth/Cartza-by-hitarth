@@ -8,6 +8,14 @@ const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const store = require('../../utils/store');
 const { ROLES } = require('../../constants');
+const Mongoose = require('mongoose');
+
+router.param('id', (req, res, next, id) => {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid category ID format.' });
+  }
+  next();
+});
 
 router.post('/add', auth, role.check(ROLES.Admin), (req, res) => {
   const name = req.body.name;
@@ -100,16 +108,23 @@ router.get('/:id', async (req, res) => {
 router.put('/:id', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const categoryId = req.params.id;
-    const update = req.body.category;
+    const update = req.body.category || {};
     const query = { _id: categoryId };
-    const { slug } = req.body.category;
+    const { name, slug } = update;
 
-    const foundCategory = await Category.findOne({
-      $or: [{ slug }]
-    });
+    if (name) {
+      const { generateUniqueSlug } = require('../../utils/slugify');
+      update.slug = await generateUniqueSlug(Category, name, categoryId);
+    } else if (slug) {
+      const { slugify } = require('../../utils/slugify');
+      update.slug = slugify(slug);
+    }
 
-    if (foundCategory && foundCategory._id != categoryId) {
-      return res.status(400).json({ error: 'Slug is already in use.' });
+    if (update.slug) {
+      const foundCategory = await Category.findOne({ slug: update.slug });
+      if (foundCategory && String(foundCategory._id) !== String(categoryId)) {
+        return res.status(400).json({ error: 'Slug is already in use.' });
+      }
     }
 
     await Category.findOneAndUpdate(query, update, {

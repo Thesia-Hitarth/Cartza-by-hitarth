@@ -12,6 +12,20 @@ const smtp = require('../../services/smtp');
 const store = require('../../utils/store');
 const { ROLES, CART_ITEM_STATUS } = require('../../constants');
 
+router.param('orderId', (req, res, next, orderId) => {
+  if (!Mongoose.Types.ObjectId.isValid(orderId)) {
+    return res.status(400).json({ error: 'Invalid Order ID format.' });
+  }
+  next();
+});
+
+router.param('itemId', (req, res, next, itemId) => {
+  if (!Mongoose.Types.ObjectId.isValid(itemId)) {
+    return res.status(400).json({ error: 'Invalid Item ID format.' });
+  }
+  next();
+});
+
 router.post('/add', auth, async (req, res) => {
   try {
     const { cartId, addressId, paymentId, gatewayOrderId, signature } = req.body;
@@ -111,7 +125,11 @@ router.post('/add', auth, async (req, res) => {
 
     newOrder = store.calculateTaxAmount(newOrder);
 
-    await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
+    try {
+      await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
+    } catch (emailError) {
+      console.warn('Order confirmation email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,
@@ -392,7 +410,11 @@ router.delete('/cancel/:orderId', auth, async (req, res) => {
     populatedOrder = store.calculateTaxAmount(populatedOrder);
 
     if (order.user && order.user.email) {
-      await smtp.sendEmail(order.user.email, 'order-cancellation', null, populatedOrder);
+      try {
+        await smtp.sendEmail(order.user.email, 'order-cancellation', null, populatedOrder);
+      } catch (emailError) {
+        console.warn('Order cancellation email failed to send:', emailError.message);
+      }
     }
 
     res.status(200).json({
@@ -422,6 +444,12 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
       return res.status(404).json({ error: 'Cart item not found.' });
     }
     const foundCartProduct = foundCart.products.find(p => String(p._id) === String(itemId));
+
+    if (status === CART_ITEM_STATUS.Cancelled) {
+      if (foundCartProduct.status === CART_ITEM_STATUS.Shipped || foundCartProduct.status === CART_ITEM_STATUS.Delivered) {
+        return res.status(400).json({ error: 'Item cannot be cancelled at this stage.' });
+      }
+    }
 
     if (req.user.role === ROLES.Merchant) {
       const product = await Product.findById(foundCartProduct.product).populate('brand');
@@ -477,7 +505,11 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
           products: orderDoc.cart?.products || []
         };
         populatedOrder = store.calculateTaxAmount(populatedOrder);
-        await smtp.sendEmail(orderDoc.user.email, 'order-cancellation', null, populatedOrder);
+        try {
+          await smtp.sendEmail(orderDoc.user.email, 'order-cancellation', null, populatedOrder);
+        } catch (emailError) {
+          console.warn('Order cancellation email failed to send:', emailError.message);
+        }
       }
 
       return res.status(200).json({

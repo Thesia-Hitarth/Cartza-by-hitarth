@@ -43,7 +43,7 @@ export const signUp = () => {
     try {
       const rules = {
         email: 'required|email',
-        password: 'required|min:6',
+        password: 'required|min:8',
         firstName: 'required',
         lastName: 'required'
       };
@@ -51,12 +51,20 @@ export const signUp = () => {
       const newUser = getState().signup.signupFormData;
       const isSubscribed = getState().signup.isSubscribed;
 
-      const { isValid, errors } = allFieldsValidation(newUser, rules, {
+      let { isValid, errors } = allFieldsValidation(newUser, rules, {
         'required.email': 'Email is required.',
         'required.password': 'Password is required.',
+        'min.password': 'Password must be at least 8 characters.',
         'required.firstName': 'First Name is required.',
         'required.lastName': 'Last Name is required.'
       });
+
+      if (isValid && newUser.password && (!/[a-zA-Z]/.test(newUser.password) || !/[0-9!@#$%^&*]/.test(newUser.password))) {
+        isValid = false;
+        errors = {
+          password: ['Password must contain at least one letter and one number or special character.']
+        };
+      }
 
       if (!isValid) {
         return dispatch({ type: SET_SIGNUP_FORM_ERRORS, payload: errors });

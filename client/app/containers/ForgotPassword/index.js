@@ -30,7 +30,7 @@ class ForgotPassword extends React.PureComponent {
       forgotFormData,
       formErrors,
       forgotPasswordChange,
-      forgotPassowrd
+      forgotPassword
     } = this.props;
 
     if (authenticated) return <Navigate to='/dashboard' replace />;
@@ -39,7 +39,7 @@ class ForgotPassword extends React.PureComponent {
       event.preventDefault();
       this.setState({ isSubmitting: true });
       try {
-        await forgotPassowrd();
+        await forgotPassword();
       } finally {
         this.setState({ isSubmitting: false });
       }

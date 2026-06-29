@@ -47,7 +47,7 @@ exports.sendEmail = async (email, type, hostParam, data) => {
     return { success: true, info };
   } catch (error) {
     console.error(`[SMTP Error] Failed to send "${type}" email to ${email}:`, error);
-    return { success: false, error };
+    throw error;
   }
 };
 

@@ -10,6 +10,14 @@ const role = require('../../middleware/role');
 const store = require('../../utils/store');
 const { ROLES, MERCHANT_STATUS } = require('../../constants');
 const User = require('../../models/user');
+const Mongoose = require('mongoose');
+
+router.param('id', (req, res, next, id) => {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid brand ID format.' });
+  }
+  next();
+});
 
 router.post('/add', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
@@ -150,9 +158,9 @@ router.put(
   async (req, res) => {
     try {
       const brandId = req.params.id;
-      const update = req.body.brand;
+      const update = req.body.brand || {};
       const query = { _id: brandId };
-      const { slug } = req.body.brand;
+      const { name, slug } = update;
 
       if (req.user.role === ROLES.Merchant) {
         const brand = await Brand.findById(brandId);
@@ -161,12 +169,19 @@ router.put(
         }
       }
 
-      const foundBrand = await Brand.findOne({
-        $or: [{ slug }]
-      });
+      if (name) {
+        const { generateUniqueSlug } = require('../../utils/slugify');
+        update.slug = await generateUniqueSlug(Brand, name, brandId);
+      } else if (slug) {
+        const { slugify } = require('../../utils/slugify');
+        update.slug = slugify(slug);
+      }
 
-      if (foundBrand && foundBrand._id != brandId) {
-        return res.status(400).json({ error: 'Slug is already in use.' });
+      if (update.slug) {
+        const foundBrand = await Brand.findOne({ slug: update.slug });
+        if (foundBrand && String(foundBrand._id) !== String(brandId)) {
+          return res.status(400).json({ error: 'Slug is already in use.' });
+        }
       }
 
       await Brand.findOneAndUpdate(query, update, {

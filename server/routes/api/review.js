@@ -10,6 +10,21 @@ const { ROLES, REVIEW_STATUS } = require('../../constants');
 
 const Order = require('../../models/order');
 const Cart = require('../../models/cart');
+const Mongoose = require('mongoose');
+
+router.param('id', (req, res, next, id) => {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid ID format.' });
+  }
+  next();
+});
+
+router.param('reviewId', (req, res, next, reviewId) => {
+  if (!Mongoose.Types.ObjectId.isValid(reviewId)) {
+    return res.status(400).json({ error: 'Invalid Review ID format.' });
+  }
+  next();
+});
 
 router.post('/add', auth, async (req, res) => {
   try {
@@ -30,7 +45,7 @@ router.post('/add', auth, async (req, res) => {
     }
 
     // 1. Verify if user has purchased the product
-    const orders = await Order.find({ user: user._id }).populate('cart');
+    const orders = await Order.find({ user: user._id, status: { $ne: 'Cancelled' } }).populate('cart');
     const hasPurchased = orders.some(order => {
       if (order.cart && order.cart.products) {
         return order.cart.products.some(item => String(item.product) === String(product));

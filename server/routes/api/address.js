@@ -33,6 +33,10 @@ router.post('/add', auth, async (req, res) => {
       return res.status(400).json({ error: 'Please enter a valid zip / postal code.' });
     }
 
+    if (Boolean(isDefault)) {
+      await Address.updateMany({ user: user._id }, { $set: { isDefault: false } });
+    }
+
     const newAddress = new Address({
       address: address.trim(),
       city: city.trim(),
@@ -134,10 +138,17 @@ router.put('/:id', auth, async (req, res) => {
       if (typeof zipCode !== 'string' || !zipCode.trim()) {
         return res.status(400).json({ error: 'Zip Code cannot be empty.' });
       }
-      update.zipCode = zipCode.trim();
+      const cleanZip = zipCode.trim().toUpperCase();
+      if (!/^[A-Z0-9]{3,10}(-[A-Z0-9]{3,6})?$/.test(cleanZip)) {
+        return res.status(400).json({ error: 'Please enter a valid zip / postal code.' });
+      }
+      update.zipCode = cleanZip;
     }
     if (isDefault !== undefined) {
       update.isDefault = Boolean(isDefault);
+      if (update.isDefault) {
+        await Address.updateMany({ user: req.user._id }, { $set: { isDefault: false } });
+      }
     }
     update.updated = Date.now();
 

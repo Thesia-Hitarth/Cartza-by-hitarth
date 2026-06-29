@@ -142,12 +142,16 @@ router.post('/register', authLimiter, async (req, res) => {
       id: registeredUser.id
     };
 
-    await smtp.sendEmail(
-      registeredUser.email,
-      'signup',
-      null,
-      registeredUser
-    );
+    try {
+      await smtp.sendEmail(
+        registeredUser.email,
+        'signup',
+        null,
+        registeredUser
+      );
+    } catch (emailError) {
+      console.warn('Signup email failed to send:', emailError.message);
+    }
 
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
 
@@ -222,6 +226,12 @@ router.post('/reset/:token', async (req, res) => {
     if (!password) {
       return res.status(400).json({ error: 'You must enter a password.' });
     }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9!@#$%^&*]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one letter and one number or special character.' });
+    }
 
     const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
     const resetUser = await User.findOne({
@@ -245,7 +255,11 @@ router.post('/reset/:token', async (req, res) => {
 
     await resetUser.save();
 
-    await smtp.sendEmail(resetUser.email, 'reset-confirmation');
+    try {
+      await smtp.sendEmail(resetUser.email, 'reset-confirmation');
+    } catch (emailError) {
+      console.warn('Reset confirmation email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,
@@ -272,8 +286,16 @@ router.post('/reset', auth, async (req, res) => {
       return res.status(400).json({ error: 'You must enter a password.' });
     }
 
-    if (!confirmPassword || confirmPassword.length < 6) {
-      return res.status(400).json({ error: 'New password must be at least 6 characters.' });
+    if (!confirmPassword) {
+      return res.status(400).json({ error: 'You must confirm your new password.' });
+    }
+
+    if (confirmPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+    }
+
+    if (!/[a-zA-Z]/.test(confirmPassword) || !/[0-9!@#$%^&*]/.test(confirmPassword)) {
+      return res.status(400).json({ error: 'New password must contain at least one letter and one number or special character.' });
     }
 
     const existingUser = await User.findOne({ email }).select('+password');
@@ -296,7 +318,11 @@ router.post('/reset', auth, async (req, res) => {
     existingUser.password = hash;
     await existingUser.save();
 
-    await smtp.sendEmail(existingUser.email, 'reset-confirmation');
+    try {
+      await smtp.sendEmail(existingUser.email, 'reset-confirmation');
+    } catch (emailError) {
+      console.warn('Reset confirmation email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,

@@ -44,4 +44,27 @@ router.post('/subscribe', newsletterLimiter, async (req, res) => {
   }
 });
 
+router.post('/unsubscribe', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email || !validator.isEmail(String(email))) {
+      return res.status(400).json({ error: 'You must enter a valid email address.' });
+    }
+
+    const emailLower = email.trim().toLowerCase();
+
+    await Newsletter.deleteOne({ email: emailLower });
+
+    res.status(200).json({
+      success: true,
+      message: 'You have successfully unsubscribed from the newsletter.'
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Your request could not be processed. Please try again.'
+    });
+  }
+});
+
 module.exports = router;

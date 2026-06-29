@@ -10,6 +10,7 @@ const setupDB = require('./utils/db');
 
 const { port } = keys;
 const app = express();
+app.set('trust proxy', 1);
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

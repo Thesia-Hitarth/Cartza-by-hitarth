@@ -14,6 +14,14 @@ const smtp = require('../../services/smtp');
 const keys = require('../../config/keys');
 const Product = require('../../models/product');
 const store = require('../../utils/store');
+const Mongoose = require('mongoose');
+
+router.param('id', (req, res, next, id) => {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid merchant ID format.' });
+  }
+  next();
+});
 
 // add merchant api
 router.post('/add', async (req, res) => {
@@ -55,7 +63,11 @@ router.post('/add', async (req, res) => {
     });
     const merchantDoc = await merchant.save();
 
-    await smtp.sendEmail(email, 'merchant-application');
+    try {
+      await smtp.sendEmail(email, 'merchant-application');
+    } catch (emailError) {
+      console.warn('Merchant application notification email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,
@@ -112,19 +124,20 @@ router.get('/search', auth, role.check(ROLES.Admin), async (req, res) => {
 router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const { page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
 
     const merchants = await Merchant.find()
       .populate('brand')
       .sort('-created')
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((page - 1) * cappedLimit)
       .exec();
 
     const count = await Merchant.countDocuments();
 
     res.status(200).json({
       merchants,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage: Number(page),
       count
     });
@@ -149,7 +162,11 @@ router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
     if (!update.isActive) {
       await deactivateBrand(merchantId);
       await User.findOneAndUpdate({ merchant: merchantId }, { role: ROLES.Member });
-      await smtp.sendEmail(merchantDoc.email, 'merchant-deactivate-account');
+      try {
+        await smtp.sendEmail(merchantDoc.email, 'merchant-deactivate-account');
+      } catch (emailError) {
+        console.warn('Merchant deactivation email failed to send:', emailError.message);
+      }
     }
 
     res.status(200).json({
@@ -233,6 +250,12 @@ router.post('/signup/:token', async (req, res) => {
 
     if (!password) {
       return res.status(400).json({ error: 'You must enter a password.' });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    if (!/[a-zA-Z]/.test(password) || !/[0-9!@#$%^&*]/.test(password)) {
+      return res.status(400).json({ error: 'Password must contain at least one letter and one number or special character.' });
     }
 
     const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
@@ -325,6 +348,9 @@ const deactivateBrand = async merchantId => {
 };
 
 const createMerchantBrand = async ({ _id, brandName, business }) => {
+  const existingBrand = await Brand.findOne({ merchant: _id });
+  if (existingBrand) return;
+
   const newBrand = new Brand({
     name: brandName,
     description: business,
@@ -362,7 +388,11 @@ const createMerchantUser = async (email, name, merchant, host) => {
 
     await createMerchantBrand(merchantDoc);
 
-    await smtp.sendEmail(email, 'merchant-welcome', null, name);
+    try {
+      await smtp.sendEmail(email, 'merchant-welcome', null, name);
+    } catch (emailError) {
+      console.warn('Merchant welcome email failed to send:', emailError.message);
+    }
 
     return await User.findOneAndUpdate(query, update, {
       new: true

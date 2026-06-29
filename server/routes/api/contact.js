@@ -10,6 +10,14 @@ const role = require('../../middleware/role');
 const { ROLES } = require('../../constants');
 const rateLimiter = require('../../middleware/rateLimiter');
 const validator = require('validator');
+const Mongoose = require('mongoose');
+
+router.param('id', (req, res, next, id) => {
+  if (!Mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({ error: 'Invalid contact ID format.' });
+  }
+  next();
+});
 
 const contactLimiter = rateLimiter({
   windowMs: 15 * 60 * 1000,
@@ -59,7 +67,11 @@ router.post('/add', contactLimiter, async (req, res) => {
 
     const contactDoc = await contact.save();
 
-    await smtp.sendEmail(email, 'contact');
+    try {
+      await smtp.sendEmail(email, 'contact');
+    } catch (emailError) {
+      console.warn('Contact confirmation email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,

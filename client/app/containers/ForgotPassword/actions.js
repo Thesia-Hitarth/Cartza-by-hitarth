@@ -64,4 +64,4 @@ export const forgotPassword = () => {
   };
 };
 
-export const forgotPassowrd = forgotPassword;
+
