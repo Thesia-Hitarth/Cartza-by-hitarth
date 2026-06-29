@@ -26,7 +26,7 @@ const activateApprovedBrands = async () => {
       { $set: { isActive: true } }
     );
 
-    console.log(`${chalk.green('✓')} Successfully activated ${result.nModified} inactive brand(s) for approved merchants.`);
+    console.log(`${chalk.green('✓')} Successfully activated ${result.modifiedCount} inactive brand(s) for approved merchants.`);
   } catch (error) {
     console.log(`${chalk.red('x')} Error during brand activation:`);
     console.error(error);

@@ -52,6 +52,10 @@ const UserSchema = new Schema({
     default: ROLES.Member,
     enum: [ROLES.Admin, ROLES.Member, ROLES.Merchant]
   },
+  jwtSeed: {
+    type: Number,
+    default: 1
+  },
   resetPasswordToken: { type: String, select: false },
   resetPasswordExpires: { type: Date, select: false },
   updated: Date,

@@ -223,9 +223,9 @@ export const addOrder = (addressId) => {
 
 export const placeOrder = (addressId) => {
   return async (dispatch, getState) => {
-    const token = localStorage.getItem('token');
+    const loggedIn = localStorage.getItem('logged_in') === 'true';
     const cartItems = getState().cart.cartItems;
-    if (!token || cartItems.length === 0) { dispatch(toggleCart()); return; }
+    if (!loggedIn || cartItems.length === 0) { dispatch(toggleCart()); return; }
 
     dispatch({ type: SET_PLACING_ORDER, payload: true });
     try {

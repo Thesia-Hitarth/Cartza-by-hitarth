@@ -19,6 +19,7 @@ import { signOut } from './containers/Login/actions';
 
 
 // Global Axios response interceptor to catch 401s and sign out the user
+axios.defaults.withCredentials = true;
 axios.interceptors.response.use(
   response => response,
   error => {
@@ -45,12 +46,9 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 import 'rc-slider/assets/index.css';
 
 // Authentication
-const token = localStorage.getItem('token');
+const loggedIn = localStorage.getItem('logged_in') === 'true';
 
-if (token) {
-  // authenticate api authorization
-  setToken(token);
-
+if (loggedIn) {
   // authenticate routes
   store.dispatch({ type: SET_AUTH });
 }

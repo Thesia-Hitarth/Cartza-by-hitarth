@@ -48,7 +48,10 @@ router.post('/add', auth, async (req, res) => {
     const orders = await Order.find({ user: user._id, status: { $ne: 'Cancelled' } }).populate('cart');
     const hasPurchased = orders.some(order => {
       if (order.cart && order.cart.products) {
-        return order.cart.products.some(item => String(item.product) === String(product));
+        return order.cart.products.some(item => 
+          String(item.product) === String(product) && 
+          item.status !== 'Cancelled'
+        );
       }
       return false;
     });

@@ -55,7 +55,8 @@ router.post('/login', authLimiter, async (req, res) => {
     }
 
     const payload = {
-      id: user.id
+      id: user.id,
+      jwtSeed: user.jwtSeed
     };
 
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
@@ -64,9 +65,18 @@ router.post('/login', authLimiter, async (req, res) => {
       throw new Error();
     }
 
+    const jwtToken = `Bearer ${token}`;
+    res.cookie('token', jwtToken, {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+
     res.status(200).json({
       success: true,
-      token: `Bearer ${token}`,
+      token: jwtToken,
       user: {
         id: user.id,
         firstName: user.firstName,
@@ -139,7 +149,8 @@ router.post('/register', authLimiter, async (req, res) => {
     const registeredUser = await user.save();
 
     const payload = {
-      id: registeredUser.id
+      id: registeredUser.id,
+      jwtSeed: registeredUser.jwtSeed
     };
 
     try {
@@ -154,11 +165,20 @@ router.post('/register', authLimiter, async (req, res) => {
     }
 
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
+    const jwtToken = `Bearer ${token}`;
+
+    res.cookie('token', jwtToken, {
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
 
     res.status(200).json({
       success: true,
       subscribed,
-      token: `Bearer ${token}`,
+      token: jwtToken,
       user: {
         id: registeredUser.id,
         firstName: registeredUser.firstName,
@@ -252,6 +272,7 @@ router.post('/reset/:token', async (req, res) => {
     resetUser.password = hash;
     resetUser.resetPasswordToken = undefined;
     resetUser.resetPasswordExpires = undefined;
+    resetUser.jwtSeed = (resetUser.jwtSeed || 1) + 1;
 
     await resetUser.save();
 
@@ -316,6 +337,7 @@ router.post('/reset', auth, async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(confirmPassword, salt);
     existingUser.password = hash;
+    existingUser.jwtSeed = (existingUser.jwtSeed || 1) + 1;
     await existingUser.save();
 
     try {
@@ -354,13 +376,14 @@ router.get(
   }),
   (req, res) => {
     const payload = {
-      id: req.user.id
+      id: req.user.id,
+      jwtSeed: req.user.jwtSeed
     };
 
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
     const jwtToken = `Bearer ${token}`;
     res.cookie('token', jwtToken, {
-      maxAge: 10000,          // 10-second hand-off window
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       httpOnly: true,         // Not accessible by JS — prevents XSS theft
       secure: process.env.NODE_ENV === 'production', // HTTPS only in prod
       sameSite: 'lax',        // Prevents CSRF on the OAuth redirect flow
@@ -387,17 +410,22 @@ router.get('/google/success', (req, res) => {
     return res.status(401).json({ error: 'Authentication token not found.' });
   }
 
-  // Clear the cookie immediately
+  return res.status(200).json({
+    success: true,
+    token: decodeURIComponent(token)
+  });
+});
+
+router.post('/logout', (req, res) => {
   res.clearCookie('token', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/'
   });
-
-  return res.status(200).json({
+  res.status(200).json({
     success: true,
-    token: decodeURIComponent(token)
+    message: 'Logged out successfully.'
   });
 });
 

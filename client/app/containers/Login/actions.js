@@ -67,9 +67,7 @@ export const login = () => {
         autoDismiss: 3
       };
 
-      localStorage.setItem('token', response.data.token);
-
-      setToken(response.data.token);
+      localStorage.setItem('logged_in', 'true');
 
       dispatch(setAuth());
       dispatch(success(successfulOptions));
@@ -86,19 +84,25 @@ export const login = () => {
 };
 
 export const signOut = () => {
-  return (dispatch, getState) => {
+  return async (dispatch, getState) => {
     const successfulOptions = {
       title: `You have signed out!`,
       position: 'tr',
       autoDismiss: 3
     };
 
+    try {
+      await axios.post(`${API_URL}/auth/logout`);
+    } catch (e) {
+      console.warn('Logout request failed:', e.message);
+    }
+
     dispatch(clearAuth());
     dispatch(clearAccount());
     dispatch(clearCart());
     dispatch(push('/login'));
 
-    localStorage.removeItem('token');
+    localStorage.removeItem('logged_in');
     dispatch(success(successfulOptions));
   };
 };

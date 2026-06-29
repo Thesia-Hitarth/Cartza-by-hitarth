@@ -278,7 +278,8 @@ router.post('/signup/:token', async (req, res) => {
       firstName,
       lastName,
       password: hash,
-      resetPasswordToken: undefined
+      resetPasswordToken: undefined,
+      $inc: { jwtSeed: 1 }
     };
 
     await User.findOneAndUpdate(query, update, {

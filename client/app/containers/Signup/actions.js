@@ -86,9 +86,7 @@ export const signUp = () => {
         autoDismiss: 3
       };
 
-      localStorage.setItem('token', response.data.token);
-
-      setToken(response.data.token);
+      localStorage.setItem('logged_in', 'true');
 
       dispatch(setAuth());
       dispatch(success(successfulOptions));

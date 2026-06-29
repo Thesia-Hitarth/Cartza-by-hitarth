@@ -150,6 +150,15 @@ router.put('/', auth, async (req, res) => {
 router.delete('/me', auth, async (req, res) => {
   try {
     const userId = req.user._id;
+    
+    const Address = require('../../models/address');
+    const Wishlist = require('../../models/wishlist');
+    const Cart = require('../../models/cart');
+
+    await Address.deleteMany({ user: userId });
+    await Wishlist.deleteMany({ user: userId });
+    await Cart.deleteMany({ user: userId });
+
     // Anonymize rather than hard-delete to preserve order history integrity
     await User.findByIdAndUpdate(userId, {
       firstName: 'Deleted',

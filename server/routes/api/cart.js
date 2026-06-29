@@ -147,8 +147,8 @@ router.put('/update-quantity/:cartId', auth, async (req, res) => {
     }
 
     const dbProduct = await Product.findById(productId);
-    if (!dbProduct) {
-      return res.status(404).json({ error: 'Product not found.' });
+    if (!dbProduct || !dbProduct.isActive) {
+      return res.status(400).json({ error: 'Product is no longer available.' });
     }
     if (dbProduct.quantity < parsedQty) {
       return res.status(400).json({

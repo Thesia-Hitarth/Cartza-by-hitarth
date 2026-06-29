@@ -42,6 +42,7 @@ import WishList from '../WishList';
 
 const AuthenticatedDashboard = Authentication(Dashboard);
 const AuthenticatedWishList = Authentication(WishList);
+const AuthenticatedOrderPage = Authentication(OrderPage);
 
 // Wrapper that provides padding-top for pages that need it (non-homepage)
 const PageWrapper = ({ children, isFullBleed }) => {
@@ -56,8 +57,8 @@ class Application extends React.PureComponent {
   }
 
   async componentDidMount() {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const loggedIn = localStorage.getItem('logged_in') === 'true';
+    if (loggedIn) {
       try {
         await this.props.fetchProfile();
       } catch (e) {
@@ -198,7 +199,7 @@ class Application extends React.PureComponent {
                 />
                 <Route
                   path='/order/:id'
-                  element={<div className='wrapper'><OrderPage /></div>}
+                  element={<div className='wrapper'><AuthenticatedOrderPage /></div>}
                 />
                 <Route
                   path='/login'

@@ -31,7 +31,11 @@ router.post('/subscribe', newsletterLimiter, async (req, res) => {
     const subscription = new Newsletter({ email: emailLower });
     await subscription.save();
 
-    await smtp.sendEmail(emailLower, 'newsletter-subscription');
+    try {
+      await smtp.sendEmail(emailLower, 'newsletter-subscription');
+    } catch (emailError) {
+      console.warn('Newsletter subscription email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,

@@ -24,8 +24,7 @@ class AuthSuccess extends React.PureComponent {
       });
       const token = response.data.token;
       if (token) {
-        setToken(token);
-        localStorage.setItem('token', token);
+        localStorage.setItem('logged_in', 'true');
         this.props.setAuth();
       } else {
         this.props.history.replace('/login');

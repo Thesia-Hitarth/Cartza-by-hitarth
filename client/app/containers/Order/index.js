@@ -22,10 +22,9 @@ class Order extends React.PureComponent {
     return (
       <div className='product-dashboard'>
         <Routes>
-          {user.role === ROLES.Admin ? (
-            <Route path='/' element={<Customer />} />
-          ) : (
-            <Route path='/' element={<List />} />
+          <Route path='/' element={<List />} />
+          {user.role === ROLES.Admin && (
+            <Route path='customers' element={<Customer />} />
           )}
           <Route path='*' element={<Page404 />} />
         </Routes>

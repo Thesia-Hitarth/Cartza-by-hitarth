@@ -10,6 +10,7 @@ import { connect } from 'react-redux';
 
 import actions from '../../actions';
 import { ROLES } from '../../constants';
+import { withRouter } from '../../utils/withRouter';
 import SubPage from '../../components/Manager/SubPage';
 import OrderList from '../../components/Manager/OrderList';
 import OrderSearch from '../../components/Manager/OrderSearch';
@@ -66,7 +67,11 @@ class Customer extends React.PureComponent {
 
     return (
       <div className='order-dashboard'>
-        <SubPage title='Customer Orders'>
+        <SubPage
+          title='Customer Orders'
+          actionTitle='Your Orders'
+          handleAction={() => history.push('/dashboard/orders')}
+        >
           <OrderSearch
             onSearch={this.handleOrderSearch}
             onSearchSubmit={searchOrders}
@@ -108,4 +113,4 @@ const mapStateToProps = state => {
   };
 };
 
-export default connect(mapStateToProps, actions)(Customer);
+export default withRouter(connect(mapStateToProps, actions)(Customer));

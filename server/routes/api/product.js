@@ -123,10 +123,23 @@ router.get('/list', async (req, res) => {
       page = 1,
       limit = 10
     } = req.query;
-    try {
-      sortOrder = sortOrder ? JSON.parse(sortOrder) : { created: -1 };
-    } catch (e) {
-      sortOrder = { created: -1 };
+    const allowedSortFields = ['price', 'created', 'name'];
+    let safeSort = { created: -1 };
+    if (sortOrder) {
+      try {
+        const parsed = JSON.parse(sortOrder);
+        const validated = {};
+        for (const [key, value] of Object.entries(parsed)) {
+          if (allowedSortFields.includes(key) && (value === 1 || value === -1)) {
+            validated[key] = value;
+          }
+        }
+        if (Object.keys(validated).length > 0) {
+          safeSort = validated;
+        }
+      } catch (e) {
+        // fallback to default
+      }
     }
 
     const categoryFilter = category ? { category } : {};
@@ -171,7 +184,7 @@ router.get('/list', async (req, res) => {
 
     // paginate query
     const paginateQuery = [
-      { $sort: sortOrder },
+      { $sort: safeSort },
       { $skip: size * limit },
       { $limit: limit * 1 }
     ];

@@ -12,15 +12,35 @@ const { google } = keys;
 const User = mongoose.model('User');
 const secret = keys.jwt.secret;
 
+const cookieExtractor = req => {
+  let token = null;
+  if (req && req.headers && req.headers.cookie) {
+    const cookieHeader = req.headers.cookie;
+    const value = `; ${cookieHeader}`;
+    const parts = value.split(`; token=`);
+    if (parts.length === 2) {
+      const rawCookie = parts.pop().split(';').shift();
+      token = decodeURIComponent(rawCookie);
+    }
+  }
+  if (token && token.startsWith('Bearer ')) {
+    token = token.slice(7).trim();
+  }
+  return token;
+};
+
 const opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.jwtFromRequest = ExtractJwt.fromExtractors([
+  ExtractJwt.fromAuthHeaderAsBearerToken(),
+  cookieExtractor
+]);
 opts.secretOrKey = secret;
 
 passport.use(
   new JwtStrategy(opts, (payload, done) => {
     User.findById(payload.id)
       .then(user => {
-        if (user) {
+        if (user && user.jwtSeed === payload.jwtSeed) {
           return done(null, user);
         }
 

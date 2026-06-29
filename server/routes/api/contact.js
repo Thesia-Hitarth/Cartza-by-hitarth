@@ -28,14 +28,16 @@ const contactLimiter = rateLimiter({
 router.post('/add', contactLimiter, async (req, res) => {
   try {
     const name = req.body.name;
-    const email = req.body.email;
+    const rawEmail = req.body.email;
     const message = req.body.message;
 
-    if (!email || !validator.isEmail(String(email))) {
+    if (!rawEmail || !validator.isEmail(String(rawEmail))) {
       return res
         .status(400)
         .json({ error: 'You must enter a valid email address.' });
     }
+
+    const email = rawEmail.trim().toLowerCase();
 
     if (!name) {
       return res
@@ -55,7 +57,7 @@ router.post('/add', contactLimiter, async (req, res) => {
         .json({ error: 'A request already existed for same email address' });
     }
 
-    const userDoc = await User.findOne({ email: email.trim().toLowerCase() });
+    const userDoc = await User.findOne({ email });
     const userRole = userDoc ? userDoc.role : 'Guest';
 
     const contact = new Contact({
@@ -171,10 +173,14 @@ router.put('/reply/:id', auth, role.check(ROLES.Admin), async (req, res) => {
     const updatedContact = await contact.save();
 
     // Trigger SMTP email sending
-    await smtp.sendEmail(contact.email, 'contact-reply', null, {
-      reply: reply,
-      message: contact.message
-    });
+    try {
+      await smtp.sendEmail(contact.email, 'contact-reply', null, {
+        reply: reply,
+        message: contact.message
+      });
+    } catch (emailError) {
+      console.warn('Contact reply email failed to send:', emailError.message);
+    }
 
     res.status(200).json({
       success: true,
