@@ -5,6 +5,12 @@
     align-items: center;
     border-bottom: $border-primary;
     padding-bottom: 16px;
+    gap: var(--space-3);
+
+    @media (max-width: 575px) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
 
     h2, h3 {
       margin: 0;

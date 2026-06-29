@@ -443,6 +443,25 @@
     border-color: var(--color-accent);
   }
 
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: stretch;
+    border-bottom: none;
+    gap: var(--space-3);
+    
+    .newsletter-email-field {
+      border-bottom: 1px solid rgba(245, 242, 238, 0.3);
+      padding: var(--space-2) 0;
+    }
+    
+    .newsletter-submit-btn {
+      border: 1px solid var(--color-accent);
+      justify-content: center;
+      padding: var(--space-2) var(--space-4);
+      width: 100%;
+    }
+  }
+
   .newsletter-email-field {
     flex: 1;
     background: transparent;

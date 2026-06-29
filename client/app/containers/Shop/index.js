@@ -23,6 +23,14 @@ import Pagination from '../../components/Common/Pagination';
 import SelectOption from '../../components/Common/SelectOption';
 
 class Shop extends React.PureComponent {
+  state = {
+    showFilters: false
+  };
+
+  toggleFilters = () => {
+    this.setState(prevState => ({ showFilters: !prevState.showFilters }));
+  };
+
   componentDidMount() {
     document.title = 'Shop | CARTZA';
     document.body.classList.add('shop-page');
@@ -50,7 +58,16 @@ class Shop extends React.PureComponent {
             md={{ size: 12, order: 1 }}
             lg={{ size: 3, order: 1 }}
           >
-            <ProductFilter filterProducts={filterProducts} categories={categories} />
+            <button
+              className='btn-filter-toggle d-block d-lg-none w-100 mb-3'
+              onClick={this.toggleFilters}
+              aria-label={this.state.showFilters ? 'Hide product filters' : 'Show product filters'}
+            >
+              {this.state.showFilters ? 'Hide Filters' : 'Show Filters'}
+            </button>
+            <div className={this.state.showFilters ? 'd-block' : 'd-none d-lg-block'}>
+              <ProductFilter filterProducts={filterProducts} categories={categories} />
+            </div>
           </Col>
           <Col
             xs={{ size: 12, order: 2 }}
