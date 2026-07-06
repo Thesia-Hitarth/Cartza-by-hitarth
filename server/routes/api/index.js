@@ -16,6 +16,7 @@ const wishlistRoutes = require('./wishlist');
 const webhookRoutes = require('./webhook');
 const couponRoutes = require('./coupon');
 const analyticsRoutes = require('./analytics');
+const jobRoutes = require('./job');
 
 // auth routes
 router.use('/auth', authRoutes);
@@ -64,5 +65,8 @@ router.use('/coupon', couponRoutes);
 
 // Analytics routes
 router.use('/analytics', analyticsRoutes);
+
+// Jobs routes
+router.use('/jobs', jobRoutes);
 
 module.exports = router;

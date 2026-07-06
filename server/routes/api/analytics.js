@@ -31,14 +31,30 @@ router.get('/', auth, role.check(ROLES.Admin, ROLES.Merchant), async (req, res) 
     const productIds = products.map(p => p._id);
 
     // 2. Low stock alert (quantity < 5)
-    const lowStock = products
-      .filter(p => p.quantity < 5)
-      .map(p => ({
-        _id: p._id,
-        name: p.name,
-        quantity: p.quantity,
-        sku: p.sku
-      }));
+    const lowStock = [];
+    products.forEach(p => {
+      if (p.variants && p.variants.length > 0) {
+        p.variants.forEach(v => {
+          if (v.quantity < 5) {
+            lowStock.push({
+              _id: p._id,
+              name: `${p.name} (${v.color} / ${v.size})`,
+              quantity: v.quantity,
+              sku: v.sku || p.sku
+            });
+          }
+        });
+      } else {
+        if (p.quantity < 5) {
+          lowStock.push({
+            _id: p._id,
+            name: p.name,
+            quantity: p.quantity,
+            sku: p.sku
+          });
+        }
+      }
+    });
 
     // 3. Find carts containing brand products
     const cartQuery = { 'products.product': { $in: productIds } };

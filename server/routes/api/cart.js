@@ -130,7 +130,8 @@ router.post('/add/:cartId', auth, async (req, res) => {
     } else {
       const enriched = await validateAndEnrichProduct(productId, rawProduct?.quantity || 1, color, size);
       const [product] = store.calculateItemsSalesTax([enriched]);
-      await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
+      cart.products.push(product);
+      await cart.save();
     }
     res.status(200).json({ success: true });
   } catch (error) {
@@ -144,10 +145,10 @@ router.delete('/delete/:cartId/:productId', auth, async (req, res) => {
     if (!cart || String(cart.user) !== String(req.user._id)) {
       return res.status(403).json({ error: 'Unauthorized to modify this cart.' });
     }
-    const product = { product: req.params.productId };
-    const query = { _id: req.params.cartId };
-
-    await Cart.updateOne(query, { $pull: { products: product } }).exec();
+    cart.products = cart.products.filter(
+      p => String(p.product) !== String(req.params.productId)
+    );
+    await cart.save();
 
     res.status(200).json({
       success: true

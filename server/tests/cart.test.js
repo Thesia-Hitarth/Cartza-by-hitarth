@@ -24,7 +24,9 @@ jest.mock('../services/smtp', () => ({
 require('../models/user');
 const Cart = require('../models/cart');
 const smtp = require('../services/smtp');
-const runAbandonedCartJob = require('../jobs/abandonedCart');
+const { runAbandonedCartJob } = require('../jobs/abandonedCart');
+const request = require('supertest');
+const app = require('../index');
 
 describe('Abandoned Cart Recovery Job', () => {
   beforeAll(() => {
@@ -36,7 +38,7 @@ describe('Abandoned Cart Recovery Job', () => {
     jest.clearAllMocks();
   });
 
-  it('should process abandoned carts and send recovery emails', async () => {
+  it('should process abandoned carts and send recovery emails via cron task', async () => {
     const mockCart = {
       _id: new Mongoose.Types.ObjectId(),
       user: {
@@ -63,5 +65,38 @@ describe('Abandoned Cart Recovery Job', () => {
     );
     expect(mockCart.save).toHaveBeenCalled();
     expect(mockCart.recoveryEmailSentAt).toBeInstanceOf(Date);
+  });
+
+  it('should process abandoned carts and send recovery emails via API endpoint (local/dev bypass)', async () => {
+    const mockCart = {
+      _id: new Mongoose.Types.ObjectId(),
+      user: {
+        firstName: 'Bob',
+        email: 'bob@example.com'
+      },
+      products: [{ product: new Mongoose.Types.ObjectId(), quantity: 1 }],
+      save: jest.fn().mockResolvedValue(true)
+    };
+
+    const findSpy = jest.spyOn(Cart, 'find').mockReturnValue({
+      populate: jest.fn().mockResolvedValue([mockCart])
+    });
+
+    // Make request to local API (in test mode, CRON_SECRET bypass is enabled as it is not production)
+    const res = await request(app)
+      .get('/api/jobs/abandoned-cart')
+      .send();
+
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.emailsSent).toBe(1);
+    expect(findSpy).toHaveBeenCalled();
+    expect(smtp.sendEmail).toHaveBeenCalledWith(
+      'bob@example.com',
+      'abandoned-cart',
+      expect.any(String),
+      mockCart
+    );
+    expect(mockCart.save).toHaveBeenCalled();
   });
 });

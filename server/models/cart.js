@@ -58,15 +58,12 @@ const CartSchema = new Schema({
     ref: 'User',
     index: true
   },
-  updated: Date,
-  created: {
-    type: Date,
-    default: Date.now
-  },
   recoveryEmailSentAt: {
     type: Date,
     default: null
   }
+}, {
+  timestamps: { createdAt: 'created', updatedAt: 'updated' }
 });
 
 module.exports = Mongoose.model('Cart', CartSchema);

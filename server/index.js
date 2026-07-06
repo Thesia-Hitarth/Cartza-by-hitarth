@@ -58,7 +58,7 @@ require('./config/passport')(app);
 app.use(routes);
 
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
-  const runAbandonedCartJob = require('./jobs/abandonedCart');
+  const { runAbandonedCartJob } = require('./jobs/abandonedCart');
   runAbandonedCartJob();
 
   app.listen(port, () => {

@@ -7,7 +7,7 @@
     "dev": "npm-run-all --parallel dev:*",
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
-    "build": "cross-env API_URL=/api npm run build --prefix client && npm run sitemap --prefix server",
+    "build": "npm run sitemap --prefix server && cross-env API_URL=/api npm run build --prefix client",
     "postinstall": "npm-run-all --parallel install:*",
     "install:client": "cd client && npm install",
     "install:server": "cd server && npm install",
