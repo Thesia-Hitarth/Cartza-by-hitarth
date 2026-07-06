@@ -66,4 +66,11 @@ const CartSchema = new Schema({
   timestamps: { createdAt: 'created', updatedAt: 'updated' }
 });
 
+CartSchema.pre('save', function (next) {
+  if (this.isModified('products')) {
+    this.recoveryEmailSentAt = null;
+  }
+  next();
+});
+
 module.exports = Mongoose.model('Cart', CartSchema);

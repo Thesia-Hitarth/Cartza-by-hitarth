@@ -37,8 +37,8 @@ const processAbandonedCarts = async () => {
 };
 
 const runAbandonedCartJob = () => {
-  // Run every hour
-  cron.schedule('0 * * * *', async () => {
+  // Run every day at 9:00 AM
+  cron.schedule('0 9 * * *', async () => {
     try {
       await processAbandonedCarts();
     } catch (error) {

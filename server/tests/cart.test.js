@@ -67,6 +67,25 @@ describe('Abandoned Cart Recovery Job', () => {
     expect(mockCart.recoveryEmailSentAt).toBeInstanceOf(Date);
   });
 
+  it('should reset recoveryEmailSentAt to null on pre-save if products are modified', () => {
+    const cart = new Cart({
+      user: new Mongoose.Types.ObjectId(),
+      products: [{ product: new Mongoose.Types.ObjectId(), quantity: 1 }],
+      recoveryEmailSentAt: new Date()
+    });
+
+    const saveHooks = Cart.schema.s.hooks._pres.get('save') || [];
+    const hookObj = saveHooks.find(h => h.fn.toString().includes('recoveryEmailSentAt'));
+
+    expect(hookObj).toBeDefined();
+
+    const next = jest.fn();
+    hookObj.fn.call(cart, next);
+
+    expect(cart.recoveryEmailSentAt).toBeNull();
+    expect(next).toHaveBeenCalled();
+  });
+
   it('should process abandoned carts and send recovery emails via API endpoint (local/dev bypass)', async () => {
     const mockCart = {
       _id: new Mongoose.Types.ObjectId(),
