@@ -158,7 +158,7 @@ const MerchantList = props => {
             ) : (
               <>
                 <p className='text-truncate'>
-                  Merchant doesn't have email. Call at
+                  Merchant doesn&apos;t have email. Call at
                   <a
                     href={`tel:${merchant.phoneNumber}`}
                     className='text-primary'

@@ -54,7 +54,7 @@ class Signup extends React.PureComponent {
               <div className='banner-quote-box text-center px-5'>
                 <h2 className='quote-title mb-3'>CARTZA</h2>
                 <p className='quote-text'>
-                  "<i>Fashion changes, but style endures.</i>"
+                  &ldquo;<i>Fashion changes, but style endures.</i>&rdquo;
                 </p>
                 <div className='quote-divider mx-auto'></div>
                 <span className='quote-sub'>Est. 2024</span>

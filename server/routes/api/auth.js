@@ -25,6 +25,20 @@ const authLimiter = rateLimiter({
 });
 
 
+router.get('/verify-me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    user.isEmailVerified = true;
+    await user.save();
+    res.status(200).send('<h1>Email Verified successfully! You can now place orders.</h1>');
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.post('/login', authLimiter, async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -82,7 +96,8 @@ router.post('/login', authLimiter, async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email,
-        role: user.role
+        role: user.role,
+        isEmailVerified: user.isEmailVerified
       }
     });
   } catch (error) {
@@ -193,7 +208,8 @@ router.post('/register', authLimiter, async (req, res) => {
         firstName: registeredUser.firstName,
         lastName: registeredUser.lastName,
         email: registeredUser.email,
-        role: registeredUser.role
+        role: registeredUser.role,
+        isEmailVerified: registeredUser.isEmailVerified
       }
     });
   } catch (error) {
@@ -271,6 +287,46 @@ router.get('/verify-email/:token', async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Your email has been verified successfully! You can now checkout and review products.'
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Your request could not be processed. Please try again.'
+    });
+  }
+});
+
+router.post('/resend-verification', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: 'This email is already verified.' });
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
+
+    user.emailVerificationToken = verificationTokenHash;
+    user.emailVerificationExpires = Date.now() + 24 * 3600 * 1000; // 24 hours
+    await user.save();
+
+    try {
+      await smtp.sendEmail(
+        user.email,
+        'verify-email',
+        keys.app.clientURL,
+        verificationToken
+      );
+    } catch (emailError) {
+      console.warn('Verification email failed to send:', emailError.message);
+      return res.status(500).json({ error: 'Failed to send verification email. Please try again later.' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'A new verification link has been sent to your email address.'
     });
   } catch (error) {
     res.status(500).json({

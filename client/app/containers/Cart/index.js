@@ -41,7 +41,11 @@ class Cart extends React.PureComponent {
       placeOrder,
       authenticated,
       addresses,
-      isPlacingOrder
+      isPlacingOrder,
+      coupon,
+      discount,
+      applyCoupon,
+      removeCoupon
     } = this.props;
     const totalUnits = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
@@ -87,7 +91,13 @@ class Cart extends React.PureComponent {
         )}
         {cartItems.length > 0 && (
           <div className='cart-checkout'>
-            <CartSummary cartTotal={cartTotal} />
+            <CartSummary
+              cartTotal={cartTotal}
+              coupon={coupon}
+              discount={discount}
+              applyCoupon={applyCoupon}
+              removeCoupon={removeCoupon}
+            />
             <Checkout
               handleShopping={handleShopping}
               handleCheckout={handleCheckout}
@@ -108,6 +118,8 @@ const mapStateToProps = state => {
     isCartOpen: state.navigation.isCartOpen,
     cartItems: state.cart.cartItems,
     cartTotal: state.cart.cartTotal,
+    coupon: state.cart.coupon,
+    discount: state.cart.discount,
     authenticated: state.authentication.authenticated,
     addresses: state.address.addresses,
     isPlacingOrder: state.order.isPlacingOrder

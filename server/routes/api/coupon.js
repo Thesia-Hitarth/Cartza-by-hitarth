@@ -2,13 +2,15 @@ const express = require('express');
 const router = express.Router();
 const Coupon = require('../../models/coupon');
 const auth = require('../../middleware/auth');
+const optionalAuth = require('../../middleware/optionalAuth');
 const role = require('../../middleware/role');
 const { ROLES } = require('../../constants');
 
 // Validate coupon route
-router.post('/validate', auth, async (req, res) => {
+router.post('/validate', optionalAuth, async (req, res) => {
   try {
-    const { code, orderTotal } = req.body;
+    const { code, orderTotal, orderValue } = req.body;
+    const finalTotal = orderTotal !== undefined ? orderTotal : orderValue;
     if (!code) {
       return res.status(400).json({ error: 'Coupon code is required.' });
     }
@@ -26,7 +28,7 @@ router.post('/validate', auth, async (req, res) => {
       return res.status(400).json({ error: 'This coupon has reached its maximum usage limit.' });
     }
 
-    const parsedTotal = Number(orderTotal) || 0;
+    const parsedTotal = Number(finalTotal) || 0;
     if (parsedTotal < coupon.minOrderValue) {
       return res.status(400).json({
         error: `Minimum order value of ₹${coupon.minOrderValue} is required to use this coupon.`

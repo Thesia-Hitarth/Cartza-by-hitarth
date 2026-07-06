@@ -10,13 +10,17 @@ import {
   REMOVE_FROM_CART,
   HANDLE_CART_TOTAL,
   SET_CART_ID,
-  CLEAR_CART
+  CLEAR_CART,
+  APPLY_COUPON,
+  REMOVE_COUPON
 } from './constants';
 
 const initialState = {
   cartItems: [],
   cartTotal: 0,
-  cartId: ''
+  cartId: '',
+  coupon: null,
+  discount: 0
 };
 
 const cartReducer = (state = initialState, action) => {
@@ -65,12 +69,28 @@ const cartReducer = (state = initialState, action) => {
         cartId: action.payload
       };
       return newState;
+    case APPLY_COUPON:
+      newState = {
+        ...state,
+        coupon: action.payload.coupon,
+        discount: action.payload.discount
+      };
+      return newState;
+    case REMOVE_COUPON:
+      newState = {
+        ...state,
+        coupon: null,
+        discount: 0
+      };
+      return newState;
     case CLEAR_CART:
       newState = {
         ...state,
         cartItems: [],
         cartTotal: 0,
-        cartId: ''
+        cartId: '',
+        coupon: null,
+        discount: 0
       };
       return newState;
 

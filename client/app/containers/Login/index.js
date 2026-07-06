@@ -55,7 +55,7 @@ class Login extends React.PureComponent {
               <div className='banner-quote-box text-center px-5'>
                 <h2 className='quote-title mb-3'>CARTZA</h2>
                 <p className='quote-text'>
-                  "<i>Style is a way to say who you are without having to speak.</i>"
+                  &ldquo;<i>Style is a way to say who you are without having to speak.</i>&rdquo;
                 </p>
                 <div className='quote-divider mx-auto'></div>
                 <span className='quote-sub'>Est. 2024</span>

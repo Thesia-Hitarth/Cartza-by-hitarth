@@ -14,7 +14,9 @@ import {
   REMOVE_FROM_CART,
   HANDLE_CART_TOTAL,
   SET_CART_ID,
-  CLEAR_CART
+  CLEAR_CART,
+  APPLY_COUPON,
+  REMOVE_COUPON
 } from './constants';
 
 import {
@@ -65,7 +67,9 @@ export const handleAddToCart = product => {
     });
 
     const existingItems = getState().cart.cartItems || [];
-    const existingIndex = existingItems.findIndex(item => item._id === product._id);
+    const existingIndex = existingItems.findIndex(
+      item => item._id === product._id && item.color === product.color && item.size === product.size
+    );
 
     let newCartItems = [];
     if (existingIndex >= 0) {
@@ -239,6 +243,8 @@ const getCartItems = cartItems => {
     newItem.price = item.price;
     newItem.taxable = item.taxable;
     newItem.product = item._id;
+    newItem.color = item.color;
+    newItem.size = item.size;
     newCartItems.push(newItem);
   });
 
@@ -307,5 +313,38 @@ export const updateCartItemQuantity = (product, quantity) => {
       }
     });
     dispatch(calculateCartTotal());
+  };
+};
+
+export const applyCoupon = (code, cartTotal) => {
+  return async (dispatch, getState) => {
+    try {
+      const orderValue = cartTotal !== undefined ? cartTotal : getState().cart.cartTotal;
+      const response = await axios.post(`${API_URL}/coupon/validate`, {
+        code,
+        orderValue
+      });
+      dispatch({
+        type: APPLY_COUPON,
+        payload: {
+          coupon: response.data,
+          discount: response.data.discount
+        }
+      });
+      const successfulOptions = {
+        title: 'Coupon applied successfully!',
+        position: 'tr',
+        autoDismiss: 3
+      };
+      dispatch(success(successfulOptions));
+    } catch (error) {
+      handleError(error, dispatch);
+    }
+  };
+};
+
+export const removeCoupon = () => {
+  return {
+    type: REMOVE_COUPON
   };
 };

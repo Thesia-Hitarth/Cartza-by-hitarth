@@ -201,12 +201,14 @@ export const addOrder = (addressId) => {
     try {
       const cartId = localStorage.getItem(CART_ID);
       const total = getState().cart.cartTotal;
+      const couponCode = getState().cart.coupon?.code || null;
 
       if (cartId) {
         const response = await axios.post(`${API_URL}/order/add`, {
           cartId,
           total,
-          addressId
+          addressId,
+          couponCode
         });
 
         dispatch(push(`/order/success/${response.data.order._id}`));

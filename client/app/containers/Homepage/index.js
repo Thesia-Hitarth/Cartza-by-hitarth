@@ -137,7 +137,7 @@ class Homepage extends React.PureComponent {
               >
                 {/* Mono tag */}
                 <motion.span className='hero-mono-tag' custom={0} variants={heroTextVariants}>
-                  — NEW COLLECTION SS'26
+                  — NEW COLLECTION SS&apos;26
                 </motion.span>
 
                 {/* Headline */}
@@ -148,7 +148,7 @@ class Homepage extends React.PureComponent {
 
                 {/* Sub-copy */}
                 <motion.p className='hero-subcopy' custom={2} variants={heroTextVariants}>
-                  Discover the season's most refined pieces — curated fashion, electronics & lifestyle for those who live with intention.
+                  Discover the season&apos;s most refined pieces — curated fashion, electronics & lifestyle for those who live with intention.
                 </motion.p>
 
                 {/* CTA Row */}
@@ -277,7 +277,7 @@ class Homepage extends React.PureComponent {
               Crafted for those who live with intention.
             </h2>
             <p className='editorial-body'>
-              Every piece in our collection tells a story — of skilled artisans, premium materials, and the belief that what you wear is a reflection of who you are. We don't follow trends. We curate timelessness.
+              Every piece in our collection tells a story — of skilled artisans, premium materials, and the belief that what you wear is a reflection of who you are. We don&apos;t follow trends. We curate timelessness.
             </p>
             <Link to='/contact' className='btn-primary-dark' data-cursor="link">
               <span>DISCOVER MORE</span>

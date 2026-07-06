@@ -19,7 +19,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div className='error-boundary-fallback d-flex flex-column align-items-center justify-content-center min-vh-100 text-center p-4'>
           <h2 className='text-danger mb-3'>Something went wrong.</h2>
-          <p className='text-muted mb-4'>We're sorry for the inconvenience. Please try refreshing the page.</p>
+          <p className='text-muted mb-4'>We&apos;re sorry for the inconvenience. Please try refreshing the page.</p>
           <button className='btn btn-primary' style={{ height: 48, minWidth: 160 }} onClick={() => window.location.reload()}>
             Refresh Page
           </button>

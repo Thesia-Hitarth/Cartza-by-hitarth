@@ -386,7 +386,12 @@ class ProductPage extends React.PureComponent {
                         disabled={product.quantity <= 0}
                         onClick={() => {
                           const shopQuantity = Number(productShopData.quantity || 1);
-                          handleAddToCart({ ...product, quantity: shopQuantity });
+                          handleAddToCart({
+                            ...product,
+                            quantity: shopQuantity,
+                            color: selectedColor,
+                            size: selectedSize
+                          });
                         }}
                       >
                         <ShoppingBag size={20} strokeWidth={1.5} />

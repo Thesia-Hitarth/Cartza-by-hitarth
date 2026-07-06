@@ -32,6 +32,7 @@ import Contact from '../Contact';
 import OrderSuccess from '../OrderSuccess';
 import OrderPage from '../OrderPage';
 import AuthSuccess from '../AuthSuccess';
+import VerifyEmail from '../VerifyEmail';
 
 import Footer from '../../components/Common/Footer';
 import Page404 from '../../components/Common/Page404';
@@ -224,6 +225,10 @@ class Application extends React.PureComponent {
                 <Route
                   path='/auth/success'
                   element={<div className='wrapper'><AuthSuccess /></div>}
+                />
+                <Route
+                  path='/verify-email/:token'
+                  element={<div className='wrapper'><VerifyEmail /></div>}
                 />
                  <Route
                   path='/wishlist'

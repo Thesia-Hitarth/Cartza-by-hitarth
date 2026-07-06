@@ -6,7 +6,7 @@
     "clean": "rimraf dist",
     "build": "npm run clean && cross-env NODE_ENV=production webpack --mode production --config webpack/webpack.prod.js",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --config webpack/webpack.dev.js",
-    "lint": "eslint . --ext .js,.jsx"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fontsource/poppins": "^4.5.9",
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.4.5",
+    "@babel/eslint-parser": "^7.29.7",
     "@babel/plugin-proposal-class-properties": "^7.14.5",
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-react": "^7.0.0",
