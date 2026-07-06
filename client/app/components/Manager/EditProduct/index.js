@@ -14,6 +14,7 @@ import Input from '../../Common/Input';
 import Switch from '../../Common/Switch';
 import Button from '../../Common/Button';
 import SelectOption from '../../Common/SelectOption';
+import VariantEditor from '../VariantEditor';
 
 const taxableSelect = [
   { value: 1, label: 'Yes' },
@@ -181,6 +182,12 @@ const EditProduct = props => {
                 productChange('isActive', value);
                 activateProduct(product._id, value);
               }}
+            />
+          </Col>
+          <Col xs='12'>
+            <VariantEditor
+              variants={product.variants || []}
+              onChange={val => productChange('variants', val)}
             />
           </Col>
         </Row>

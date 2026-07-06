@@ -168,8 +168,17 @@ router.delete('/me', auth, async (req, res) => {
       googleId: undefined,
       phoneNumber: undefined,
       resetPasswordToken: undefined,
-      resetPasswordExpires: undefined
+      resetPasswordExpires: undefined,
+      $inc: { jwtSeed: 1 }
     });
+
+    res.clearCookie('token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/'
+    });
+
     res.status(200).json({
       success: true,
       message: 'Your account has been successfully deleted.'

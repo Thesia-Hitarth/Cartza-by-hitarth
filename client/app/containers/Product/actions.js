@@ -258,6 +258,7 @@ export const addProduct = () => {
         image: product.image,
         isActive: product.isActive,
         taxable: product.taxable.value,
+        variants: product.variants || [],
         brand:
           user.role !== ROLES.Merchant
             ? brand !== 0
@@ -290,6 +291,8 @@ export const addProduct = () => {
           if (newProduct.hasOwnProperty(key)) {
             if (key === 'brand' && newProduct[key] === null) {
               continue;
+            } else if (key === 'variants') {
+              formData.set(key, JSON.stringify(newProduct[key]));
             } else {
               formData.set(key, newProduct[key]);
             }
@@ -349,6 +352,7 @@ export const updateProduct = () => {
         quantity: product.quantity,
         price: product.price,
         taxable: product.taxable,
+        variants: product.variants || [],
         brand: brand != 0 ? brand : null
       };
 

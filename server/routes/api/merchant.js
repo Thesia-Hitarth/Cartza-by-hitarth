@@ -152,14 +152,22 @@ router.get('/', auth, role.check(ROLES.Admin), async (req, res) => {
 router.put('/:id/active', auth, role.check(ROLES.Admin), async (req, res) => {
   try {
     const merchantId = req.params.id;
-    const update = req.body.merchant;
-    const query = { _id: merchantId };
+    const { isActive } = req.body.merchant || {};
+    
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ error: 'isActive must be a boolean.' });
+    }
 
-    const merchantDoc = await Merchant.findOneAndUpdate(query, update, {
+    const query = { _id: merchantId };
+    const merchantDoc = await Merchant.findOneAndUpdate(query, { isActive }, {
       new: true
     });
 
-    if (!update.isActive) {
+    if (!merchantDoc) {
+      return res.status(404).json({ error: 'Merchant not found.' });
+    }
+
+    if (isActive === false) {
       await deactivateBrand(merchantId);
       await User.findOneAndUpdate({ merchant: merchantId }, { role: ROLES.Member });
       try {
@@ -261,8 +269,8 @@ router.post('/signup/:token', async (req, res) => {
     const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
     const userDoc = await User.findOne({
       email,
-      resetPasswordToken: tokenHash,
-      resetPasswordExpires: { $gt: Date.now() }
+      inviteToken: tokenHash,
+      inviteTokenExpires: { $gt: Date.now() }
     });
 
     if (!userDoc) {
@@ -278,7 +286,8 @@ router.post('/signup/:token', async (req, res) => {
       firstName,
       lastName,
       password: hash,
-      resetPasswordToken: undefined,
+      inviteToken: undefined,
+      inviteTokenExpires: undefined,
       $inc: { jwtSeed: 1 }
     };
 
@@ -402,15 +411,15 @@ const createMerchantUser = async (email, name, merchant, host) => {
     const buffer = await crypto.randomBytes(48);
     const resetToken = buffer.toString('hex');
 
-    const resetPasswordToken = crypto.createHash('sha256').update(resetToken).digest('hex');
-    const resetPasswordExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
+    const inviteToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+    const inviteTokenExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
 
     const user = new User({
       email,
       firstName,
       lastName: null,
-      resetPasswordToken,
-      resetPasswordExpires,
+      inviteToken,
+      inviteTokenExpires,
       merchant,
       role: ROLES.Merchant
     });

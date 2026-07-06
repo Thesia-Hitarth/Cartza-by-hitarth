@@ -107,6 +107,10 @@ const prepareTemplate = (type, hostParam, data) => {
       message = template.orderCancellationEmail(data);
       break;
 
+    case 'abandoned-cart':
+      message = template.abandonedCartEmail(hostParam, data);
+      break;
+
     default:
       message = '';
   }

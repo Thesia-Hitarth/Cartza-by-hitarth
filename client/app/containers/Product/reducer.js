@@ -46,7 +46,8 @@ const initialState = {
     brand: {
       value: 0,
       label: 'No Options Selected'
-    }
+    },
+    variants: []
   },
   isLoading: false,
   productShopData: {
@@ -85,7 +86,10 @@ const productReducer = (state = initialState, action) => {
     case FETCH_PRODUCT:
       return {
         ...state,
-        product: action.payload,
+        product: {
+          ...action.payload,
+          variants: action.payload.variants || []
+        },
         editFormErrors: {}
       };
     case FETCH_STORE_PRODUCT:
@@ -172,7 +176,8 @@ const productReducer = (state = initialState, action) => {
           brand: {
             value: 0,
             label: 'No Options Selected'
-          }
+          },
+          variants: []
         },
         product: {
           _id: ''

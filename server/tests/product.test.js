@@ -6,21 +6,44 @@ const request = require('supertest');
 
 // Mock setupDB so we don't connect to db
 jest.mock('../utils/db', () => jest.fn());
+jest.mock('../utils/storage', () => ({
+  uploadImage: jest.fn().mockResolvedValue({ imageUrl: 'http://test.com/img.jpg', imageKey: 'img' })
+}));
 
 // Require models to register schemas before App loads passport
 require('../models/user');
 require('../models/newsletter');
 const Product = require('../models/product');
+const Brand = require('../models/brand');
+const { ROLES } = require('../constants');
+
+let mockTestUser = null;
+
+// Mock passport authenticate, use, and initialize middleware
+jest.mock('passport', () => {
+  return {
+    initialize: jest.fn().mockReturnValue((req, res, next) => next()),
+    use: jest.fn(),
+    authenticate: jest.fn().mockImplementation(() => (req, res, next) => {
+      if (mockTestUser) {
+        req.user = mockTestUser;
+      }
+      next();
+    })
+  };
+});
 
 const app = require('../index');
-
-jest.mock('../utils/auth', () => jest.fn().mockResolvedValue(null));
 
 describe('Product Endpoints', () => {
   let findSpy;
   let countDocumentsSpy;
 
   beforeEach(() => {
+    mockTestUser = {
+      _id: 'mockadminid',
+      role: ROLES.Admin
+    };
     findSpy = jest.spyOn(Product, 'find');
     countDocumentsSpy = jest.spyOn(Product, 'countDocuments');
   });
@@ -28,6 +51,7 @@ describe('Product Endpoints', () => {
   afterEach(() => {
     findSpy.mockRestore();
     countDocumentsSpy.mockRestore();
+    jest.restoreAllMocks();
     jest.clearAllMocks();
   });
 
@@ -48,6 +72,44 @@ describe('Product Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body.products.length).toBe(1);
       expect(res.body.currentPage).toBe(1);
+    });
+  });
+
+  describe('PUT /api/product/:id - Variants Update', () => {
+    it('should automatically compute and sync colors and sizes when variants are updated', async () => {
+      const productId = new (require('mongoose')).Types.ObjectId().toString();
+      const mockProduct = {
+        _id: productId,
+        brand: new (require('mongoose')).Types.ObjectId().toString(),
+        price: 100,
+        compareAtPrice: null
+      };
+
+      jest.spyOn(Product, 'findById').mockResolvedValue(mockProduct);
+      const findOneAndUpdateSpy = jest.spyOn(Product, 'findOneAndUpdate').mockResolvedValue(mockProduct);
+
+      const res = await request(app)
+        .put(`/api/product/${productId}`)
+        .send({
+          product: {
+            variants: [
+              { color: 'Red', size: 'M', quantity: 5, sku: 'SKU-R-M' },
+              { color: 'Blue', size: 'L', quantity: 10, sku: 'SKU-B-L' }
+            ]
+          }
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(findOneAndUpdateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ _id: productId }),
+        expect.objectContaining({
+          variants: expect.any(Array),
+          colors: ['Red', 'Blue'],
+          sizes: ['M', 'L']
+        }),
+        expect.any(Object)
+      );
     });
   });
 });

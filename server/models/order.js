@@ -37,14 +37,7 @@ const OrderSchema = new Schema({
     type: String,
     default: null
   },
-  guestEmail: {
-    type: String,
-    default: null
-  },
-  guestName: {
-    type: String,
-    default: null
-  },
+
   status: {
     type: String,
     default: 'Not_processed',

@@ -179,6 +179,27 @@ class ProductPage extends React.PureComponent {
       : 0;
     const originalPrice = hasDiscount ? product.compareAtPrice : null;
 
+    const hasVariants = product.variants && product.variants.length > 0;
+    let currentQty = product.quantity || 0;
+    if (hasVariants) {
+      const activeVariant = product.variants.find(
+        v => v.color === selectedColor && v.size === selectedSize
+      );
+      currentQty = activeVariant ? activeVariant.quantity : 0;
+    }
+
+    const isColorDisabled = col => {
+      if (!hasVariants) return false;
+      const colVariants = product.variants.filter(v => v.color === col);
+      return colVariants.length > 0 && colVariants.every(v => v.quantity <= 0);
+    };
+
+    const isSizeDisabled = sz => {
+      if (!hasVariants) return false;
+      const sizeVariant = product.variants.find(v => v.color === selectedColor && v.size === sz);
+      return !sizeVariant || sizeVariant.quantity <= 0;
+    };
+
     return (
       <div className='product-shop-redesign py-4'>
         {isLoading ? (
@@ -218,13 +239,13 @@ class ProductPage extends React.PureComponent {
                     <div
                       className='zoom-target-image'
                       style={{
-                        backgroundImage: `url(${currentImage})`,
-                        backgroundPosition: isZoomed ? zoomPos : 'center',
-                        backgroundSize: isZoomed ? '200%' : 'contain',
-                        backgroundRepeat: 'no-repeat'
+                          backgroundImage: `url(${currentImage})`,
+                          backgroundPosition: isZoomed ? zoomPos : 'center',
+                          backgroundSize: isZoomed ? '200%' : 'contain',
+                          backgroundRepeat: 'no-repeat'
                       }}
                     />
-                    {product.quantity <= 0 ? (
+                    {currentQty <= 0 ? (
                       <span className='stock-badge out-of-stock'>Sold Out</span>
                     ) : (
                       <span className='stock-badge in-stock'>In Stock</span>
@@ -318,15 +339,25 @@ class ProductPage extends React.PureComponent {
                     <div className='variant-swatch-block mb-3'>
                       <div className='variant-label'>Color: <strong>{selectedColor}</strong></div>
                       <div className='color-swatch-list d-flex align-items-center'>
-                        {product.colors.map((col, idx) => (
-                          <button
-                            key={idx}
-                            className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(/\s+/g, '-')}`}
-                            onClick={() => this.setState({ selectedColor: col })}
-                            title={col}
-                            aria-label={`Select color ${col}`}
-                          ></button>
-                        ))}
+                        {product.colors.map((col, idx) => {
+                          const disabled = isColorDisabled(col);
+                          return (
+                            <button
+                              key={idx}
+                              disabled={disabled}
+                              className={`color-swatch-btn ${selectedColor === col ? 'active' : ''} ${col.toLowerCase().replace(/\s+/g, '-')} ${disabled ? 'disabled' : ''}`}
+                              onClick={() => {
+                                this.setState({ selectedColor: col });
+                                const availableVariant = product.variants && product.variants.find(v => v.color === col && v.quantity > 0);
+                                if (availableVariant) {
+                                  this.setState({ selectedSize: availableVariant.size });
+                                }
+                              }}
+                              title={col}
+                              aria-label={`Select color ${col}`}
+                            ></button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -336,16 +367,20 @@ class ProductPage extends React.PureComponent {
                     <div className='variant-swatch-block mb-4'>
                       <div className='variant-label'>Size: <strong>{selectedSize}</strong></div>
                       <div className='size-swatch-list d-flex align-items-center'>
-                        {product.sizes.map((sz, idx) => (
-                          <button
-                            key={idx}
-                            className={`size-swatch-btn ${selectedSize === sz ? 'active' : ''}`}
-                            onClick={() => this.setState({ selectedSize: sz })}
-                            aria-label={`Select size ${sz}`}
-                          >
-                            {sz}
-                          </button>
-                        ))}
+                        {product.sizes.map((sz, idx) => {
+                          const disabled = isSizeDisabled(sz);
+                          return (
+                            <button
+                              key={idx}
+                              disabled={disabled}
+                              className={`size-swatch-btn ${selectedSize === sz ? 'active' : ''} ${disabled ? 'disabled' : ''}`}
+                              onClick={() => this.setState({ selectedSize: sz })}
+                              aria-label={`Select size ${sz}`}
+                            >
+                              {sz}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -359,9 +394,9 @@ class ProductPage extends React.PureComponent {
                       name={'quantity'}
                       decimals={false}
                       min={1}
-                      max={product.quantity}
+                      max={currentQty}
                       placeholder={'Product Quantity'}
-                      disabled={product.quantity <= 0 && !shopFormErrors['quantity']}
+                      disabled={currentQty <= 0 && !shopFormErrors['quantity']}
                       value={productShopData.quantity}
                       onInputChange={(name, value) => {
                         productShopChange(name, value);
@@ -374,7 +409,7 @@ class ProductPage extends React.PureComponent {
                     {itemInCart ? (
                       <button
                         className='btn-cart-page-remove d-flex align-items-center justify-content-center'
-                        disabled={product.quantity <= 0 && !shopFormErrors['quantity']}
+                        disabled={currentQty <= 0 && !shopFormErrors['quantity']}
                         onClick={() => handleRemoveFromCart(product)}
                       >
                         <ShoppingBag size={20} strokeWidth={1.5} />
@@ -383,7 +418,7 @@ class ProductPage extends React.PureComponent {
                     ) : (
                       <button
                         className='btn-cart-page-add d-flex align-items-center justify-content-center'
-                        disabled={product.quantity <= 0}
+                        disabled={currentQty <= 0}
                         onClick={() => {
                           const shopQuantity = Number(productShopData.quantity || 1);
                           handleAddToCart({

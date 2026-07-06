@@ -62,6 +62,10 @@ const CartSchema = new Schema({
   created: {
     type: Date,
     default: Date.now
+  },
+  recoveryEmailSentAt: {
+    type: Date,
+    default: null
   }
 });
 

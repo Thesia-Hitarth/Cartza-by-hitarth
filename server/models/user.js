@@ -64,6 +64,8 @@ const UserSchema = new Schema({
   emailVerificationExpires: { type: Date, select: false },
   resetPasswordToken: { type: String, select: false },
   resetPasswordExpires: { type: Date, select: false },
+  inviteToken: { type: String, select: false },
+  inviteTokenExpires: { type: Date, select: false },
   updated: Date,
   created: {
     type: Date,

@@ -461,3 +461,25 @@ exports.verifyEmail = (host, token) => {
     )
   };
 };
+
+exports.abandonedCartEmail = (host, cart) => {
+  const link = host.includes('http') ? `${host}/cart` : `http://${host}/cart`;
+  const name = cart.user ? cart.user.firstName : 'there';
+  return {
+    subject: 'You left items in your cart!',
+    text: `Hi ${name},\n\nYou left some items in your cart! Resume checkout by clicking: ${link}\n`,
+    html: buildHtmlTemplate(
+      'Complete Your Purchase',
+      `
+        <p>Hi ${name},</p>
+        <p>We noticed you left some items in your shopping bag. They're still waiting for you!</p>
+        <p>Click the button below to resume checkout and complete your order:</p>
+        <div class="button-wrapper">
+          <a href="${link}" class="button" target="_blank">Return to Cart</a>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size: 13px; color: #64748b;">If the button doesn't work, copy and paste this link into your browser: <br><a href="${link}" style="color: #4f46e5; word-break: break-all;">${link}</a></p>
+      `
+    )
+  };
+};

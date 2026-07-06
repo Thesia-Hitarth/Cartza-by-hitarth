@@ -62,9 +62,25 @@ describe('Order Security and IDOR Endpoints', () => {
       // Spy on Address findOne to return User A's address
       jest.spyOn(Address, 'findOne').mockResolvedValue(mockAddress);
 
-      // Spy on Cart findOne to return a query chain that populates to null
-      jest.spyOn(Cart, 'findOne').mockReturnValue({
-        populate: jest.fn().mockResolvedValue(null)
+      // Other user's cart containing a product
+      const mockOtherCart = {
+        _id: mockCartId,
+        user: new Mongoose.Types.ObjectId().toString(),
+        products: [{
+          product: new Mongoose.Types.ObjectId().toString(),
+          quantity: 2,
+          purchasePrice: 100
+        }]
+      };
+
+      // Spy on Cart findOne to return a query chain that:
+      // - returns null if the query correctly checks user ownership
+      // - returns mockOtherCart if the query does not check user ownership
+      jest.spyOn(Cart, 'findOne').mockImplementation((query) => {
+        const hasCorrectUserFilter = query && query.user === mockTestUser._id;
+        return {
+          populate: jest.fn().mockResolvedValue(hasCorrectUserFilter ? null : mockOtherCart)
+        };
       });
 
       const res = await request(app)
@@ -76,6 +92,13 @@ describe('Order Security and IDOR Endpoints', () => {
 
       expect(res.status).toBe(400);
       expect(res.body.error).toBe('Cannot checkout with an empty cart.');
+
+      expect(Address.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({ user: mockTestUser._id })
+      );
+      expect(Cart.findOne).toHaveBeenCalledWith(
+        expect.objectContaining({ user: mockTestUser._id })
+      );
     });
   });
 

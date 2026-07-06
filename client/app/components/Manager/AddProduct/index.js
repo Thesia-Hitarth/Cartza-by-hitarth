@@ -13,6 +13,7 @@ import Input from '../../Common/Input';
 import Switch from '../../Common/Switch';
 import Button from '../../Common/Button';
 import SelectOption from '../../Common/SelectOption';
+import VariantEditor from '../VariantEditor';
 
 const taxableSelect = [
   { value: 1, label: 'Yes' },
@@ -159,6 +160,12 @@ const AddProduct = props => {
               label={'Active?'}
               checked={productFormData.isActive}
               toggleCheckboxChange={value => productChange('isActive', value)}
+            />
+          </Col>
+          <Col xs='12'>
+            <VariantEditor
+              variants={productFormData.variants || []}
+              onChange={val => productChange('variants', val)}
             />
           </Col>
         </Row>

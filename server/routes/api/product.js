@@ -300,6 +300,21 @@ router.post(
 
       const { imageUrl, imageKey } = await uploadImage(image);
 
+      let variants = [];
+      if (req.body.variants) {
+        try {
+          variants = typeof req.body.variants === 'string' ? JSON.parse(req.body.variants) : req.body.variants;
+        } catch (e) {
+          variants = [];
+        }
+      }
+      if (!Array.isArray(variants)) {
+        variants = [];
+      }
+
+      const colors = [...new Set(variants.map(v => v.color || 'Default').filter(Boolean))];
+      const sizes = [...new Set(variants.map(v => v.size || 'Default').filter(Boolean))];
+
       const product = new Product({
         sku,
         name,
@@ -311,7 +326,10 @@ router.post(
         isActive,
         brand,
         imageUrl,
-        imageKey
+        imageKey,
+        variants,
+        colors,
+        sizes
       });
 
       const savedProduct = await product.save();
@@ -530,9 +548,16 @@ router.put(
       if (taxable !== undefined) update.taxable = taxable;
       if (isActive !== undefined) update.isActive = isActive;
       if (brand !== undefined) update.brand = brand;
-      if (colors !== undefined) update.colors = colors;
-      if (sizes !== undefined) update.sizes = sizes;
-      if (variants !== undefined) update.variants = variants;
+      if (variants !== undefined) {
+        update.variants = variants;
+        if (Array.isArray(variants)) {
+          update.colors = [...new Set(variants.map(v => v.color || 'Default').filter(Boolean))];
+          update.sizes = [...new Set(variants.map(v => v.size || 'Default').filter(Boolean))];
+        }
+      } else {
+        if (colors !== undefined) update.colors = colors;
+        if (sizes !== undefined) update.sizes = sizes;
+      }
       update.updated = Date.now();
 
       await Product.findOneAndUpdate(query, update, {
