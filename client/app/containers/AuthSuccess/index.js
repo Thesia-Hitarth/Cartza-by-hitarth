@@ -22,8 +22,7 @@ class AuthSuccess extends React.PureComponent {
       const response = await axios.get(`${API_URL}/auth/google/success`, {
         withCredentials: true
       });
-      const token = response.data.token;
-      if (token) {
+      if (response.data.success) {
         localStorage.setItem('logged_in', 'true');
         this.props.setAuth();
       } else {

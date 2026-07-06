@@ -65,7 +65,7 @@ class Login extends React.PureComponent {
             {/* Right 45% Column: Form Panel */}
             <Col xs='12' md='6' lg='5' className='auth-right-form p-4 p-lg-5'>
               <div className='form-panel-header mb-4 text-center text-md-left'>
-                <h3 className='form-title mb-2'>Welcome Back</h3>
+                <h1 className='form-title mb-2'>Welcome Back</h1>
                 <p className='form-subtitle'>Login to manage your account and orders</p>
               </div>
 

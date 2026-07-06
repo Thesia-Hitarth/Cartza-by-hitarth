@@ -16,6 +16,7 @@ const {
   getStoreProductsQuery,
   getStoreProductsWishListQuery
 } = require('../../utils/queries');
+const { generateUniqueSlug, slugify } = require('../../utils/slugify');
 const { ROLES } = require('../../constants');
 
 router.param('id', (req, res, next, id) => {
@@ -179,28 +180,30 @@ router.get('/list', async (req, res) => {
       });
     }
 
-    let products = null;
-    const countQuery = [...basicQuery, { $count: 'total' }];
-    const countResult = await Product.aggregate(countQuery);
-    const count = countResult.length > 0 ? countResult[0].total : 0;
-    const size = count > cappedLimit ? safePage - 1 : 0;
-    const currentPage = count > cappedLimit ? safePage : 1;
+    const pipeline = userDoc
+      ? getStoreProductsWishListQuery(userDoc.id).concat(basicQuery)
+      : [...basicQuery];
 
-    // paginate query
-    const paginateQuery = [
-      { $sort: safeSort },
-      { $skip: size * cappedLimit },
-      { $limit: cappedLimit }
-    ];
+    const safeSkip = Math.max(0, (safePage - 1) * cappedLimit);
 
-    if (userDoc) {
-      const wishListQuery = getStoreProductsWishListQuery(userDoc.id).concat(
-        basicQuery
-      );
-      products = await Product.aggregate(wishListQuery.concat(paginateQuery));
-    } else {
-      products = await Product.aggregate(basicQuery.concat(paginateQuery));
-    }
+    pipeline.push({
+      $facet: {
+        data: [
+          { $sort: safeSort },
+          { $skip: safeSkip },
+          { $limit: cappedLimit }
+        ],
+        metadata: [
+          { $count: 'total' }
+        ]
+      }
+    });
+
+    const [facetResult] = await Product.aggregate(pipeline);
+    const products = facetResult?.data || [];
+    const count = facetResult?.metadata?.[0]?.total || 0;
+    const totalPages = Math.ceil(count / cappedLimit);
+    const currentPage = count > 0 ? Math.min(safePage, totalPages) : 1;
 
     res.status(200).json({
       products,
@@ -489,10 +492,8 @@ router.put(
       if (name !== undefined) update.name = name;
 
       if (name) {
-        const { generateUniqueSlug } = require('../../utils/slugify');
         update.slug = await generateUniqueSlug(Product, name, productId);
       } else if (req.body.product?.slug) {
-        const { slugify } = require('../../utils/slugify');
         update.slug = slugify(req.body.product.slug);
       }
 

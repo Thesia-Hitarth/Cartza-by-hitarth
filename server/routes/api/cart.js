@@ -6,6 +6,7 @@ const Cart = require('../../models/cart');
 const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
 const store = require('../../utils/store');
+const taxRate = require('../../config/tax').stateTaxRate;
 
 async function validateAndEnrichProduct(productId, requestedQty, color, size) {
   const dbProduct = await Product.findById(productId);
@@ -177,19 +178,35 @@ router.put('/update-quantity/:cartId', auth, async (req, res) => {
     if (!dbProduct || !dbProduct.isActive) {
       return res.status(400).json({ error: 'Product is no longer available.' });
     }
-    if (dbProduct.quantity < parsedQty) {
-      return res.status(400).json({
-        error: `Only ${dbProduct.quantity} unit(s) available for "${dbProduct.name}".`
-      });
-    }
 
     const productItem = cart.products.find(item => String(item.product) === String(productId));
     if (!productItem) {
       return res.status(404).json({ error: 'Product not found in cart.' });
     }
 
+    if (dbProduct.variants && dbProduct.variants.length > 0) {
+      const col = productItem.color || 'Default';
+      const sz = productItem.size || 'Default';
+      const variant = dbProduct.variants.find(v => v.color === col && v.size === sz);
+      if (!variant) {
+        return res.status(400).json({
+          error: `Variant (${col} / ${sz}) for "${dbProduct.name}" does not exist.`
+        });
+      }
+      if (variant.quantity < parsedQty) {
+        return res.status(400).json({
+          error: `Only ${variant.quantity} unit(s) of "${dbProduct.name}" (${col} / ${sz}) available.`
+        });
+      }
+    } else {
+      if (dbProduct.quantity < parsedQty) {
+        return res.status(400).json({
+          error: `Only ${dbProduct.quantity} unit(s) available for "${dbProduct.name}".`
+        });
+      }
+    }
+
     const isTaxable = productItem.totalTax > 0 || (productItem.priceWithTax > productItem.totalPrice);
-    const taxRate = require('../../config/tax').stateTaxRate;
 
     productItem.quantity = parsedQty;
     productItem.totalPrice = parseFloat(Number((productItem.purchasePrice * parsedQty).toFixed(2)));

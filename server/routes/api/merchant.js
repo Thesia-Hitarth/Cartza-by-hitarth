@@ -3,6 +3,8 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 
+const validator = require('validator');
+
 // Bring in Models & Helpers
 const { MERCHANT_STATUS, ROLES } = require('../../constants');
 const Merchant = require('../../models/merchant');
@@ -28,22 +30,22 @@ router.post('/add', async (req, res) => {
   try {
     const { name, business, phoneNumber, email, brandName } = req.body;
 
-    if (!name || !email) {
+    if (!name || !email || !phoneNumber) {
       return res
         .status(400)
-        .json({ error: 'You must enter your name and email.' });
+        .json({ error: 'You must enter your name, email, and phone number.' });
+    }
+
+    if (!validator.isEmail(String(email))) {
+      return res
+        .status(400)
+        .json({ error: 'You must enter a valid email address.' });
     }
 
     if (!business) {
       return res
         .status(400)
         .json({ error: 'You must enter a business description.' });
-    }
-
-    if (!phoneNumber || !email) {
-      return res
-        .status(400)
-        .json({ error: 'You must enter a phone number and an email address.' });
     }
 
     const existingMerchant = await Merchant.findOne({ email });

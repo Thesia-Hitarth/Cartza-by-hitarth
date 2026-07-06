@@ -23,6 +23,18 @@ const PendingPaymentSchema = new Schema({
     ref: 'User',
     required: true
   },
+  amount: {
+    type: Number,
+    required: true
+  },
+  discount: {
+    type: Number,
+    default: 0
+  },
+  couponCode: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -6,7 +6,7 @@ const User = require('../models/user');
 const smtp = require('./smtp');
 const store = require('../utils/store');
 
-async function createOrder({ cartId, addressId, userId, couponCode }) {
+async function createOrder({ cartId, addressId, userId, couponCode, precomputedTotal, precomputedDiscount }) {
   if (!userId) {
     throw new Error('User authentication is required to place an order.');
   }
@@ -117,32 +117,42 @@ async function createOrder({ cartId, addressId, userId, couponCode }) {
     throw new Error(err.message || 'Stock allocation failed due to insufficient stock.');
   }
 
-  // 4. Calculate total
-  let serverTotal = validProducts.reduce((sum, item) => {
-    const price = item.purchasePrice || item.product?.price || 0;
-    return sum + (price * item.quantity);
-  }, 0);
-
+  // 4. Calculate total or use precomputed value
+  let serverTotal = 0;
   let discountAmount = 0;
   let appliedCoupon = null;
 
-  if (couponCode) {
-    const Coupon = require('../models/coupon');
-    const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
-    if (coupon) {
-      const isExpired = coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
-      const hasUses = coupon.maxUses === null || coupon.usedCount < coupon.maxUses;
-      const meetsMin = serverTotal >= coupon.minOrderValue;
+  if (precomputedTotal !== undefined && precomputedDiscount !== undefined) {
+    serverTotal = precomputedTotal;
+    discountAmount = precomputedDiscount;
+    if (couponCode) {
+      const Coupon = require('../models/coupon');
+      appliedCoupon = await Coupon.findOne({ code: couponCode.toUpperCase() });
+    }
+  } else {
+    serverTotal = validProducts.reduce((sum, item) => {
+      const price = item.purchasePrice || item.product?.price || 0;
+      return sum + (price * item.quantity);
+    }, 0);
 
-      if (!isExpired && hasUses && meetsMin) {
-        appliedCoupon = coupon;
-        if (coupon.type === 'percentage') {
-          discountAmount = (serverTotal * coupon.value) / 100;
-        } else if (coupon.type === 'fixed') {
-          discountAmount = coupon.value;
+    if (couponCode) {
+      const Coupon = require('../models/coupon');
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (coupon) {
+        const isExpired = coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
+        const hasUses = coupon.maxUses === null || coupon.usedCount < coupon.maxUses;
+        const meetsMin = serverTotal >= coupon.minOrderValue;
+
+        if (!isExpired && hasUses && meetsMin) {
+          appliedCoupon = coupon;
+          if (coupon.type === 'percentage') {
+            discountAmount = (serverTotal * coupon.value) / 100;
+          } else if (coupon.type === 'fixed') {
+            discountAmount = coupon.value;
+          }
+          discountAmount = Math.min(discountAmount, serverTotal);
+          serverTotal -= discountAmount;
         }
-        discountAmount = Math.min(discountAmount, serverTotal);
-        serverTotal -= discountAmount;
       }
     }
   }

@@ -37,6 +37,7 @@ import VerifyEmail from '../VerifyEmail';
 import Footer from '../../components/Common/Footer';
 import Page404 from '../../components/Common/Page404';
 import CustomCursor from '../../components/ui/CustomCursor';
+import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import { CART_ITEMS } from '../../constants';
 
 import WishList from '../WishList';
@@ -54,6 +55,10 @@ const PageWrapper = ({ children, isFullBleed }) => {
 class Application extends React.PureComponent {
   constructor(props) {
     super(props);
+    const loggedIn = localStorage.getItem('logged_in') === 'true';
+    this.state = {
+      isCheckingAuth: loggedIn
+    };
     this.handleStorage = this.handleStorage.bind(this);
   }
 
@@ -62,8 +67,11 @@ class Application extends React.PureComponent {
     if (loggedIn) {
       try {
         await this.props.fetchProfile();
+        this.props.setAuth();
       } catch (e) {
-        console.error(e);
+        console.error('Session validation failed:', e);
+      } finally {
+        this.setState({ isCheckingAuth: false });
       }
     }
 
@@ -160,15 +168,18 @@ class Application extends React.PureComponent {
         <Navigation />
 
         <main className='main'>
-          <AnimatePresence exitBeforeEnter mode="wait">
-            <motion.div
-              key={location.pathname}
-              variants={pageVariants}
-              initial="initial"
-              animate="enter"
-              exit="exit"
-            >
-              {/* All routes live together; homepage gets no wrapper padding */}
+          {this.state.isCheckingAuth ? (
+            <div className='wrapper'><LoadingIndicator /></div>
+          ) : (
+            <AnimatePresence exitBeforeEnter mode="wait">
+              <motion.div
+                key={location.pathname}
+                variants={pageVariants}
+                initial="initial"
+                animate="enter"
+                exit="exit"
+              >
+                {/* All routes live together; homepage gets no wrapper padding */}
               <Routes>
                 <Route
                   path='/'
@@ -249,6 +260,7 @@ class Application extends React.PureComponent {
               </Routes>
             </motion.div>
           </AnimatePresence>
+          )}
         </main>
 
         <Footer />

@@ -1,15 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const Mongoose = require('mongoose');
+const crypto = require('crypto');
 
-// Bring in Models & Utils
+// Bring in Models, Utils, Services
 const Order = require('../../models/order');
 const Cart = require('../../models/cart');
 const Product = require('../../models/product');
+const Address = require('../../models/address');
+const Coupon = require('../../models/coupon');
+const PendingPayment = require('../../models/pendingPayment');
+
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
 const smtp = require('../../services/smtp');
 const store = require('../../utils/store');
+const { createOrder } = require('../../services/order');
+const { createRazorpayOrder } = require('../../services/razorpay');
 const { ROLES, CART_ITEM_STATUS } = require('../../constants');
 
 router.param('orderId', (req, res, next, orderId) => {
@@ -38,7 +45,6 @@ router.post('/initiate', auth, async (req, res) => {
       return res.status(400).json({ error: 'Please select a delivery address.' });
     }
 
-    const Address = require('../../models/address');
     const addr = await Address.findOne({ _id: addressId, user });
     if (!addr) {
       return res.status(400).json({ error: 'Invalid address selected.' });
@@ -54,13 +60,15 @@ router.post('/initiate', auth, async (req, res) => {
       return res.status(400).json({ error: 'Cannot checkout with no valid products.' });
     }
 
-    let serverTotal = validProducts.reduce((sum, item) => {
+    const originalTotal = validProducts.reduce((sum, item) => {
       const price = item.purchasePrice || item.product?.price || 0;
       return sum + (price * item.quantity);
     }, 0);
 
+    let serverTotal = originalTotal;
+    let discountAmount = 0;
+
     if (couponCode) {
-      const Coupon = require('../../models/coupon');
       const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
       if (coupon) {
         const isExpired = coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
@@ -68,13 +76,13 @@ router.post('/initiate', auth, async (req, res) => {
         const meetsMin = serverTotal >= coupon.minOrderValue;
 
         if (!isExpired && hasUses && meetsMin) {
-          let discount = 0;
           if (coupon.type === 'percentage') {
-            discount = (serverTotal * coupon.value) / 100;
+            discountAmount = (serverTotal * coupon.value) / 100;
           } else if (coupon.type === 'fixed') {
-            discount = coupon.value;
+            discountAmount = coupon.value;
           }
-          serverTotal -= Math.min(discount, serverTotal);
+          discountAmount = Math.min(discountAmount, serverTotal);
+          serverTotal -= discountAmount;
         }
       }
     }
@@ -84,37 +92,20 @@ router.post('/initiate', auth, async (req, res) => {
 
     if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
       requiresPayment = true;
-      const axios = require('axios');
-      const authHeader = Buffer.from(
-        `${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
-      ).toString('base64');
-
-      const response = await axios.post(
-        'https://api.razorpay.com/v1/orders',
-        {
-          amount: Math.round(serverTotal * 100), // Razorpay expects paisa (cents)
-          currency: 'INR',
-          receipt: `receipt_${cartId}`
-        },
-        {
-          headers: {
-            Authorization: `Basic ${authHeader}`
-          }
-        }
-      );
-
-      gatewayOrderId = response.data.id;
+      gatewayOrderId = await createRazorpayOrder(cartId, serverTotal);
     }
 
-    // Save pending payment metadata
-    const PendingPayment = require('../../models/pendingPayment');
+    // Save pending payment metadata including calculated pricing details
     await PendingPayment.findOneAndUpdate(
       { cartId, userId: user },
       {
         razorpayOrderId: gatewayOrderId,
         cartId,
         addressId,
-        userId: user
+        userId: user,
+        amount: serverTotal,
+        discount: discountAmount,
+        couponCode: couponCode || null
       },
       { upsert: true, new: true }
     );
@@ -145,12 +136,16 @@ router.post('/add', auth, async (req, res) => {
       return res.status(400).json({ error: 'Please select a delivery address.' });
     }
 
+    const PendingPayment = require('../../models/pendingPayment');
+    let precomputedTotal = undefined;
+    let precomputedDiscount = undefined;
+    let finalCouponCode = couponCode;
+
     // Verify Payment Signature if Razorpay credentials are set in env
     if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
       if (!paymentId || !gatewayOrderId || !signature) {
         return res.status(400).json({ error: 'Payment details are missing.' });
       }
-      const crypto = require('crypto');
       const expectedSignature = crypto
         .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
         .update(gatewayOrderId + '|' + paymentId)
@@ -158,10 +153,30 @@ router.post('/add', auth, async (req, res) => {
       if (expectedSignature !== signature) {
         return res.status(400).json({ error: 'Payment verification failed. Invalid signature.' });
       }
+
+      // Fetch pending payment to verify details and get precalculated amount
+      const pending = await PendingPayment.findOne({ razorpayOrderId: gatewayOrderId, userId: user });
+      if (!pending) {
+        return res.status(400).json({ error: 'Payment record not found. Please try again.' });
+      }
+
+      if (String(pending.cartId) !== String(cartId) || String(pending.addressId) !== String(addressId)) {
+        return res.status(400).json({ error: 'Cart or address does not match payment details.' });
+      }
+
+      precomputedTotal = pending.amount;
+      precomputedDiscount = pending.discount;
+      finalCouponCode = pending.couponCode;
     }
 
-    const { createOrder } = require('../../services/order');
-    const orderDoc = await createOrder({ cartId, addressId, userId: user, couponCode });
+    const orderDoc = await createOrder({
+      cartId,
+      addressId,
+      userId: user,
+      couponCode: finalCouponCode,
+      precomputedTotal,
+      precomputedDiscount
+    });
 
     res.status(200).json({
       success: true,
@@ -393,7 +408,12 @@ router.delete('/cancel/:orderId', auth, async (req, res) => {
   try {
     const orderId = req.params.orderId;
 
-    const order = await Order.findOne({ _id: orderId })
+    const query = { _id: orderId };
+    if (req.user.role !== ROLES.Admin) {
+      query.user = req.user._id;
+    }
+
+    const order = await Order.findOne(query)
       .populate('user')
       .populate({
         path: 'cart',
@@ -409,7 +429,7 @@ router.delete('/cancel/:orderId', auth, async (req, res) => {
       return res.status(404).json({ error: 'Order not found.' });
     }
 
-    if (req.user.role !== ROLES.Admin && String(order.user._id || order.user) !== String(req.user._id)) {
+    if (!order.user || (req.user.role !== ROLES.Admin && String(order.user._id || order.user) !== String(req.user._id))) {
       return res.status(403).json({ error: 'Unauthorized to cancel this order.' });
     }
 
@@ -466,7 +486,11 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
     const cartId = req.body.cartId;
     const status = req.body.status || CART_ITEM_STATUS.Cancelled;
 
-    const order = await Order.findOne({ _id: orderId });
+    const query = { _id: orderId };
+    if (req.user.role !== ROLES.Admin && req.user.role !== ROLES.Merchant) {
+      query.user = req.user._id;
+    }
+    const order = await Order.findOne(query);
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
     }

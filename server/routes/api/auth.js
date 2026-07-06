@@ -78,7 +78,6 @@ router.post('/login', authLimiter, async (req, res) => {
 
     res.status(200).json({
       success: true,
-      token: jwtToken,
       user: {
         id: user.id,
         firstName: user.firstName,
@@ -190,7 +189,6 @@ router.post('/register', authLimiter, async (req, res) => {
     res.status(200).json({
       success: true,
       subscribed,
-      token: jwtToken,
       user: {
         id: registeredUser.id,
         firstName: registeredUser.firstName,
@@ -502,8 +500,7 @@ router.get('/google/success', (req, res) => {
   }
 
   return res.status(200).json({
-    success: true,
-    token: decodeURIComponent(token)
+    success: true
   });
 });
 

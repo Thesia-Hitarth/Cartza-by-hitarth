@@ -10,11 +10,9 @@ import { ReduxRouter } from '@lagunovsky/redux-react-router';
 import { HelmetProvider } from 'react-helmet-async';
 
 import store, { history } from './store';
-import { SET_AUTH } from './containers/Authentication/constants';
 import Application from './containers/Application';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import ScrollToTop from './scrollToTop';
-import setToken from './utils/token';
 import axios from 'axios';
 import { signOut } from './containers/Login/actions';
 
@@ -46,13 +44,6 @@ import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 // rc-slider style
 import 'rc-slider/assets/index.css';
 
-// Authentication
-const loggedIn = localStorage.getItem('logged_in') === 'true';
-
-if (loggedIn) {
-  // authenticate routes
-  store.dispatch({ type: SET_AUTH });
-}
 
 const app = () => (
   <HelmetProvider>

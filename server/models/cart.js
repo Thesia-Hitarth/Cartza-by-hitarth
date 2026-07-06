@@ -73,4 +73,6 @@ CartSchema.pre('save', function (next) {
   next();
 });
 
+CartSchema.index({ updated: 1, recoveryEmailSentAt: 1 });
+
 module.exports = Mongoose.model('Cart', CartSchema);

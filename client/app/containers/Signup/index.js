@@ -64,7 +64,7 @@ class Signup extends React.PureComponent {
             {/* Right 45% Column: Form Panel */}
             <Col xs='12' md='6' lg='5' className='auth-right-form p-4 p-lg-5'>
               <div className='form-panel-header mb-4 text-center text-md-left'>
-                <h3 className='form-title mb-2'>Create Account</h3>
+                <h1 className='form-title mb-2'>Create Account</h1>
                 <p className='form-subtitle'>Join Cartza to explore premium fashion and electronics</p>
               </div>
 

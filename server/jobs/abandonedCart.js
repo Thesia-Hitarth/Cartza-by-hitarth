@@ -12,7 +12,10 @@ const processAbandonedCarts = async () => {
     products: { $exists: true, $not: { $size: 0 } },
     updated: { $lt: oneHourAgo },
     recoveryEmailSentAt: null
-  }).populate('user');
+  }).populate([
+    { path: 'user' },
+    { path: 'products.product', select: 'name imageUrl price slug' }
+  ]);
 
   let sentCount = 0;
   for (const cart of carts) {

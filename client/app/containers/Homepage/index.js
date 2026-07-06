@@ -20,6 +20,7 @@ import { Link } from 'react-router-dom';
 import { Container } from 'reactstrap';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { Helmet } from 'react-helmet-async';
 
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
@@ -119,6 +120,15 @@ class Homepage extends React.PureComponent {
 
     return (
       <div className='homepage-redesign'>
+        <Helmet>
+          <title>Cartza | Premium Editorial E-Commerce Experience</title>
+          <meta name="description" content="Discover the season's most refined collections. Curated fashion, electronics & lifestyle accessories crafted for those who live with intention." />
+          <meta property="og:title" content="Cartza | Premium Editorial E-Commerce Experience" />
+          <meta property="og:description" content="Discover the season's most refined collections. Curated fashion, electronics & lifestyle accessories." />
+          <meta property="og:image" content="https://cartza-by-hitarth.vercel.app/images/banners/men.jpg" />
+          <meta property="og:url" content="https://cartza-by-hitarth.vercel.app/" />
+          <meta name="twitter:card" content="summary_large_image" />
+        </Helmet>
         {/* ═══════════════════════════════════════════
             SECTION 1: HERO — Full viewport Ken Burns
             ═══════════════════════════════════════════ */}

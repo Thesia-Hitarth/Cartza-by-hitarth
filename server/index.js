@@ -1,5 +1,14 @@
 require('dotenv').config();
 require('./utils/validateEnv')();
+const Sentry = require('@sentry/node');
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    environment: process.env.NODE_ENV || 'development'
+  });
+}
+
 const express = require('express');
 const chalk = require('chalk');
 const cors = require('cors');
@@ -11,6 +20,11 @@ const setupDB = require('./utils/db');
 
 const { port } = keys;
 const app = express();
+
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.requestHandler());
+}
+
 app.set('trust proxy', 1);
 
 app.use(express.urlencoded({ extended: true }));
@@ -19,12 +33,18 @@ app.use(express.json({
     req.rawBody = buf;
   }
 }));
+
+const csrfProtection = require('./middleware/csrf');
+app.use(csrfProtection);
+
 app.use(
   helmet({
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
-        connectSrc: ["'self'", "*"],
+        connectSrc: process.env.NODE_ENV === 'production'
+          ? ["'self'", "https://api.razorpay.com", "https://res.cloudinary.com"]
+          : ["'self'", "http://localhost:3000", "http://localhost:8080", "ws://localhost:8080", "https://api.razorpay.com", "https://res.cloudinary.com"],
         fontSrc: ["'self'", "fonts.gstatic.com", "data:"],
         imgSrc: ["'self'", "data:", "res.cloudinary.com"],
         scriptSrc: process.env.NODE_ENV === 'production'
@@ -56,6 +76,10 @@ app.use(cors({
 setupDB();
 require('./config/passport')(app);
 app.use(routes);
+
+if (process.env.SENTRY_DSN) {
+  app.use(Sentry.Handlers.errorHandler());
+}
 
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   const { runAbandonedCartJob } = require('./jobs/abandonedCart');

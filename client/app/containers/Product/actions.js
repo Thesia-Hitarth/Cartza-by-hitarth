@@ -24,7 +24,10 @@ import {
   FETCH_PRODUCTS_SELECT,
   SET_PRODUCTS_LOADING,
   SET_ADVANCED_FILTERS,
-  RESET_ADVANCED_FILTERS
+  RESET_ADVANCED_FILTERS,
+  SORT_NEWEST,
+  SORT_PRICE_HIGH,
+  SORT_PRICE_LOW
 } from './constants';
 
 import { API_URL, ROLES } from '../../constants';
@@ -61,25 +64,14 @@ export const productShopChange = (name, value) => {
   };
 };
 
-export const resetProduct = () => {
-  return async (dispatch, getState) => {
-    dispatch({ type: RESET_PRODUCT });
-  };
-};
+export const resetProduct = () => ({
+  type: RESET_PRODUCT
+});
 
 export const setProductLoading = value => {
   return {
     type: SET_PRODUCTS_LOADING,
     payload: value
-  };
-};
-
-export const filterProducts2 = (n, v) => {
-  return async (dispatch, getState) => {
-    const advancedFilters = getState().product.advancedFilters;
-    const payload = productsFilterOrganizer(n, v, advancedFilters);
-
-    dispatch({ type: SET_ADVANCED_FILTERS, payload });
   };
 };
 
@@ -235,7 +227,7 @@ export const addProduct = () => {
       const rules = {
         sku: 'required|alpha_dash',
         name: 'required',
-        description: 'required|max:200',
+        description: 'required|max:2000',
         quantity: 'required|numeric',
         price: 'required|numeric',
         taxable: 'required',
@@ -274,7 +266,7 @@ export const addProduct = () => {
         'required.name': 'Name is required.',
         'required.description': 'Description is required.',
         'max.description':
-          'Description may not be greater than 200 characters.',
+          'Description may not be greater than 2000 characters.',
         'required.quantity': 'Quantity is required.',
         'required.price': 'Price is required.',
         'required.taxable': 'Taxable is required.',
@@ -333,7 +325,7 @@ export const updateProduct = () => {
         name: 'required',
         sku: 'required|alpha_dash',
         slug: 'required|alpha_dash',
-        description: 'required|max:200',
+        description: 'required|max:2000',
         quantity: 'required|numeric',
         price: 'required|numeric',
         taxable: 'required',
@@ -366,7 +358,7 @@ export const updateProduct = () => {
           'Slug may have alpha-numeric characters, as well as dashes and underscores only.',
         'required.description': 'Description is required.',
         'max.description':
-          'Description may not be greater than 200 characters.',
+          'Description may not be greater than 2000 characters.',
         'required.quantity': 'Quantity is required.',
         'required.price': 'Price is required.',
         'required.taxable': 'Taxable is required.',
@@ -544,13 +536,13 @@ const productsFilterOrganizer = (n, v, s) => {
 const getSortOrder = value => {
   let sortOrder = {};
   switch (value) {
-    case 0:
+    case SORT_NEWEST:
       sortOrder._id = -1;
       break;
-    case 1:
+    case SORT_PRICE_HIGH:
       sortOrder.price = -1;
       break;
-    case 2:
+    case SORT_PRICE_LOW:
       sortOrder.price = 1;
       break;
 
