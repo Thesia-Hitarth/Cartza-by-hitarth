@@ -21,8 +21,8 @@ Cartza is a modern, high-performance MERN (MongoDB, Express, React, Node.js) sta
 
 ## 🛠️ Tech Stack
 
-* **Frontend**: React (v16.14.0), Redux, Webpack, SASS/SCSS, Reactstrap
-* **Backend**: Node.js, Express, Socket.io, Mongoose (v5.13.22)
+* **Frontend**: React (v18.3.1), Redux, Webpack, SASS/SCSS, Reactstrap
+* **Backend**: Node.js, Express, Socket.io, Mongoose (v8.24.1)
 * **Database**: MongoDB (Atlas)
 * **Cloud Storage**: Cloudinary (Image uploads)
 * **Hosting**: Vercel

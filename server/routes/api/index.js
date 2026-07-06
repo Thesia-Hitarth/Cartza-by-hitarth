@@ -13,6 +13,8 @@ const cartRoutes = require('./cart');
 const orderRoutes = require('./order');
 const reviewRoutes = require('./review');
 const wishlistRoutes = require('./wishlist');
+const webhookRoutes = require('./webhook');
+const couponRoutes = require('./coupon');
 
 // auth routes
 router.use('/auth', authRoutes);
@@ -52,5 +54,11 @@ router.use('/review', reviewRoutes);
 
 // Wishlist routes
 router.use('/wishlist', wishlistRoutes);
+
+// Webhook routes
+router.use('/webhook', webhookRoutes);
+
+// Coupon routes
+router.use('/coupon', couponRoutes);
 
 module.exports = router;

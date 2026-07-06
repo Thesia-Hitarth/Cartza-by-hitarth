@@ -7,11 +7,7 @@
 import axios from 'axios';
 
 const setToken = token => {
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = token;
-  } else {
-    delete axios.defaults.headers.common['Authorization'];
-  }
+  // Rely on secure httpOnly cookies instead of Authorization headers to reduce attack surface
 };
 
 export default setToken;

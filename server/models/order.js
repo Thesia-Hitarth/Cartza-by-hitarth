@@ -20,6 +20,31 @@ const OrderSchema = new Schema({
     type: Number,
     default: 0
   },
+  coupon: {
+    type: Schema.Types.ObjectId,
+    ref: 'Coupon',
+    default: null
+  },
+  discount: {
+    type: Number,
+    default: 0
+  },
+  trackingNumber: {
+    type: String,
+    default: null
+  },
+  carrier: {
+    type: String,
+    default: null
+  },
+  guestEmail: {
+    type: String,
+    default: null
+  },
+  guestName: {
+    type: String,
+    default: null
+  },
   status: {
     type: String,
     default: 'Not_processed',

@@ -19,15 +19,15 @@ import { ShoppingBag, Star, Check, ChevronDown, ChevronUp } from 'lucide-react/d
 import ProductReviews from '../../components/Store/ProductReviews';
 import SocialShare from '../../components/Store/SocialShare';
 
-const updateMetaTag = (property, content) => {
+const updateMetaTag = (attrName, attrValue, content) => {
   if (typeof window === 'undefined') return;
-  let element = document.querySelector(`meta[property="${property}"]`);
+  let element = document.querySelector(`meta[${attrName}="${attrValue}"]`);
   if (!element) {
     element = document.createElement('meta');
-    element.setAttribute('property', property);
+    element.setAttribute(attrName, attrValue);
     document.head.appendChild(element);
   }
-  element.setAttribute('content', content);
+  element.setAttribute('content', content || '');
 };
 
 
@@ -77,9 +77,34 @@ class ProductPage extends React.PureComponent {
     const { product } = this.props;
     if (product && Object.keys(product).length > 0) {
       document.title = `${product.name} | CARTZA`;
-      updateMetaTag('og:title', `${product.name} | CARTZA`);
-      updateMetaTag('og:description', product.description || '');
-      updateMetaTag('og:image', product.imageUrl || '/images/placeholder-image.png');
+      updateMetaTag('property', 'og:title', `${product.name} | CARTZA`);
+      updateMetaTag('name', 'description', product.description || '');
+      updateMetaTag('property', 'og:description', product.description || '');
+      updateMetaTag('property', 'og:image', product.imageUrl || '/images/placeholder-image.png');
+
+      // Update JSON-LD schema dynamically
+      let schemaScript = document.getElementById('product-schema-jsonld');
+      if (!schemaScript) {
+        schemaScript = document.createElement('script');
+        schemaScript.id = 'product-schema-jsonld';
+        schemaScript.type = 'application/ld+json';
+        document.head.appendChild(schemaScript);
+      }
+      const schemaData = {
+        '@context': 'https://schema.org/',
+        '@type': 'Product',
+        'name': product.name,
+        'image': product.imageUrl || '',
+        'description': product.description || '',
+        'sku': product.sku || '',
+        'offers': {
+          '@type': 'Offer',
+          'priceCurrency': 'INR',
+          'price': product.price,
+          'availability': product.quantity > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock'
+        }
+      };
+      schemaScript.innerHTML = JSON.stringify(schemaData);
       
       const recentlyViewed = JSON.parse(localStorage.getItem('cartza_recently_viewed') || '[]');
       const filtered = recentlyViewed.filter(p => p._id !== product._id);
@@ -139,7 +164,12 @@ class ProductPage extends React.PureComponent {
 
     const { activeThumbIdx, isZoomed, zoomPos, selectedColor, selectedSize, openAccordion } = this.state;
 
-    const productImages = product.imageUrl ? [product.imageUrl] : ['/images/placeholder-image.png'];
+    let productImages = ['/images/placeholder-image.png'];
+    if (product.images && product.images.length > 0) {
+      productImages = product.images.map(img => img.url);
+    } else if (product.imageUrl) {
+      productImages = [product.imageUrl];
+    }
     const currentImage = productImages[activeThumbIdx] || productImages[0];
 
     // Dynamic discount calculations

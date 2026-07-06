@@ -8,6 +8,7 @@ const Cart = require('../../models/cart');
 const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
+const optionalAuth = require('../../middleware/optionalAuth');
 const smtp = require('../../services/smtp');
 const store = require('../../utils/store');
 const { ROLES, CART_ITEM_STATUS } = require('../../constants');
@@ -26,19 +27,137 @@ router.param('itemId', (req, res, next, itemId) => {
   next();
 });
 
-router.post('/add', auth, async (req, res) => {
+router.post('/initiate', optionalAuth, async (req, res) => {
   try {
-    const { cartId, addressId, paymentId, gatewayOrderId, signature } = req.body;
-    const user = req.user._id;
+    if (req.user && !req.user.isEmailVerified) {
+      return res.status(403).json({ error: 'Please verify your email address to place orders.' });
+    }
+    const { cartId, addressId, couponCode } = req.body;
+    const user = req.user ? req.user._id : null;
 
     if (!addressId) {
       return res.status(400).json({ error: 'Please select a delivery address.' });
     }
 
     const Address = require('../../models/address');
-    const addr = await Address.findOne({ _id: addressId, user });
+    let addr;
+    if (user) {
+      addr = await Address.findOne({ _id: addressId, user });
+    } else {
+      addr = await Address.findById(addressId);
+    }
     if (!addr) {
       return res.status(400).json({ error: 'Invalid address selected.' });
+    }
+
+    let cartDoc;
+    if (user) {
+      cartDoc = await Cart.findOne({ _id: cartId, user }).populate('products.product');
+    } else {
+      cartDoc = await Cart.findById(cartId).populate('products.product');
+    }
+    if (!cartDoc || !cartDoc.products || cartDoc.products.length === 0) {
+      return res.status(400).json({ error: 'Cannot checkout with an empty cart.' });
+    }
+
+    const validProducts = cartDoc.products.filter(item => item.product !== null);
+    if (validProducts.length === 0) {
+      return res.status(400).json({ error: 'Cannot checkout with no valid products.' });
+    }
+
+    let serverTotal = validProducts.reduce((sum, item) => {
+      const price = item.purchasePrice || item.product?.price || 0;
+      return sum + (price * item.quantity);
+    }, 0);
+
+    if (couponCode) {
+      const Coupon = require('../../models/coupon');
+      const coupon = await Coupon.findOne({ code: couponCode.toUpperCase(), isActive: true });
+      if (coupon) {
+        const isExpired = coupon.expiresAt && new Date(coupon.expiresAt) < new Date();
+        const hasUses = coupon.maxUses === null || coupon.usedCount < coupon.maxUses;
+        const meetsMin = serverTotal >= coupon.minOrderValue;
+
+        if (!isExpired && hasUses && meetsMin) {
+          let discount = 0;
+          if (coupon.type === 'percentage') {
+            discount = (serverTotal * coupon.value) / 100;
+          } else if (coupon.type === 'fixed') {
+            discount = coupon.value;
+          }
+          serverTotal -= Math.min(discount, serverTotal);
+        }
+      }
+    }
+
+    let gatewayOrderId = 'mock_order_' + Date.now();
+    let requiresPayment = false;
+
+    if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+      requiresPayment = true;
+      const axios = require('axios');
+      const authHeader = Buffer.from(
+        `${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`
+      ).toString('base64');
+
+      const response = await axios.post(
+        'https://api.razorpay.com/v1/orders',
+        {
+          amount: Math.round(serverTotal * 100), // Razorpay expects paisa (cents)
+          currency: 'INR',
+          receipt: `receipt_${cartId}`
+        },
+        {
+          headers: {
+            Authorization: `Basic ${authHeader}`
+          }
+        }
+      );
+
+      gatewayOrderId = response.data.id;
+    }
+
+    // Save pending payment metadata
+    const PendingPayment = require('../../models/pendingPayment');
+    await PendingPayment.findOneAndUpdate(
+      { cartId },
+      {
+        razorpayOrderId: gatewayOrderId,
+        cartId,
+        addressId,
+        userId: user
+      },
+      { upsert: true, new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      requiresPayment,
+      keyId: process.env.RAZORPAY_KEY_ID || '',
+      amount: Math.round(serverTotal * 100),
+      gatewayOrderId
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message || 'Payment initiation failed.'
+    });
+  }
+});
+
+router.post('/add', optionalAuth, async (req, res) => {
+  try {
+    if (req.user && !req.user.isEmailVerified) {
+      return res.status(403).json({ error: 'Please verify your email address to place orders.' });
+    }
+    const { cartId, addressId, paymentId, gatewayOrderId, signature, couponCode, guestEmail, guestName } = req.body;
+    const user = req.user ? req.user._id : null;
+
+    if (!user && (!guestEmail || !guestName)) {
+      return res.status(400).json({ error: 'Guest checkouts require guestEmail and guestName.' });
+    }
+
+    if (!addressId) {
+      return res.status(400).json({ error: 'Please select a delivery address.' });
     }
 
     // Verify Payment Signature if Razorpay credentials are set in env
@@ -56,80 +175,8 @@ router.post('/add', auth, async (req, res) => {
       }
     }
 
-    const cartDoc = await Cart.findById(cartId).populate({
-      path: 'products.product',
-      populate: {
-        path: 'brand'
-      }
-    });
-
-    if (!cartDoc || !cartDoc.products || cartDoc.products.length === 0) {
-      return res.status(400).json({ error: 'Cannot place an order with an empty cart.' });
-    }
-
-    // Filter out items where product has been deleted (is null)
-    const validProducts = cartDoc.products.filter(item => item.product !== null);
-    if (validProducts.length === 0) {
-      return res.status(400).json({ error: 'Cannot place an order with no valid products.' });
-    }
-
-    // Decrement stock atomically and verify success
-    const decrementedProducts = [];
-    try {
-      for (const item of validProducts) {
-        const productId = item.product._id || item.product;
-        const updatedProduct = await Product.findOneAndUpdate(
-          { _id: productId, quantity: { $gte: item.quantity } },
-          { $inc: { quantity: -item.quantity } },
-          { new: true }
-        );
-        if (!updatedProduct) {
-          throw new Error(`Insufficient stock for product: ${item.product.name}`);
-        }
-        decrementedProducts.push({ productId, quantity: item.quantity });
-      }
-    } catch (err) {
-      // Rollback already decremented products
-      for (const rolledBack of decrementedProducts) {
-        await Product.updateOne(
-          { _id: rolledBack.productId },
-          { $inc: { quantity: rolledBack.quantity } }
-        );
-      }
-      return res.status(400).json({ error: err.message || 'Stock allocation failed due to insufficient stock.' });
-    }
-
-    const serverTotal = validProducts.reduce((sum, item) => {
-      const price = item.purchasePrice || item.product?.price || 0;
-      return sum + (price * item.quantity);
-    }, 0);
-
-    const order = new Order({
-      cart: cartId,
-      user,
-      address: addressId,
-      total: serverTotal,
-      status: 'Not_processed',
-      isCancelled: false
-    });
-
-    const orderDoc = await order.save();
-
-    let newOrder = {
-      _id: orderDoc._id,
-      created: orderDoc.created,
-      user: req.user,
-      total: orderDoc.total,
-      products: validProducts
-    };
-
-    newOrder = store.calculateTaxAmount(newOrder);
-
-    try {
-      await smtp.sendEmail(req.user.email, 'order-confirmation', null, newOrder);
-    } catch (emailError) {
-      console.warn('Order confirmation email failed to send:', emailError.message);
-    }
+    const { createOrder } = require('../../services/order');
+    const orderDoc = await createOrder({ cartId, addressId, userId: user, couponCode, guestEmail, guestName });
 
     res.status(200).json({
       success: true,
@@ -138,7 +185,7 @@ router.post('/add', auth, async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      error: 'Your request could not be processed. Please try again.'
+      error: error.message || 'Your request could not be processed. Please try again.'
     });
   }
 });
@@ -530,6 +577,34 @@ router.put('/status/item/:itemId', auth, async (req, res) => {
     });
   }
 });
+
+router.put('/:orderId', auth, role.check(ROLES.Admin, ROLES.Merchant), async (req, res) => {
+  try {
+    const { trackingNumber, carrier, status } = req.body;
+    const orderId = req.params.orderId;
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    const update = {};
+    if (trackingNumber !== undefined) update.trackingNumber = trackingNumber;
+    if (carrier !== undefined) update.carrier = carrier;
+    if (status !== undefined) update.status = status;
+    update.updated = Date.now();
+
+    const updatedOrder = await Order.findByIdAndUpdate(orderId, update, { new: true });
+    res.status(200).json({
+      success: true,
+      message: 'Order updated successfully!',
+      order: updatedOrder
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Internal server error.' });
+  }
+});
+
 
 const increaseQuantity = async products => {
   let bulkOptions = products

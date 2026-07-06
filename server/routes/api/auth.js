@@ -112,6 +112,9 @@ router.post('/register', authLimiter, async (req, res) => {
     if (password.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters.' });
     }
+    if (password.length > 128) {
+      return res.status(400).json({ error: 'Password must be 128 characters or fewer.' });
+    }
     if (!/[a-zA-Z]/.test(password) || !/[0-9!@#$%^&*]/.test(password)) {
       return res.status(400).json({ error: 'Password must contain at least one letter and one number or special character.' });
     }
@@ -135,11 +138,17 @@ router.post('/register', authLimiter, async (req, res) => {
       }
     }
 
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationTokenHash = crypto.createHash('sha256').update(verificationToken).digest('hex');
+
     const user = new User({
       email,
       password,
       firstName,
-      lastName
+      lastName,
+      isEmailVerified: false,
+      emailVerificationToken: verificationTokenHash,
+      emailVerificationExpires: Date.now() + 24 * 3600 * 1000 // 24 hours
     });
 
     const salt = await bcrypt.genSalt(10);
@@ -156,12 +165,12 @@ router.post('/register', authLimiter, async (req, res) => {
     try {
       await smtp.sendEmail(
         registeredUser.email,
-        'signup',
-        null,
-        registeredUser
+        'verify-email',
+        keys.app.clientURL,
+        verificationToken
       );
     } catch (emailError) {
-      console.warn('Signup email failed to send:', emailError.message);
+      console.warn('Verification email failed to send:', emailError.message);
     }
 
     const token = jwt.sign(payload, secret, { expiresIn: tokenLife });
@@ -239,6 +248,37 @@ router.post('/forgot', authLimiter, async (req, res) => {
   }
 });
 
+router.get('/verify-email/:token', async (req, res) => {
+  try {
+    const tokenHash = crypto.createHash('sha256').update(req.params.token).digest('hex');
+    const user = await User.findOne({
+      emailVerificationToken: tokenHash,
+      emailVerificationExpires: { $gt: Date.now() }
+    }).select('+emailVerificationToken +emailVerificationExpires');
+
+    if (!user) {
+      return res.status(400).json({
+        error: 'Your verification link is invalid or has expired.'
+      });
+    }
+
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Your email has been verified successfully! You can now checkout and review products.'
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Your request could not be processed. Please try again.'
+    });
+  }
+});
+
 router.post('/reset/:token', async (req, res) => {
   try {
     const { password } = req.body;
@@ -248,6 +288,9 @@ router.post('/reset/:token', async (req, res) => {
     }
     if (password.length < 8) {
       return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    }
+    if (password.length > 128) {
+      return res.status(400).json({ error: 'Password must be 128 characters or fewer.' });
     }
     if (!/[a-zA-Z]/.test(password) || !/[0-9!@#$%^&*]/.test(password)) {
       return res.status(400).json({ error: 'Password must contain at least one letter and one number or special character.' });
@@ -313,6 +356,10 @@ router.post('/reset', auth, async (req, res) => {
 
     if (confirmPassword.length < 8) {
       return res.status(400).json({ error: 'New password must be at least 8 characters.' });
+    }
+
+    if (confirmPassword.length > 128) {
+      return res.status(400).json({ error: 'New password must be 128 characters or fewer.' });
     }
 
     if (!/[a-zA-Z]/.test(confirmPassword) || !/[0-9!@#$%^&*]/.test(confirmPassword)) {

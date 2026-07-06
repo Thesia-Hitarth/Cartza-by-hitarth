@@ -23,6 +23,10 @@ const ProductSchema = new Schema({
   imageKey: {
     type: String
   },
+  images: [{
+    url: String,
+    key: String
+  }],
   description: {
     type: String,
     trim: true,
@@ -59,6 +63,12 @@ const ProductSchema = new Schema({
     type: [String],
     default: []
   },
+  variants: [{
+    color: { type: String, default: 'Default' },
+    size: { type: String, default: 'Default' },
+    quantity: { type: Number, default: 0 },
+    sku: { type: String }
+  }],
   updated: Date,
   created: {
     type: Date,

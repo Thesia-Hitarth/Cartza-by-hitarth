@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./utils/validateEnv')();
 const express = require('express');
 const chalk = require('chalk');
 const cors = require('cors');
@@ -13,7 +14,11 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => {
+    req.rawBody = buf;
+  }
+}));
 app.use(
   helmet({
     contentSecurityPolicy: {
@@ -52,7 +57,7 @@ setupDB();
 require('./config/passport')(app);
 app.use(routes);
 
-if (!process.env.VERCEL) {
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   app.listen(port, () => {
     console.log(
       `${chalk.green('✓')} ${chalk.blue(

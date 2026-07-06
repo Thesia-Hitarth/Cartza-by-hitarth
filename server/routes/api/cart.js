@@ -7,7 +7,7 @@ const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
 const store = require('../../utils/store');
 
-async function validateAndEnrichProduct(productId, requestedQty) {
+async function validateAndEnrichProduct(productId, requestedQty, color, size) {
   const dbProduct = await Product.findById(productId);
   if (!dbProduct) {
     throw Object.assign(new Error(`Product not found: ${productId}`), { status: 404 });
@@ -16,17 +16,39 @@ async function validateAndEnrichProduct(productId, requestedQty) {
     throw Object.assign(new Error(`Product is no longer available.`), { status: 400 });
   }
   const qty = Number(requestedQty) || 1;
-  if (dbProduct.quantity < qty) {
-    throw Object.assign(
-      new Error(`Only ${dbProduct.quantity} unit(s) of "${dbProduct.name}" available.`),
-      { status: 400 }
-    );
+  const col = color || 'Default';
+  const sz = size || 'Default';
+
+  if (dbProduct.variants && dbProduct.variants.length > 0) {
+    const variant = dbProduct.variants.find(v => v.color === col && v.size === sz);
+    if (!variant) {
+      throw Object.assign(
+        new Error(`Variant (${col} / ${sz}) for "${dbProduct.name}" does not exist.`),
+        { status: 400 }
+      );
+    }
+    if (variant.quantity < qty) {
+      throw Object.assign(
+        new Error(`Only ${variant.quantity} unit(s) of "${dbProduct.name}" (${col} / ${sz}) available.`),
+        { status: 400 }
+      );
+    }
+  } else {
+    if (dbProduct.quantity < qty) {
+      throw Object.assign(
+        new Error(`Only ${dbProduct.quantity} unit(s) of "${dbProduct.name}" available.`),
+        { status: 400 }
+      );
+    }
   }
+
   return {
     product: dbProduct._id,
     purchasePrice: dbProduct.price,
     price: dbProduct.price,
     quantity: qty,
+    color: col,
+    size: sz,
     taxable: dbProduct.taxable
   };
 }
@@ -42,7 +64,7 @@ router.post('/add', auth, async (req, res) => {
 
     // Validate and enrich each product from DB
     const enrichedItems = await Promise.all(
-      items.map(item => validateAndEnrichProduct(item._id || item.product, item.quantity))
+      items.map(item => validateAndEnrichProduct(item._id || item.product, item.quantity, item.color, item.size))
     );
 
     const products = store.calculateItemsSalesTax(enrichedItems);
@@ -92,17 +114,21 @@ router.post('/add/:cartId', auth, async (req, res) => {
 
     const rawProduct = req.body.product;
     const productId = rawProduct?._id || rawProduct?.product;
+    const color = rawProduct?.color || 'Default';
+    const size = rawProduct?.size || 'Default';
 
-    const existingIndex = cart.products.findIndex(p => String(p.product) === String(productId));
+    const existingIndex = cart.products.findIndex(
+      p => String(p.product) === String(productId) && p.color === color && p.size === size
+    );
 
     if (existingIndex > -1) {
       const newQty = cart.products[existingIndex].quantity + (Number(rawProduct?.quantity) || 1);
-      const enriched = await validateAndEnrichProduct(productId, newQty);
+      const enriched = await validateAndEnrichProduct(productId, newQty, color, size);
       const [product] = store.calculateItemsSalesTax([enriched]);
       cart.products[existingIndex] = product;
       await cart.save();
     } else {
-      const enriched = await validateAndEnrichProduct(productId, rawProduct?.quantity || 1);
+      const enriched = await validateAndEnrichProduct(productId, rawProduct?.quantity || 1, color, size);
       const [product] = store.calculateItemsSalesTax([enriched]);
       await Cart.updateOne({ _id: req.params.cartId }, { $push: { products: product } });
     }

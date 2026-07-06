@@ -11,6 +11,14 @@ const CartItemSchema = new Schema({
     ref: 'Product'
   },
   quantity: Number,
+  color: {
+    type: String,
+    default: 'Default'
+  },
+  size: {
+    type: String,
+    default: 'Default'
+  },
   purchasePrice: {
     type: Number,
     default: 0

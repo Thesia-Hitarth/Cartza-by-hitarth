@@ -83,7 +83,8 @@ const googleAuth = async () => {
                 firstName: name[0],
                 lastName: name[1],
                 avatar: profile.picture,
-                password: null
+                password: null,
+                isEmailVerified: true
               });
 
               newUser.save()

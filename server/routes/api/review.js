@@ -29,6 +29,9 @@ router.param('reviewId', (req, res, next, reviewId) => {
 router.post('/add', auth, async (req, res) => {
   try {
     const user = req.user;
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ error: 'Please verify your email address to submit reviews.' });
+    }
     const { product, title, rating, review, isRecommended } = req.body;
 
     if (!product) {

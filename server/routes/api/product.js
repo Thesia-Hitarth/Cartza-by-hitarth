@@ -77,6 +77,8 @@ router.get('/list/search/:name', async (req, res) => {
   try {
     const name = req.params.name;
     const { page = 1, limit = 10 } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
+    const safePage = Math.max(1, parseInt(page) || 1);
     const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const regex = new RegExp(escapeRegExp(name || ''), 'is');
     const query = { name: { $regex: regex }, isActive: true };
@@ -85,8 +87,8 @@ router.get('/list/search/:name', async (req, res) => {
       query,
       { name: 1, slug: 1, imageUrl: 1, price: 1, _id: 0 }
     )
-      .limit(limit * 1)
-      .skip((page - 1) * limit)
+      .limit(cappedLimit)
+      .skip((safePage - 1) * cappedLimit)
       .exec();
 
     const count = await Product.countDocuments(query);
@@ -99,8 +101,8 @@ router.get('/list/search/:name', async (req, res) => {
 
     res.status(200).json({
       products: productDoc,
-      totalPages: Math.ceil(count / limit),
-      currentPage: Number(page),
+      totalPages: Math.ceil(count / cappedLimit),
+      currentPage: safePage,
       count
     });
   } catch (error) {
@@ -123,6 +125,8 @@ router.get('/list', async (req, res) => {
       page = 1,
       limit = 10
     } = req.query;
+    const cappedLimit = Math.min(Number(limit) || 10, 100);
+    const safePage = Math.max(1, parseInt(page) || 1);
     const allowedSortFields = ['price', 'created', 'name'];
     let safeSort = { created: -1 };
     if (sortOrder) {
@@ -179,14 +183,14 @@ router.get('/list', async (req, res) => {
     const countQuery = [...basicQuery, { $count: 'total' }];
     const countResult = await Product.aggregate(countQuery);
     const count = countResult.length > 0 ? countResult[0].total : 0;
-    const size = count > limit ? page - 1 : 0;
-    const currentPage = count > limit ? Number(page) : 1;
+    const size = count > cappedLimit ? safePage - 1 : 0;
+    const currentPage = count > cappedLimit ? safePage : 1;
 
     // paginate query
     const paginateQuery = [
       { $sort: safeSort },
-      { $skip: size * limit },
-      { $limit: limit * 1 }
+      { $skip: size * cappedLimit },
+      { $limit: cappedLimit }
     ];
 
     if (userDoc) {
@@ -200,7 +204,7 @@ router.get('/list', async (req, res) => {
 
     res.status(200).json({
       products,
-      totalPages: Math.ceil(count / limit),
+      totalPages: Math.ceil(count / cappedLimit),
       currentPage,
       count
     });
@@ -333,6 +337,8 @@ router.get(
   async (req, res) => {
     try {
       const { page = 1, limit = 50 } = req.query;
+      const cappedLimit = Math.min(Number(limit) || 50, 100);
+      const safePage = Math.max(1, parseInt(page) || 1);
       let products = [];
       let count = 0;
       let query = {};
@@ -347,8 +353,8 @@ router.get(
       }
 
       products = await Product.find(query)
-        .limit(limit * 1)
-        .skip((page - 1) * limit)
+        .limit(cappedLimit)
+        .skip((safePage - 1) * cappedLimit)
         .populate({
           path: 'brand',
           populate: {
@@ -361,8 +367,8 @@ router.get(
 
       res.status(200).json({
         products,
-        totalPages: Math.ceil(count / limit),
-        currentPage: Number(page),
+        totalPages: Math.ceil(count / cappedLimit),
+        currentPage: safePage,
         count
       });
     } catch (error) {
@@ -438,7 +444,8 @@ router.put(
         isActive,
         brand,
         colors,
-        sizes
+        sizes,
+        variants
       } = req.body.product || {};
 
       const productDoc = await Product.findById(productId);
@@ -450,6 +457,12 @@ router.put(
         const brandDoc = await Brand.findById(productDoc.brand);
         if (!brandDoc || String(brandDoc.merchant) !== String(req.user.merchant)) {
           return res.status(403).json({ error: 'Unauthorized to edit this product.' });
+        }
+        if (brand !== undefined) {
+          const newBrandDoc = await Brand.findById(brand);
+          if (!newBrandDoc || String(newBrandDoc.merchant) !== String(req.user.merchant)) {
+            return res.status(403).json({ error: 'Unauthorized to reassign product to this brand.' });
+          }
         }
       }
 
@@ -519,6 +532,7 @@ router.put(
       if (brand !== undefined) update.brand = brand;
       if (colors !== undefined) update.colors = colors;
       if (sizes !== undefined) update.sizes = sizes;
+      if (variants !== undefined) update.variants = variants;
       update.updated = Date.now();
 
       await Product.findOneAndUpdate(query, update, {

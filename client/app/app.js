@@ -7,6 +7,7 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { ReduxRouter } from '@lagunovsky/redux-react-router';
+import { HelmetProvider } from 'react-helmet-async';
 
 import store, { history } from './store';
 import { SET_AUTH } from './containers/Authentication/constants';
@@ -54,15 +55,17 @@ if (loggedIn) {
 }
 
 const app = () => (
-  <Provider store={store}>
-    <ReduxRouter history={history}>
-      <ScrollToTop>
-        <ErrorBoundary>
-          <Application />
-        </ErrorBoundary>
-      </ScrollToTop>
-    </ReduxRouter>
-  </Provider>
+  <HelmetProvider>
+    <Provider store={store}>
+      <ReduxRouter history={history}>
+        <ScrollToTop>
+          <ErrorBoundary>
+            <Application />
+          </ErrorBoundary>
+        </ScrollToTop>
+      </ReduxRouter>
+    </Provider>
+  </HelmetProvider>
 );
 
 export default app;

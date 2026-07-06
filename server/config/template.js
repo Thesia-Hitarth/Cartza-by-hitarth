@@ -441,3 +441,23 @@ exports.contactReplyEmail = (reply, originalMessage) => {
 
   return message;
 };
+
+exports.verifyEmail = (host, token) => {
+  const link = host.includes('http') ? `${host}/verify-email/${token}` : `http://${host}/verify-email/${token}`;
+  return {
+    subject: 'Email Verification Required',
+    text: `Please verify your email address by clicking on the link below:\n\n${link}\n\n`,
+    html: buildHtmlTemplate(
+      'Email Verification Required',
+      `
+        <p>Hi,</p>
+        <p>Thank you for registering on Cartza! Please click the button below to verify your email address and activate your account:</p>
+        <div class="button-wrapper">
+          <a href="${link}" class="button" target="_blank">Verify Email</a>
+        </div>
+        <div class="divider"></div>
+        <p style="font-size: 13px; color: #64748b;">If the button doesn't work, copy and paste this link into your browser: <br><a href="${link}" style="color: #4f46e5; word-break: break-all;">${link}</a></p>
+      `
+    )
+  };
+};
