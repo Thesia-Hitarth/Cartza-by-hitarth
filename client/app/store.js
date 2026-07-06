@@ -4,7 +4,7 @@
  * store configuration
  */
 
-import { legacy_createStore as createStore, compose, applyMiddleware } from 'redux';
+import { createStore, compose, applyMiddleware } from 'redux';
 import thunk from 'redux-thunk';
 import { createRouterMiddleware } from '@lagunovsky/redux-react-router';
 import { createBrowserHistory } from 'history';
