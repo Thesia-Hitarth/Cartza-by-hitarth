@@ -5,9 +5,16 @@ const auth = require('../../middleware/auth');
 const optionalAuth = require('../../middleware/optionalAuth');
 const role = require('../../middleware/role');
 const { ROLES } = require('../../constants');
+const rateLimiter = require('../../middleware/rateLimiter');
+
+const couponLimiter = rateLimiter({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: 'Too many coupon attempts. Please try again after 15 minutes.'
+});
 
 // Validate coupon route
-router.post('/validate', optionalAuth, async (req, res) => {
+router.post('/validate', couponLimiter, optionalAuth, async (req, res) => {
   try {
     const { code, orderTotal, orderValue } = req.body;
     const finalTotal = orderTotal !== undefined ? orderTotal : orderValue;

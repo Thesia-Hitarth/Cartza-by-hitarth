@@ -25,19 +25,7 @@ const authLimiter = rateLimiter({
 });
 
 
-router.get('/verify-me', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found.' });
-    }
-    user.isEmailVerified = true;
-    await user.save();
-    res.status(200).send('<h1>Email Verified successfully! You can now place orders.</h1>');
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+
 
 router.post('/login', authLimiter, async (req, res) => {
   try {

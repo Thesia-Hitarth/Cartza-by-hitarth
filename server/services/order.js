@@ -6,35 +6,24 @@ const User = require('../models/user');
 const smtp = require('./smtp');
 const store = require('../utils/store');
 
-async function createOrder({ cartId, addressId, userId, couponCode, guestEmail, guestName }) {
-  // 1. Validate address
-  let addr;
-  if (userId) {
-    addr = await Address.findOne({ _id: addressId, user: userId });
-  } else {
-    addr = await Address.findById(addressId);
+async function createOrder({ cartId, addressId, userId, couponCode }) {
+  if (!userId) {
+    throw new Error('User authentication is required to place an order.');
   }
+
+  // 1. Validate address
+  const addr = await Address.findOne({ _id: addressId, user: userId });
   if (!addr) {
     throw new Error('Invalid address selected.');
   }
 
   // 2. Fetch cart
-  let cartDoc;
-  if (userId) {
-    cartDoc = await Cart.findOne({ _id: cartId, user: userId }).populate({
-      path: 'products.product',
-      populate: {
-        path: 'brand'
-      }
-    });
-  } else {
-    cartDoc = await Cart.findById(cartId).populate({
-      path: 'products.product',
-      populate: {
-        path: 'brand'
-      }
-    });
-  }
+  const cartDoc = await Cart.findOne({ _id: cartId, user: userId }).populate({
+    path: 'products.product',
+    populate: {
+      path: 'brand'
+    }
+  });
 
   if (!cartDoc || !cartDoc.products || cartDoc.products.length === 0) {
     throw new Error('Cannot place an order with an empty cart.');
@@ -161,9 +150,7 @@ async function createOrder({ cartId, addressId, userId, couponCode, guestEmail, 
   // 5. Save order
   const order = new Order({
     cart: cartId,
-    user: userId || null,
-    guestEmail: guestEmail || null,
-    guestName: guestName || null,
+    user: userId,
     address: addressId,
     total: parseFloat(serverTotal.toFixed(2)),
     coupon: appliedCoupon ? appliedCoupon._id : null,
@@ -174,28 +161,61 @@ async function createOrder({ cartId, addressId, userId, couponCode, guestEmail, 
 
   const orderDoc = await order.save();
 
-  // If a coupon was successfully applied, update its usage count
+  // If a coupon was successfully applied, update its usage count atomically
   if (appliedCoupon) {
-    appliedCoupon.usedCount += 1;
-    await appliedCoupon.save();
+    const Coupon = require('../models/coupon');
+    const updateQuery = {
+      _id: appliedCoupon._id
+    };
+    if (appliedCoupon.maxUses !== null) {
+      updateQuery.usedCount = { $lt: appliedCoupon.maxUses };
+    }
+    const updateResult = await Coupon.updateOne(updateQuery, {
+      $inc: { usedCount: 1 }
+    });
+    if (updateResult.modifiedCount === 0) {
+      // Rollback order record
+      await Order.deleteOne({ _id: orderDoc._id });
+      // Rollback stock allocation:
+      for (const rolledBack of decrementedProducts) {
+        if (rolledBack.hasVariants) {
+          await Product.updateOne(
+            {
+              _id: rolledBack.productId,
+              'variants.color': rolledBack.color,
+              'variants.size': rolledBack.size
+            },
+            {
+              $inc: {
+                quantity: rolledBack.quantity,
+                'variants.$.quantity': rolledBack.quantity
+              }
+            }
+          );
+        } else {
+          await Product.updateOne(
+            { _id: rolledBack.productId },
+            { $inc: { quantity: rolledBack.quantity } }
+          );
+        }
+      }
+      throw new Error('This coupon has reached its usage limit.');
+    }
   }
 
   // 6. Send confirmation email
-  const emailRecipient = userId ? (await User.findById(userId))?.email : guestEmail;
-  if (emailRecipient) {
-    const userObject = userId
-      ? await User.findById(userId)
-      : { firstName: guestName || 'Guest', lastName: '', email: guestEmail };
+  const userDoc = await User.findById(userId);
+  if (userDoc && userDoc.email) {
     let newOrder = {
       _id: orderDoc._id,
       created: orderDoc.created,
-      user: userObject,
+      user: userDoc,
       total: orderDoc.total,
       products: validProducts
     };
     newOrder = store.calculateTaxAmount(newOrder);
     try {
-      await smtp.sendEmail(emailRecipient, 'order-confirmation', null, newOrder);
+      await smtp.sendEmail(userDoc.email, 'order-confirmation', null, newOrder);
     } catch (emailError) {
       console.warn('Order confirmation email failed to send:', emailError.message);
     }

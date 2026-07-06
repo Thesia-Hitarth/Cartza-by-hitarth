@@ -8,7 +8,6 @@ const Cart = require('../../models/cart');
 const Product = require('../../models/product');
 const auth = require('../../middleware/auth');
 const role = require('../../middleware/role');
-const optionalAuth = require('../../middleware/optionalAuth');
 const smtp = require('../../services/smtp');
 const store = require('../../utils/store');
 const { ROLES, CART_ITEM_STATUS } = require('../../constants');
@@ -27,35 +26,25 @@ router.param('itemId', (req, res, next, itemId) => {
   next();
 });
 
-router.post('/initiate', optionalAuth, async (req, res) => {
+router.post('/initiate', auth, async (req, res) => {
   try {
-    if (req.user && !req.user.isEmailVerified) {
+    if (!req.user.isEmailVerified) {
       return res.status(403).json({ error: 'Please verify your email address to place orders.' });
     }
     const { cartId, addressId, couponCode } = req.body;
-    const user = req.user ? req.user._id : null;
+    const user = req.user._id;
 
     if (!addressId) {
       return res.status(400).json({ error: 'Please select a delivery address.' });
     }
 
     const Address = require('../../models/address');
-    let addr;
-    if (user) {
-      addr = await Address.findOne({ _id: addressId, user });
-    } else {
-      addr = await Address.findById(addressId);
-    }
+    const addr = await Address.findOne({ _id: addressId, user });
     if (!addr) {
       return res.status(400).json({ error: 'Invalid address selected.' });
     }
 
-    let cartDoc;
-    if (user) {
-      cartDoc = await Cart.findOne({ _id: cartId, user }).populate('products.product');
-    } else {
-      cartDoc = await Cart.findById(cartId).populate('products.product');
-    }
+    const cartDoc = await Cart.findOne({ _id: cartId, user }).populate('products.product');
     if (!cartDoc || !cartDoc.products || cartDoc.products.length === 0) {
       return res.status(400).json({ error: 'Cannot checkout with an empty cart.' });
     }
@@ -120,7 +109,7 @@ router.post('/initiate', optionalAuth, async (req, res) => {
     // Save pending payment metadata
     const PendingPayment = require('../../models/pendingPayment');
     await PendingPayment.findOneAndUpdate(
-      { cartId },
+      { cartId, userId: user },
       {
         razorpayOrderId: gatewayOrderId,
         cartId,
@@ -144,17 +133,13 @@ router.post('/initiate', optionalAuth, async (req, res) => {
   }
 });
 
-router.post('/add', optionalAuth, async (req, res) => {
+router.post('/add', auth, async (req, res) => {
   try {
-    if (req.user && !req.user.isEmailVerified) {
+    if (!req.user.isEmailVerified) {
       return res.status(403).json({ error: 'Please verify your email address to place orders.' });
     }
-    const { cartId, addressId, paymentId, gatewayOrderId, signature, couponCode, guestEmail, guestName } = req.body;
-    const user = req.user ? req.user._id : null;
-
-    if (!user && (!guestEmail || !guestName)) {
-      return res.status(400).json({ error: 'Guest checkouts require guestEmail and guestName.' });
-    }
+    const { cartId, addressId, paymentId, gatewayOrderId, signature, couponCode } = req.body;
+    const user = req.user._id;
 
     if (!addressId) {
       return res.status(400).json({ error: 'Please select a delivery address.' });
@@ -176,7 +161,7 @@ router.post('/add', optionalAuth, async (req, res) => {
     }
 
     const { createOrder } = require('../../services/order');
-    const orderDoc = await createOrder({ cartId, addressId, userId: user, couponCode, guestEmail, guestName });
+    const orderDoc = await createOrder({ cartId, addressId, userId: user, couponCode });
 
     res.status(200).json({
       success: true,
@@ -586,6 +571,24 @@ router.put('/:orderId', auth, role.check(ROLES.Admin, ROLES.Merchant), async (re
     const order = await Order.findById(orderId);
     if (!order) {
       return res.status(404).json({ error: 'Order not found.' });
+    }
+
+    if (req.user.role === ROLES.Merchant) {
+      const cart = await Cart.findById(order.cart).populate({
+        path: 'products.product',
+        populate: {
+          path: 'brand'
+        }
+      });
+      if (!cart) {
+        return res.status(400).json({ error: 'Cart not found for this order.' });
+      }
+      const hasMerchantProduct = cart.products.some(p => {
+        return p.product && p.product.brand && String(p.product.brand.merchant) === String(req.user.merchant);
+      });
+      if (!hasMerchantProduct) {
+        return res.status(403).json({ error: 'Unauthorized to update tracking details for this order.' });
+      }
     }
 
     const update = {};
