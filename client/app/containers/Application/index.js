@@ -12,6 +12,24 @@ import { withRouter } from '../../utils/withRouter';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import actions from '../../actions';
+import axios from 'axios';
+
+// --- CSRF token interceptor ---
+// The server sets an XSRF-TOKEN cookie on every GET response.
+// Axios must echo it back as the X-XSRF-TOKEN header on mutating requests.
+axios.defaults.withCredentials = true;
+axios.interceptors.request.use(config => {
+  if (['post', 'put', 'delete', 'patch'].includes((config.method || '').toLowerCase())) {
+    try {
+      const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/);
+      if (match) {
+        config.headers['X-XSRF-TOKEN'] = decodeURIComponent(match[1]);
+      }
+    } catch (_) { /* ignore */ }
+  }
+  return config;
+});
+// --- end CSRF interceptor ---
 
 // Layout elements
 import Navigation from '../Navigation';
