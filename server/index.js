@@ -43,14 +43,16 @@ app.use(
       directives: {
         defaultSrc: ["'self'"],
         connectSrc: process.env.NODE_ENV === 'production'
-          ? ["'self'", "https://api.razorpay.com", "https://res.cloudinary.com"]
-          : ["'self'", "http://localhost:3000", "http://localhost:8080", "ws://localhost:8080", "https://api.razorpay.com", "https://res.cloudinary.com"],
-        fontSrc: ["'self'", "fonts.gstatic.com", "data:"],
-        imgSrc: ["'self'", "data:", "res.cloudinary.com"],
+          ? ["'self'", "https://api.razorpay.com", "https://res.cloudinary.com", "https://client.crisp.chat", "wss://client.crisp.chat", "https://storage.crisp.chat"]
+          : ["'self'", "http://localhost:3000", "http://localhost:8080", "ws://localhost:8080", "https://api.razorpay.com", "https://res.cloudinary.com", "https://client.crisp.chat", "wss://client.crisp.chat", "https://storage.crisp.chat"],
+        fontSrc: ["'self'", "fonts.gstatic.com", "data:", "https://client.crisp.chat"],
+        imgSrc: ["'self'", "data:", "res.cloudinary.com", "https://image.crisp.chat", "https://client.crisp.chat"],
         scriptSrc: process.env.NODE_ENV === 'production'
-          ? ["'self'", "https://checkout.razorpay.com"]
-          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com"],
-        styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com"]
+          ? ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com", "https://client.crisp.chat"]
+          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com", "https://client.crisp.chat"],
+        styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "https://client.crisp.chat"],
+        frameSrc: ["'self'", "https://game.crisp.chat", "https://challenges.cloudflare.com", "https://hcaptcha.com"],
+        mediaSrc: ["'self'", "https://client.crisp.chat"]
       }
     },
     crossOriginEmbedderPolicy: false,

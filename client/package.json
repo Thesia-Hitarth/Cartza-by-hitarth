@@ -12,6 +12,7 @@
     "analyze": "cross-env NODE_ENV=production webpack --mode production --config webpack/webpack.prod.js --profile --json=stats.json && npx webpack-bundle-analyzer stats.json"
   },
   "dependencies": {
+    "@babel/runtime": "^8.0.0",
     "@fontsource/poppins": "^4.5.9",
     "@lagunovsky/redux-react-router": "^4.5.0",
     "@sentry/react": "^10.64.0",
@@ -50,6 +51,7 @@
     "@babel/core": "^7.4.5",
     "@babel/eslint-parser": "^7.29.7",
     "@babel/plugin-proposal-class-properties": "^7.14.5",
+    "@babel/plugin-transform-runtime": "^7.29.7",
     "@babel/preset-env": "^7.4.5",
     "@babel/preset-react": "^7.0.0",
     "@testing-library/jest-dom": "^6.9.1",
