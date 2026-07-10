@@ -22,9 +22,8 @@ if (redisUrl && redisToken) {
     });
     store = new RedisStore({
       sendCommand: async (...args) => {
-        // args is an array like ['eval', script, 1, key, expiry, weight]
-        // @upstash/redis call expects a single array containing the command and arguments
-        return await redis.call(args);
+        // @upstash/redis .call() expects spread args, not a nested array
+        return await redis.call(...args);
       }
     });
     console.log('RedisStore configured successfully for rate limiter.');
