@@ -39,6 +39,7 @@ class Cart extends React.PureComponent {
       handleCheckout,
       handleRemoveFromCart,
       placeOrder,
+      placeGuestOrder,
       authenticated,
       addresses,
       isPlacingOrder,
@@ -47,6 +48,7 @@ class Cart extends React.PureComponent {
       applyCoupon,
       removeCoupon
     } = this.props;
+
     const totalUnits = cartItems.reduce((sum, item) => sum + (item.quantity || 1), 0);
 
     return (
@@ -102,6 +104,7 @@ class Cart extends React.PureComponent {
               handleShopping={handleShopping}
               handleCheckout={handleCheckout}
               placeOrder={placeOrder}
+              placeGuestOrder={placeGuestOrder}
               authenticated={authenticated}
               addresses={addresses}
               isPlacingOrder={isPlacingOrder}

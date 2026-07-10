@@ -35,6 +35,15 @@ const PendingPaymentSchema = new Schema({
     type: String,
     default: null
   },
+  status: {
+    type: String,
+    enum: ['pending', 'error'],
+    default: 'pending'
+  },
+  error: {
+    type: String,
+    default: null
+  },
   createdAt: {
     type: Date,
     default: Date.now,

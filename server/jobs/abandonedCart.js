@@ -40,7 +40,7 @@ const processAbandonedCarts = async () => {
 };
 
 const runAbandonedCartJob = () => {
-  // Run every day at 9:00 AM
+  // Run every day at 9:00 AM UTC (equivalent to 2:30 PM IST)
   cron.schedule('0 9 * * *', async () => {
     try {
       await processAbandonedCarts();

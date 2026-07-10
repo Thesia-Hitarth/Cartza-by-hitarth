@@ -4,7 +4,7 @@
  *
  */
 
-import React from 'react';
+import React, { Suspense } from 'react';
 
 import { connect } from 'react-redux';
 import { Routes, Route, useLocation } from 'react-router-dom';
@@ -13,34 +13,36 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import actions from '../../actions';
 
-// routes
-import Login from '../Login';
-import Signup from '../Signup';
-import MerchantSignup from '../MerchantSignup';
-import HomePage from '../Homepage';
-import Dashboard from '../Dashboard';
+// Layout elements
 import Navigation from '../Navigation';
 import Authentication from '../Authentication';
 import Notification from '../Notification';
-import ForgotPassword from '../ForgotPassword';
-import ResetPassword from '../ResetPassword';
-import Shop from '../Shop';
-import BrandsPage from '../BrandsPage';
-import ProductPage from '../ProductPage';
-import Sell from '../Sell';
-import Contact from '../Contact';
-import OrderSuccess from '../OrderSuccess';
-import OrderPage from '../OrderPage';
-import AuthSuccess from '../AuthSuccess';
-import VerifyEmail from '../VerifyEmail';
 
 import Footer from '../../components/Common/Footer';
 import Page404 from '../../components/Common/Page404';
 import CustomCursor from '../../components/ui/CustomCursor';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
+import PageSkeleton from '../../components/Common/PageSkeleton';
 import { CART_ITEMS } from '../../constants';
 
-import WishList from '../WishList';
+// Lazy loaded routes
+const Login = React.lazy(() => import('../Login'));
+const Signup = React.lazy(() => import('../Signup'));
+const MerchantSignup = React.lazy(() => import('../MerchantSignup'));
+const HomePage = React.lazy(() => import('../Homepage'));
+const Dashboard = React.lazy(() => import('../Dashboard'));
+const ForgotPassword = React.lazy(() => import('../ForgotPassword'));
+const ResetPassword = React.lazy(() => import('../ResetPassword'));
+const Shop = React.lazy(() => import('../Shop'));
+const BrandsPage = React.lazy(() => import('../BrandsPage'));
+const ProductPage = React.lazy(() => import('../ProductPage'));
+const Sell = React.lazy(() => import('../Sell'));
+const Contact = React.lazy(() => import('../Contact'));
+const OrderSuccess = React.lazy(() => import('../OrderSuccess'));
+const OrderPage = React.lazy(() => import('../OrderPage'));
+const AuthSuccess = React.lazy(() => import('../AuthSuccess'));
+const VerifyEmail = React.lazy(() => import('../VerifyEmail'));
+const WishList = React.lazy(() => import('../WishList'));
 
 const AuthenticatedDashboard = Authentication(Dashboard);
 const AuthenticatedWishList = Authentication(WishList);
@@ -55,7 +57,12 @@ const PageWrapper = ({ children, isFullBleed }) => {
 class Application extends React.PureComponent {
   constructor(props) {
     super(props);
-    const loggedIn = localStorage.getItem('logged_in') === 'true';
+    let loggedIn = false;
+    try {
+      loggedIn = localStorage.getItem('logged_in') === 'true';
+    } catch (e) {
+      console.error('localStorage read blocked', e);
+    }
     this.state = {
       isCheckingAuth: loggedIn
     };
@@ -63,7 +70,12 @@ class Application extends React.PureComponent {
   }
 
   async componentDidMount() {
-    const loggedIn = localStorage.getItem('logged_in') === 'true';
+    let loggedIn = false;
+    try {
+      loggedIn = localStorage.getItem('logged_in') === 'true';
+    } catch (e) {
+      console.error('localStorage read blocked', e);
+    }
     if (loggedIn) {
       try {
         await this.props.fetchProfile();
@@ -180,84 +192,86 @@ class Application extends React.PureComponent {
                 exit="exit"
               >
                 {/* All routes live together; homepage gets no wrapper padding */}
-              <Routes>
-                <Route
-                  path='/'
-                  element={<HomePage />}
-                />
-                <Route
-                  path='/shop/*'
-                  element={<div className='wrapper'><Shop /></div>}
-                />
-                <Route
-                  path='/sell'
-                  element={<div className='wrapper'><Sell /></div>}
-                />
-                <Route
-                  path='/contact'
-                  element={<div className='wrapper'><Contact /></div>}
-                />
-                <Route
-                  path='/brands'
-                  element={<div className='wrapper'><BrandsPage /></div>}
-                />
-                <Route
-                  path='/product/:slug'
-                  element={<div className='wrapper'><ProductPage /></div>}
-                />
-                <Route
-                  path='/order/success/:id'
-                  element={<div className='wrapper'><OrderSuccess /></div>}
-                />
-                <Route
-                  path='/order/:id'
-                  element={<div className='wrapper'><AuthenticatedOrderPage /></div>}
-                />
-                <Route
-                  path='/login'
-                  element={<div className='wrapper'><Login /></div>}
-                />
-                <Route
-                  path='/register'
-                  element={<div className='wrapper'><Signup /></div>}
-                />
-                <Route
-                  path='/merchant-signup/:token'
-                  element={<div className='wrapper'><MerchantSignup /></div>}
-                />
-                <Route
-                  path='/forgot-password'
-                  element={<div className='wrapper'><ForgotPassword /></div>}
-                />
-                <Route
-                  path='/reset-password/:token'
-                  element={<div className='wrapper'><ResetPassword /></div>}
-                />
-                <Route
-                  path='/auth/success'
-                  element={<div className='wrapper'><AuthSuccess /></div>}
-                />
-                <Route
-                  path='/verify-email/:token'
-                  element={<div className='wrapper'><VerifyEmail /></div>}
-                />
-                 <Route
-                  path='/wishlist'
-                  element={<div className='wrapper'><AuthenticatedWishList /></div>}
-                />
-                <Route
-                  path='/dashboard/*'
-                  element={<div className='wrapper'><AuthenticatedDashboard /></div>}
-                />
-                <Route
-                  path='/404'
-                  element={<div className='wrapper'><Page404 /></div>}
-                />
-                <Route
-                  path='*'
-                  element={<div className='wrapper'><Page404 /></div>}
-                />
-              </Routes>
+              <Suspense fallback={<PageSkeleton />}>
+                <Routes>
+                  <Route
+                    path='/'
+                    element={<HomePage />}
+                  />
+                  <Route
+                    path='/shop/*'
+                    element={<div className='wrapper'><Shop /></div>}
+                  />
+                  <Route
+                    path='/sell'
+                    element={<div className='wrapper'><Sell /></div>}
+                  />
+                  <Route
+                    path='/contact'
+                    element={<div className='wrapper'><Contact /></div>}
+                  />
+                  <Route
+                    path='/brands'
+                    element={<div className='wrapper'><BrandsPage /></div>}
+                  />
+                  <Route
+                    path='/product/:slug'
+                    element={<div className='wrapper'><ProductPage /></div>}
+                  />
+                  <Route
+                    path='/order/success/:id'
+                    element={<div className='wrapper'><OrderSuccess /></div>}
+                  />
+                  <Route
+                    path='/order/:id'
+                    element={<div className='wrapper'><AuthenticatedOrderPage /></div>}
+                  />
+                  <Route
+                    path='/login'
+                    element={<div className='wrapper'><Login /></div>}
+                  />
+                  <Route
+                    path='/register'
+                    element={<div className='wrapper'><Signup /></div>}
+                  />
+                  <Route
+                    path='/merchant-signup/:token'
+                    element={<div className='wrapper'><MerchantSignup /></div>}
+                  />
+                  <Route
+                    path='/forgot-password'
+                    element={<div className='wrapper'><ForgotPassword /></div>}
+                  />
+                  <Route
+                    path='/reset-password/:token'
+                    element={<div className='wrapper'><ResetPassword /></div>}
+                  />
+                  <Route
+                    path='/auth/success'
+                    element={<div className='wrapper'><AuthSuccess /></div>}
+                  />
+                  <Route
+                    path='/verify-email/:token'
+                    element={<div className='wrapper'><VerifyEmail /></div>}
+                  />
+                   <Route
+                    path='/wishlist'
+                    element={<div className='wrapper'><AuthenticatedWishList /></div>}
+                  />
+                  <Route
+                    path='/dashboard/*'
+                    element={<div className='wrapper'><AuthenticatedDashboard /></div>}
+                  />
+                  <Route
+                    path='/404'
+                    element={<div className='wrapper'><Page404 /></div>}
+                  />
+                  <Route
+                    path='*'
+                    element={<div className='wrapper'><Page404 /></div>}
+                  />
+                </Routes>
+              </Suspense>
             </motion.div>
           </AnimatePresence>
           )}

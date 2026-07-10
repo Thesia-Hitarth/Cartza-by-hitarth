@@ -59,13 +59,19 @@ const CustomCursor = () => {
       rafId.current = requestAnimationFrame(lerp);
     };
 
+    const onTouchStart = () => {
+      setIsTouch(true);
+    };
+
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseover', onMouseOver);
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
     rafId.current = requestAnimationFrame(lerp);
 
     return () => {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseover', onMouseOver);
+      document.removeEventListener('touchstart', onTouchStart);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
   }, []);

@@ -13,6 +13,7 @@ const smtp = require('../../services/smtp');
 const keys = require('../../config/keys');
 const Newsletter = require('../../models/newsletter');
 const rateLimiter = require('../../middleware/rateLimiter');
+const validateCaptcha = require('../../middleware/captcha');
 const { EMAIL_PROVIDER } = require('../../constants');
 const validator = require('validator');
 
@@ -27,7 +28,7 @@ const authLimiter = rateLimiter({
 
 
 
-router.post('/login', authLimiter, async (req, res) => {
+router.post('/login', authLimiter, validateCaptcha, async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -94,7 +95,8 @@ router.post('/login', authLimiter, async (req, res) => {
   }
 });
 
-router.post('/register', authLimiter, async (req, res) => {
+router.post('/register', authLimiter, validateCaptcha, async (req, res) => {
+
   try {
     const { email, firstName, lastName, password, isSubscribed } = req.body;
 

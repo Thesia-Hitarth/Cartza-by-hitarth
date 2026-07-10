@@ -8,6 +8,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ShoppingBag, Trash2 } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { getCloudinaryUrl } from '../../../utils/cloudinary';
 
 const WishList = props => {
   const { wishlist, updateWishlist, handleAddToCart } = props;
@@ -49,9 +50,11 @@ const WishList = props => {
                     <div className='image-aspect-wrapper'>
                       <img
                         className='wishlist-card-img'
-                        src={product.imageUrl ? product.imageUrl : '/images/placeholder-image.png'}
+                        src={getCloudinaryUrl(product.imageUrl, 300)}
                         alt={product.name}
                         loading="lazy"
+                        width={300}
+                        height={300}
                       />
                     </div>
                   </Link>

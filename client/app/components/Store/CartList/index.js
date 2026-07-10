@@ -7,6 +7,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Minus, Trash2 } from 'lucide-react/dist/cjs/lucide-react.cjs';
+import { getCloudinaryUrl } from '../../../utils/cloudinary';
 
 const CartList = props => {
   const { cartItems, handleRemoveFromCart, updateCartItemQuantity, toggleCart } = props;
@@ -26,8 +27,11 @@ const CartList = props => {
             <div className='cart-item-img-box mr-3'>
               <img
                 className='cart-item-img'
-                src={`${item.imageUrl ? item.imageUrl : '/images/placeholder-image.png'}`}
+                src={getCloudinaryUrl(item.imageUrl, 80)}
                 alt={item.name}
+                loading="lazy"
+                width={80}
+                height={80}
               />
             </div>
 

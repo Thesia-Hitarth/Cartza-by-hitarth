@@ -14,8 +14,8 @@ import Page404 from '../../Common/Page404';
 
 import Account from '../../../containers/Account';
 import AccountSecurity from '../../../containers/AccountSecurity';
-import Product from '../../../containers/Product';
-import Brand from '../../../containers/Brand';
+import Product from '../../../containers/Admin/Product';
+import Brand from '../../../containers/Admin/Brand';
 import Order from '../../../containers/Order';
 import Complaints from '../../../containers/Complaints';
 

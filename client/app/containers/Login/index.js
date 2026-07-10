@@ -15,8 +15,16 @@ import Input from '../../components/Common/Input';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import SignupProvider from '../../components/Common/SignupProvider';
 import Button from '../../components/Common/Button';
+import Captcha from '../../components/Common/Captcha';
 
 class Login extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      captchaToken: null
+    };
+  }
+
   componentDidMount() {
     document.title = 'Login | CARTZA';
   }
@@ -40,7 +48,7 @@ class Login extends React.PureComponent {
 
     const handleSubmit = event => {
       event.preventDefault();
-      login();
+      login(this.state.captchaToken);
     };
 
     return (
@@ -132,6 +140,9 @@ class Login extends React.PureComponent {
                   </Link>
                 </div>
 
+                {/* CAPTCHA Widget */}
+                <Captcha onChange={token => this.setState({ captchaToken: token })} />
+
                 <div className='auth-action-btn-row d-flex flex-column gap-3 mt-4'>
                   <Button
                     type='submit'
@@ -139,6 +150,7 @@ class Login extends React.PureComponent {
                     text='Login'
                     className='btn-auth-submit'
                     loading={isSubmitting}
+                    disabled={!this.state.captchaToken}
                   />
                   
                   <Link

@@ -11,9 +11,15 @@ const keys = require('../config/keys');
 const { database } = keys;
 
 const setupDB = async () => {
+  if (mongoose.connection.readyState >= 1) {
+    console.log('Using active or pending MongoDB connection.');
+    return mongoose;
+  }
+
   try {
     await mongoose.connect(database.url);
     console.log(`${chalk.green('✓')} ${chalk.blue('MongoDB Connected!')}`);
+    return mongoose;
   } catch (error) {
     console.log(error);
     return null;

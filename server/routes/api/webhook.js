@@ -43,13 +43,20 @@ router.post('/razorpay', async (req, res) => {
           const existingOrder = await Order.findOne({ cart: pending.cartId, user: pending.userId });
           if (!existingOrder) {
             console.log(`[WEBHOOK] Reconciling payment for order ${gatewayOrderId}. Creating order...`);
-            await createOrder({
-              cartId: pending.cartId,
-              addressId: pending.addressId,
-              userId: pending.userId
-            });
-            // Clean up pending payment record
-            await pending.deleteOne();
+            try {
+              await createOrder({
+                cartId: pending.cartId,
+                addressId: pending.addressId,
+                userId: pending.userId
+              });
+              // Clean up pending payment record
+              await pending.deleteOne();
+            } catch (err) {
+              console.error(`[WEBHOOK ERROR] Stock allocation / order creation failed for captured payment. Order ${gatewayOrderId}:`, err.message);
+              pending.status = 'error';
+              pending.error = err.message;
+              await pending.save();
+            }
           } else {
             console.log(`[WEBHOOK] Order already exists for order ${gatewayOrderId}. Skipping...`);
           }

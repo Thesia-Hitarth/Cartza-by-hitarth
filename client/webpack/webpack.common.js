@@ -27,7 +27,7 @@ module.exports = {
         {
           from: 'public',
           filter: (resourcePath) => {
-            if (resourcePath.endsWith('index.html')) {
+            if (resourcePath.endsWith('index.html') || resourcePath.endsWith('robots.txt')) {
               return false;
             }
             return true;

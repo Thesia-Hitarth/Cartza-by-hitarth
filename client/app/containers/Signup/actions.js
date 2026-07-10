@@ -38,7 +38,7 @@ export const subscribeChange = () => {
   };
 };
 
-export const signUp = () => {
+export const signUp = (captchaToken) => {
   return async (dispatch, getState) => {
     try {
       const rules = {
@@ -75,6 +75,7 @@ export const signUp = () => {
 
       const user = {
         isSubscribed,
+        captchaToken,
         ...newUser
       };
 
@@ -86,7 +87,11 @@ export const signUp = () => {
         autoDismiss: 3
       };
 
-      localStorage.setItem('logged_in', 'true');
+      try {
+        localStorage.setItem('logged_in', 'true');
+      } catch (e) {
+        console.error('localStorage write blocked', e);
+      }
 
       dispatch(setAuth());
       dispatch(success(successfulOptions));

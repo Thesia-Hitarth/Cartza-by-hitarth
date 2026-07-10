@@ -35,7 +35,12 @@ class VerifyEmail extends React.PureComponent {
         isLoading: false,
         message: response.data.message || 'Your email has been verified successfully!'
       });
-      const loggedIn = localStorage.getItem('logged_in') === 'true';
+      let loggedIn = false;
+      try {
+        loggedIn = localStorage.getItem('logged_in') === 'true';
+      } catch (e) {
+        console.error('localStorage read blocked', e);
+      }
       if (loggedIn) {
         this.props.fetchProfile();
       }

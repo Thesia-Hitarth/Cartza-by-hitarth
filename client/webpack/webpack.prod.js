@@ -130,7 +130,10 @@ const config = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(NODE_ENV),
-        API_URL: JSON.stringify(API_URL)
+        API_URL: JSON.stringify(API_URL),
+        SENTRY_DSN: JSON.stringify(process.env.SENTRY_DSN),
+        TURNSTILE_SITE_KEY: JSON.stringify(process.env.TURNSTILE_SITE_KEY),
+        HCAPTCHA_SITE_KEY: JSON.stringify(process.env.HCAPTCHA_SITE_KEY)
       }
     }),
     new HtmlWebpackPlugin({

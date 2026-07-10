@@ -41,14 +41,22 @@ export const onSearch = v => {
   };
 };
 
+let searchAbortController = null;
+
 export const onSuggestionsFetchRequested = value => {
   const inputValue = value.value.trim().toLowerCase();
 
   return async (dispatch, getState) => {
     try {
       if (inputValue && inputValue.length % 3 === 0) {
+        if (searchAbortController) {
+          searchAbortController.abort();
+        }
+        searchAbortController = new AbortController();
+
         const response = await axios.get(
-          `${API_URL}/product/list/search/${inputValue}`
+          `${API_URL}/product/list/search/${inputValue}`,
+          { signal: searchAbortController.signal }
         );
         dispatch({
           type: SUGGESTIONS_FETCH_REQUEST,
@@ -56,6 +64,9 @@ export const onSuggestionsFetchRequested = value => {
         });
       }
     } catch (error) {
+      if (axios.isCancel(error)) {
+        return;
+      }
       handleError(error, dispatch);
     }
   };

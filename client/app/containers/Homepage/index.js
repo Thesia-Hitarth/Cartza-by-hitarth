@@ -23,6 +23,7 @@ import { ArrowRight } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import { Helmet } from 'react-helmet-async';
 
 import actions from '../../actions';
+import { getStorageItem } from '../../utils/storage';
 import { withRouter } from '../../utils/withRouter';
 import Marquee from '../../components/ui/Marquee';
 import SectionHeader from '../../components/ui/SectionHeader';
@@ -97,7 +98,12 @@ class Homepage extends React.PureComponent {
     this.props.fetchStoreCategories();
     this.props.filterProducts('all', 'all');
 
-    const recentlyViewed = JSON.parse(localStorage.getItem('cartza_recently_viewed') || '[]');
+    let recentlyViewed = [];
+    try {
+      recentlyViewed = JSON.parse(getStorageItem('cartza_recently_viewed') || '[]');
+    } catch (e) {
+      console.error('Failed to parse recentlyViewed:', e);
+    }
     this.setState({ recentlyViewed });
   }
 

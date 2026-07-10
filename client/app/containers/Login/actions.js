@@ -33,7 +33,7 @@ export const loginChange = (name, value) => {
   };
 };
 
-export const login = () => {
+export const login = (captchaToken) => {
   return async (dispatch, getState) => {
     const rules = {
       email: 'required|email',
@@ -57,7 +57,10 @@ export const login = () => {
     dispatch({ type: SET_LOGIN_LOADING, payload: true });
 
     try {
-      const response = await axios.post(`${API_URL}/auth/login`, user);
+      const response = await axios.post(`${API_URL}/auth/login`, {
+        ...user,
+        captchaToken
+      });
 
       const firstName = response.data.user.firstName;
 
@@ -67,7 +70,11 @@ export const login = () => {
         autoDismiss: 3
       };
 
-      localStorage.setItem('logged_in', 'true');
+      try {
+        localStorage.setItem('logged_in', 'true');
+      } catch (e) {
+        console.error('localStorage write blocked', e);
+      }
 
       dispatch(setAuth());
       dispatch(success(successfulOptions));
@@ -102,7 +109,11 @@ export const signOut = () => {
     dispatch(clearCart());
     dispatch(push('/login'));
 
-    localStorage.removeItem('logged_in');
+    try {
+      localStorage.removeItem('logged_in');
+    } catch (e) {
+      console.error('localStorage remove blocked', e);
+    }
     dispatch(success(successfulOptions));
   };
 };

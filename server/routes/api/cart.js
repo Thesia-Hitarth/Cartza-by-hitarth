@@ -234,4 +234,121 @@ router.put('/update-quantity/:cartId', auth, async (req, res) => {
   }
 });
 
+router.get('/validate/:cartId', auth, async (req, res) => {
+  try {
+    const cart = await Cart.findById(req.params.cartId);
+    if (!cart || String(cart.user) !== String(req.user._id)) {
+      return res.status(403).json({ error: 'Unauthorized to access this cart.' });
+    }
+
+    const priceChanges = [];
+    const removed = [];
+    const stockIssues = [];
+    let updatedProducts = [];
+    let hasChanges = false;
+
+    for (const item of cart.products) {
+      const dbProduct = await Product.findById(item.product);
+      if (!dbProduct || !dbProduct.isActive) {
+        removed.push({
+          product: item.product,
+          name: item.name || (dbProduct ? dbProduct.name : 'Unknown Product'),
+          reason: 'Product is no longer active or available'
+        });
+        hasChanges = true;
+        continue;
+      }
+
+      // Check price changes
+      if (dbProduct.price !== item.purchasePrice) {
+        priceChanges.push({
+          product: item.product,
+          name: dbProduct.name,
+          oldPrice: item.purchasePrice,
+          newPrice: dbProduct.price
+        });
+        item.purchasePrice = dbProduct.price;
+        item.price = dbProduct.price;
+        hasChanges = true;
+      }
+
+      // Check stock levels
+      const col = item.color || 'Default';
+      const sz = item.size || 'Default';
+      let availableQty = 0;
+
+      if (dbProduct.variants && dbProduct.variants.length > 0) {
+        const variant = dbProduct.variants.find(v => v.color === col && v.size === sz);
+        availableQty = variant ? variant.quantity : 0;
+      } else {
+        availableQty = dbProduct.quantity || 0;
+      }
+
+      if (availableQty === 0) {
+        removed.push({
+          product: item.product,
+          name: dbProduct.name,
+          color: col,
+          size: sz,
+          reason: 'Out of stock'
+        });
+        hasChanges = true;
+        continue;
+      } else if (availableQty < item.quantity) {
+        stockIssues.push({
+          product: item.product,
+          name: dbProduct.name,
+          color: col,
+          size: sz,
+          requested: item.quantity,
+          available: availableQty
+        });
+        item.quantity = availableQty;
+        hasChanges = true;
+      }
+
+      // Re-calculate prices and taxes
+      const isTaxable = item.totalTax > 0 || (item.priceWithTax > item.totalPrice);
+      item.totalPrice = parseFloat(Number((item.purchasePrice * item.quantity).toFixed(2)));
+
+      if (isTaxable) {
+        const taxAmount = item.purchasePrice * taxRate;
+        item.totalTax = parseFloat(Number((taxAmount * item.quantity).toFixed(2)));
+        item.priceWithTax = parseFloat(Number((item.totalPrice + item.totalTax).toFixed(2)));
+      } else {
+        item.totalTax = 0;
+        item.priceWithTax = item.totalPrice;
+      }
+
+      updatedProducts.push(item);
+    }
+
+    if (hasChanges) {
+      cart.products = updatedProducts;
+      await cart.save();
+    }
+
+    const validatedCart = await Cart.findById(cart._id).populate({
+      path: 'products.product',
+      populate: {
+        path: 'brand',
+        model: 'Brand'
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      hasChanges,
+      priceChanges,
+      removed,
+      stockIssues,
+      cart: validatedCart
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error.message || 'Cart validation failed.'
+    });
+  }
+});
+
 module.exports = router;

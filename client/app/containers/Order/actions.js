@@ -19,7 +19,7 @@ import {
   SET_PLACING_ORDER
 } from './constants';
 
-import { clearCart, getCartId } from '../Cart/actions';
+import { clearCart, getCartId, revalidateCart } from '../Cart/actions';
 import { toggleCart } from '../Navigation/actions';
 import handleError from '../../utils/error';
 import { API_URL, CART_ID } from '../../constants';
@@ -199,7 +199,12 @@ export const updateOrderItemStatus = (itemId, status) => {
 export const addOrder = (addressId) => {
   return async (dispatch, getState) => {
     try {
-      const cartId = localStorage.getItem(CART_ID);
+      let cartId = null;
+      try {
+        cartId = localStorage.getItem(CART_ID);
+      } catch (e) {
+        console.error('localStorage access denied', e);
+      }
       const total = getState().cart.cartTotal;
       const couponCode = getState().cart.coupon?.code || null;
 
@@ -216,7 +221,11 @@ export const addOrder = (addressId) => {
       }
     } catch (error) {
       if (error.response && error.response.status === 404) {
-        localStorage.removeItem(CART_ID);
+        try {
+          localStorage.removeItem(CART_ID);
+        } catch (e) {
+          console.error('localStorage access denied', e);
+        }
       }
       handleError(error, dispatch);
     }
@@ -225,14 +234,72 @@ export const addOrder = (addressId) => {
 
 export const placeOrder = (addressId) => {
   return async (dispatch, getState) => {
-    const loggedIn = localStorage.getItem('logged_in') === 'true';
+    let loggedIn = false;
+    try {
+      loggedIn = localStorage.getItem('logged_in') === 'true';
+    } catch (e) {
+      console.error('localStorage access denied', e);
+    }
     const cartItems = getState().cart.cartItems;
     if (!loggedIn || cartItems.length === 0) { dispatch(toggleCart()); return; }
 
     dispatch({ type: SET_PLACING_ORDER, payload: true });
     try {
+      const hasChanges = await dispatch(revalidateCart());
+      if (hasChanges) {
+        dispatch({ type: SET_PLACING_ORDER, payload: false });
+        return;
+      }
       await dispatch(getCartId());
       await dispatch(addOrder(addressId));
+    } catch (err) {
+      handleError(err, dispatch);
+    } finally {
+      dispatch({ type: SET_PLACING_ORDER, payload: false });
+      dispatch(toggleCart());
+    }
+  };
+};
+
+export const placeGuestOrder = (guestDetails) => {
+  return async (dispatch, getState) => {
+    const cartItems = getState().cart.cartItems;
+    if (cartItems.length === 0) { dispatch(toggleCart()); return; }
+
+    dispatch({ type: SET_PLACING_ORDER, payload: true });
+    try {
+      const hasChanges = await dispatch(revalidateCart());
+      if (hasChanges) {
+        dispatch({ type: SET_PLACING_ORDER, payload: false });
+        return;
+      }
+      await dispatch(getCartId());
+      let cartId = null;
+      try {
+        cartId = localStorage.getItem(CART_ID);
+      } catch (e) {
+        console.error('localStorage access denied', e);
+      }
+      const couponCode = getState().cart.coupon?.code || null;
+
+      if (cartId) {
+        const response = await axios.post(`${API_URL}/order/initiate-guest`, {
+          cartId,
+          guestDetails,
+          couponCode
+        });
+
+        const { addressId, userId } = response.data;
+
+        const addResponse = await axios.post(`${API_URL}/order/add-guest`, {
+          cartId,
+          addressId,
+          userId
+        });
+
+        dispatch(push(`/order/success/${addResponse.data.order._id}`));
+        dispatch(clearCart());
+      }
     } catch (err) {
       handleError(err, dispatch);
     } finally {

@@ -57,6 +57,16 @@ app.use(
     frameguard: true
   })
 );
+
+// Add Permissions-Policy to lock down device APIs and X-Robots-Tag for preview deployments
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  if (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== 'production') {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow');
+  }
+  next();
+});
+
 const allowedOrigins = [
   process.env.CLIENT_URL,
   process.env.NODE_ENV !== 'production' ? 'http://localhost:8080' : null

@@ -8,7 +8,7 @@ import { success, warning } from 'react-notification-system-redux';
 import axios from 'axios';
 
 import { FETCH_WISHLIST, SET_WISHLIST_LOADING } from './constants';
-import { TOGGLE_PRODUCT_WISHLIST } from '../Product/constants';
+import { TOGGLE_PRODUCT_WISHLIST } from '../Admin/Product/constants';
 import handleError from '../../utils/error';
 import { API_URL } from '../../constants';
 

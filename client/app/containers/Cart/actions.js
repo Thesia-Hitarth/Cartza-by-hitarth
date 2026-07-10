@@ -22,9 +22,10 @@ import {
 import {
   SET_PRODUCT_SHOP_FORM_ERRORS,
   RESET_PRODUCT_SHOP
-} from '../Product/constants';
+} from '../Admin/Product/constants';
 
 import { API_URL, CART_ID, CART_ITEMS, CART_TOTAL } from '../../constants';
+import { getStorageItem, setStorageItem, removeStorageItem } from '../../utils/storage';
 import handleError from '../../utils/error';
 import { allFieldsValidation } from '../../utils/validation';
 import { toggleCart } from '../Navigation/actions';
@@ -101,7 +102,7 @@ export const handleAddToCart = product => {
       });
     }
 
-    localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
+    setStorageItem(CART_ITEMS, JSON.stringify(newCartItems));
     dispatch(calculateCartTotal());
     dispatch(toggleCart());
   };
@@ -110,9 +111,9 @@ export const handleAddToCart = product => {
 // Handle Remove From Cart
 export const handleRemoveFromCart = product => {
   return (dispatch, getState) => {
-    const cartItems = JSON.parse(localStorage.getItem(CART_ITEMS));
+    const cartItems = JSON.parse(getStorageItem(CART_ITEMS));
     const newCartItems = cartItems.filter(item => item._id !== product._id);
-    localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
+    setStorageItem(CART_ITEMS, JSON.stringify(newCartItems));
 
     dispatch({
       type: REMOVE_FROM_CART,
@@ -134,7 +135,7 @@ export const calculateCartTotal = () => {
     });
 
     total = parseFloat(total.toFixed(2));
-    localStorage.setItem(CART_TOTAL, total);
+    setStorageItem(CART_TOTAL, total);
     dispatch({
       type: HANDLE_CART_TOTAL,
       payload: total
@@ -145,9 +146,9 @@ export const calculateCartTotal = () => {
 // set cart store from local storage
 export const handleCart = () => {
   const cart = {
-    cartItems: JSON.parse(localStorage.getItem(CART_ITEMS)),
-    cartTotal: localStorage.getItem(CART_TOTAL),
-    cartId: localStorage.getItem(CART_ID)
+    cartItems: JSON.parse(getStorageItem(CART_ITEMS)),
+    cartTotal: getStorageItem(CART_TOTAL),
+    cartId: getStorageItem(CART_ID)
   };
 
   return (dispatch, getState) => {
@@ -157,6 +158,7 @@ export const handleCart = () => {
         payload: cart
       });
       dispatch(calculateCartTotal());
+      dispatch(revalidateCart());
     }
   };
 };
@@ -197,7 +199,7 @@ export const handleShopping = () => {
 export const getCartId = () => {
   return async (dispatch, getState) => {
     try {
-      const cartId = localStorage.getItem(CART_ID);
+      const cartId = getStorageItem(CART_ID);
       const cartItems = getState().cart.cartItems;
       const products = getCartItems(cartItems);
 
@@ -215,7 +217,7 @@ export const getCartId = () => {
 
 export const setCartId = cartId => {
   return (dispatch, getState) => {
-    localStorage.setItem(CART_ID, cartId);
+    setStorageItem(CART_ID, cartId);
     dispatch({
       type: SET_CART_ID,
       payload: cartId
@@ -225,9 +227,9 @@ export const setCartId = cartId => {
 
 export const clearCart = () => {
   return (dispatch, getState) => {
-    localStorage.removeItem(CART_ITEMS);
-    localStorage.removeItem(CART_TOTAL);
-    localStorage.removeItem(CART_ID);
+    removeStorageItem(CART_ITEMS);
+    removeStorageItem(CART_TOTAL);
+    removeStorageItem(CART_ID);
 
     dispatch({
       type: CLEAR_CART
@@ -303,7 +305,7 @@ export const updateCartItemQuantity = (product, quantity) => {
       return item;
     });
 
-    localStorage.setItem(CART_ITEMS, JSON.stringify(newCartItems));
+    setStorageItem(CART_ITEMS, JSON.stringify(newCartItems));
     dispatch({
       type: HANDLE_CART,
       payload: {
@@ -346,5 +348,77 @@ export const applyCoupon = (code, cartTotal) => {
 export const removeCoupon = () => {
   return {
     type: REMOVE_COUPON
+  };
+};
+
+export const revalidateCart = () => {
+  return async (dispatch, getState) => {
+    const cartId = getState().cart.cartId || getStorageItem(CART_ID);
+    if (!cartId) return false;
+
+    try {
+      const response = await axios.get(`${API_URL}/cart/validate/${cartId}`);
+      if (response.data && response.data.cart) {
+        const { hasChanges, priceChanges, removed, stockIssues, cart } = response.data;
+        
+        const revalidatedItems = cart.products.map(item => ({
+          _id: item.product?._id,
+          name: item.product?.name || 'Product',
+          slug: item.product?.slug || '',
+          imageUrl: item.product?.imageUrl || '/images/placeholder-image.png',
+          brand: item.product?.brand || null,
+          inventory: item.product?.inventory || item.product?.quantity || 1,
+          quantity: item.quantity,
+          price: item.price,
+          purchasePrice: item.purchasePrice,
+          color: item.color,
+          size: item.size,
+          totalPrice: item.totalPrice
+        }));
+
+        setStorageItem(CART_ITEMS, JSON.stringify(revalidatedItems));
+        dispatch({
+          type: HANDLE_CART,
+          payload: {
+            cartItems: revalidatedItems,
+            cartTotal: 0,
+            cartId
+          }
+        });
+        dispatch(calculateCartTotal());
+
+        if (hasChanges) {
+          const warnings = [];
+          if (priceChanges && priceChanges.length > 0) {
+            priceChanges.forEach(p => {
+              warnings.push(`Price of "${p.name}" changed from ₹${p.oldPrice} to ₹${p.newPrice}.`);
+            });
+          }
+          if (removed && removed.length > 0) {
+            removed.forEach(r => {
+              warnings.push(`"${r.name}" was removed because: ${r.reason}.`);
+            });
+          }
+          if (stockIssues && stockIssues.length > 0) {
+            stockIssues.forEach(s => {
+              warnings.push(`"${s.name}" quantity was adjusted to ${s.available} due to available stock.`);
+            });
+          }
+          if (warnings.length > 0) {
+            dispatch(success({
+              title: 'Cart Updated',
+              message: warnings.join(' '),
+              position: 'tr',
+              autoDismiss: 5
+            }));
+          }
+        }
+        return hasChanges;
+      }
+      return false;
+    } catch (error) {
+      console.warn('Cart revalidation failed:', error.message);
+      return false;
+    }
   };
 };

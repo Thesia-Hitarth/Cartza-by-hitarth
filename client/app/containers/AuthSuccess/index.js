@@ -23,7 +23,11 @@ class AuthSuccess extends React.PureComponent {
         withCredentials: true
       });
       if (response.data.success) {
-        localStorage.setItem('logged_in', 'true');
+        try {
+          localStorage.setItem('logged_in', 'true');
+        } catch (e) {
+          console.error('localStorage write blocked', e);
+        }
         this.props.setAuth();
       } else {
         this.props.history.replace('/login');

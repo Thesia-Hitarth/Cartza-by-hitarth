@@ -7,10 +7,9 @@
  *
  */
 
-import React from 'react';
-import { connect } from 'react-redux';
-import { Link, NavLink } from 'react-router-dom';
-import { withRouter } from '../../utils/withRouter';
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { Link, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Autosuggest from 'react-autosuggest';
 import AutosuggestHighlightMatch from 'autosuggest-highlight/match';
 import AutosuggestHighlightParse from 'autosuggest-highlight/parse';
@@ -24,210 +23,206 @@ import {
 
 import actions from '../../actions';
 import CartIcon from '../../components/Common/CartIcon';
-import { Heart, Search, User, X, ShoppingBag } from 'lucide-react/dist/cjs/lucide-react.cjs';
-import Menu from '../NavigationMenu';
+import { Heart, Search, User, X, Sun, Moon } from 'lucide-react/dist/cjs/lucide-react.cjs';
 import Cart from '../Cart';
+import AnnouncementBar from '../../components/Common/Navigation/AnnouncementBar';
+import MobileMenu from '../../components/Common/Navigation/MobileMenu';
+import { getCloudinaryUrl } from '../../utils/cloudinary';
+import { getStorageItem, setStorageItem } from '../../utils/storage';
 
-class Navigation extends React.PureComponent {
-  constructor(props) {
-    super(props);
-    // Non-homepage pages start in 'scrolled' (frosted glass, dark text) state immediately
-    const isHome = typeof window !== 'undefined'
-      ? window.location.pathname === '/'
-      : true;
+const Navigation = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
 
+  const isHome = location.pathname === '/';
+
+  // Redux selectors
+  const isMenuOpen = useSelector(state => state.navigation.isMenuOpen);
+  const isCartOpen = useSelector(state => state.navigation.isCartOpen);
+  const cartItems = useSelector(state => state.cart.cartItems);
+  const categories = useSelector(state => state.category.storeCategories);
+  const authenticated = useSelector(state => state.authentication.authenticated);
+  const user = useSelector(state => state.account.user);
+  const searchValue = useSelector(state => state.navigation.searchValue);
+  const suggestions = useSelector(state => state.navigation.searchSuggestions);
+
+  // Local state
+  const [showAnnouncement, setShowAnnouncement] = useState(() => {
     const ANNOUNCEMENT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
     const dismissedAt = typeof window !== 'undefined'
-      ? Number(localStorage.getItem('cartza_announcement_dismissed_at') || 0)
+      ? Number(getStorageItem('cartza_announcement_dismissed_at') || 0)
       : 0;
     const announcementDismissed = dismissedAt > 0 && (Date.now() - dismissedAt) < ANNOUNCEMENT_TTL_MS;
-
-    this.state = {
-      showAnnouncement: !announcementDismissed,
-      isDropdownOpen: false,
-      isMobileSearchOpen: false,
-      scrolled: !isHome,
-      navHidden: false,
-      isMobile: typeof window !== 'undefined' ? window.innerWidth < 992 : false,
-    };
-    this.lastScrollY = 0;
-    this.dismissAnnouncement = this.dismissAnnouncement.bind(this);
-    this.toggleDropdown = this.toggleDropdown.bind(this);
-    this.toggleMobileSearch = this.toggleMobileSearch.bind(this);
-    this.handleScroll = this.handleScroll.bind(this);
-    this.handleResize = this.handleResize.bind(this);
-    this.handleFocusTrap = this.handleFocusTrap.bind(this);
-  }
-
-  isHomePage() {
-    return this.props.location && this.props.location.pathname === '/';
-  }
-
-  componentDidMount() {
-    this.props.fetchStoreBrands();
-    this.props.fetchStoreCategories();
-    window.addEventListener('scroll', this.handleScroll, { passive: true });
-    window.addEventListener('resize', this.handleResize, { passive: true });
-    window.addEventListener('keydown', this.handleFocusTrap);
-    // Immediately sync scroll state (handles direct URL navigation)
-    this.handleScroll();
-    this.handleResize();
-  }
-
-  componentDidUpdate(prevProps) {
-    // When route changes, re-evaluate scrolled state for new page
-    if (prevProps.location && this.props.location &&
-      prevProps.location.pathname !== this.props.location.pathname) {
-      const isHome = this.props.location.pathname === '/';
-      this.setState({ scrolled: !isHome ? true : window.scrollY > 80 });
-      window.scrollTo(0, 0);
-    }
-
-    if (this.props.isCartOpen !== prevProps.isCartOpen) {
-      if (this.props.isCartOpen) {
-        document.body.classList.add('no-scroll');
-        this.cartTrigger = document.activeElement;
-        setTimeout(() => {
-          const container = document.querySelector('.mini-cart-open');
-          if (container) {
-            const focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
-            if (focusables.length > 0) focusables[0].focus();
-          }
-        }, 50);
-      } else {
-        document.body.classList.remove('no-scroll');
-        if (this.cartTrigger) {
-          this.cartTrigger.focus();
-        }
-      }
-    }
-
-    if (this.props.isMenuOpen !== prevProps.isMenuOpen) {
-      if (this.props.isMenuOpen) {
-        this.menuTrigger = document.activeElement;
-        setTimeout(() => {
-          const container = document.querySelector('.mobile-full-screen-menu');
-          if (container) {
-            const focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
-            if (focusables.length > 0) focusables[0].focus();
-          }
-        }, 50);
-      } else {
-        if (this.menuTrigger) {
-          this.menuTrigger.focus();
-        }
-      }
-    }
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
-    window.removeEventListener('resize', this.handleResize);
-    window.removeEventListener('keydown', this.handleFocusTrap);
-    document.body.classList.remove('no-scroll');
-  }
-
-  handleResize() {
+    return !announcementDismissed;
+  });
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(!isHome);
+  const [navHidden, setNavHidden] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false);
+  const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      this.setState({ isMobile: window.innerWidth < 992 });
+      return getStorageItem('theme') || 'light';
     }
-  }
+    return 'light';
+  });
 
-  handleFocusTrap(e) {
-    const { isCartOpen, isMenuOpen } = this.props;
-    if (!isCartOpen && !isMenuOpen) return;
-
-    if (e.key !== 'Tab') return;
-
-    let container = null;
-    if (isCartOpen) {
-      container = document.querySelector('.mini-cart-open');
-    } else if (isMenuOpen) {
-      container = document.querySelector('.mobile-full-screen-menu');
-    }
-    if (!container) return;
-
-    const focusables = container.querySelectorAll(
-      'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    );
-    if (focusables.length === 0) {
-      e.preventDefault();
-      return;
-    }
-
-    const firstElement = focusables[0];
-    const lastElement = focusables[focusables.length - 1];
-
-    if (e.shiftKey) {
-      if (document.activeElement === firstElement) {
-        lastElement.focus();
-        e.preventDefault();
-      }
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.body.classList.add('dark-theme');
     } else {
-      if (document.activeElement === lastElement) {
-        firstElement.focus();
+      document.documentElement.classList.remove('dark');
+      document.body.classList.remove('dark-theme');
+    }
+    setStorageItem('theme', theme);
+  }, [theme]);
+
+  const lastScrollY = useRef(0);
+  const cartTrigger = useRef(null);
+  const menuTrigger = useRef(null);
+
+  // Initialize
+  useEffect(() => {
+    dispatch(actions.fetchStoreBrands());
+    dispatch(actions.fetchStoreCategories());
+  }, [dispatch]);
+
+  // Scroll handler
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const delta = currentScrollY - lastScrollY.current;
+
+      const isScrolled = location.pathname !== '/' ? true : currentScrollY > 80;
+
+      let nextNavHidden = navHidden;
+      if (delta > 8 && currentScrollY > 200) {
+        nextNavHidden = true;
+      } else if (delta < -3) {
+        nextNavHidden = false;
+      }
+
+      setScrolled(isScrolled);
+      setNavHidden(nextNavHidden);
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    // Sync immediately
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [location.pathname, navHidden]);
+
+  // Resize handler
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 992);
+    };
+
+    window.addEventListener('resize', handleResize, { passive: true });
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Route change scroll reset
+  useEffect(() => {
+    const nextScrolled = location.pathname !== '/' ? true : window.scrollY > 80;
+    setScrolled(nextScrolled);
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  // Focus trap accessibility
+  useEffect(() => {
+    const handleFocusTrap = (e) => {
+      if (!isCartOpen && !isMenuOpen) return;
+      if (e.key !== 'Tab') return;
+
+      let container = null;
+      if (isCartOpen) {
+        container = document.querySelector('.mini-cart-open');
+      } else if (isMenuOpen) {
+        container = document.querySelector('.mobile-full-screen-menu');
+      }
+      if (!container) return;
+
+      const focusables = container.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) {
         e.preventDefault();
+        return;
+      }
+
+      const firstElement = focusables[0];
+      const lastElement = focusables[focusables.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstElement) {
+          lastElement.focus();
+          e.preventDefault();
+        }
+      } else {
+        if (document.activeElement === lastElement) {
+          firstElement.focus();
+          e.preventDefault();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleFocusTrap);
+    return () => window.removeEventListener('keydown', handleFocusTrap);
+  }, [isCartOpen, isMenuOpen]);
+
+  // Handle body scroll locking on cart open
+  useEffect(() => {
+    if (isCartOpen) {
+      document.body.classList.add('no-scroll');
+      cartTrigger.current = document.activeElement;
+      setTimeout(() => {
+        const container = document.querySelector('.mini-cart-open');
+        if (container) {
+          const focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (focusables.length > 0) focusables[0].focus();
+        }
+      }, 50);
+    } else {
+      document.body.classList.remove('no-scroll');
+      if (cartTrigger.current) {
+        cartTrigger.current.focus();
       }
     }
-  }
+  }, [isCartOpen]);
 
-  handleScroll() {
-    const currentScrollY = window.scrollY;
-    const delta = currentScrollY - this.lastScrollY;
-
-    // On non-homepage pages always stay in scrolled (frosted glass) state
-    const scrolled = !this.isHomePage() ? true : currentScrollY > 80;
-
-    // Smart-hide: hide on fast scroll down (delta > 8), show on scroll up
-    let navHidden = this.state.navHidden;
-    if (delta > 8 && currentScrollY > 200) {
-      navHidden = true;
-    } else if (delta < -3) {
-      navHidden = false;
+  // Handle mobile menu focus state
+  useEffect(() => {
+    if (isMenuOpen) {
+      menuTrigger.current = document.activeElement;
+      setTimeout(() => {
+        const container = document.querySelector('.mobile-full-screen-menu');
+        if (container) {
+          const focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])');
+          if (focusables.length > 0) focusables[0].focus();
+        }
+      }, 50);
+    } else {
+      if (menuTrigger.current) {
+        menuTrigger.current.focus();
+      }
     }
+  }, [isMenuOpen]);
 
-    if (scrolled !== this.state.scrolled || navHidden !== this.state.navHidden) {
-      this.setState({ scrolled, navHidden });
-    }
+  const dismissAnnouncement = () => {
+    setShowAnnouncement(false);
+    setStorageItem('cartza_announcement_dismissed_at', String(Date.now()));
+  };
 
-    this.lastScrollY = currentScrollY;
-  }
+  const getSuggestionValue = (suggestion) => suggestion.name;
 
-  dismissAnnouncement() {
-    this.setState({ showAnnouncement: false });
-    localStorage.setItem('cartza_announcement_dismissed_at', String(Date.now()));
-    // Remove old key if present to avoid confusion
-    localStorage.removeItem('cartza_announcement_dismissed');
-  }
-
-  toggleDropdown() {
-    this.setState(prevState => ({
-      isDropdownOpen: !prevState.isDropdownOpen
-    }));
-  }
-
-  toggleMobileSearch() {
-    this.setState(prev => ({ isMobileSearchOpen: !prev.isMobileSearchOpen }));
-  }
-
-  toggleBrand() {
-    this.props.fetchStoreBrands();
-    this.props.toggleBrand();
-  }
-
-  toggleMenu() {
-    this.props.fetchStoreCategories();
-    this.props.toggleMenu();
-  }
-
-  getSuggestionValue(suggestion) {
-    return suggestion.name;
-  }
-
-  renderSuggestion(suggestion, { query }) {
-    const BoldName = (suggestion, query) => {
-      const matches = AutosuggestHighlightMatch(suggestion.name, query);
-      const parts = AutosuggestHighlightParse(suggestion.name, matches);
+  const renderSuggestion = (suggestion, { query }) => {
+    const BoldName = (item, q) => {
+      const matches = AutosuggestHighlightMatch(item.name, q);
+      const parts = AutosuggestHighlightParse(item.name, matches);
 
       return (
         <div>
@@ -250,8 +245,11 @@ class Navigation extends React.PureComponent {
         <div className='d-flex align-items-center suggestion-item'>
           <img
             className='item-image mr-3'
-            src={`${suggestion.imageUrl ? suggestion.imageUrl : '/images/placeholder-image.png'}`}
+            src={getCloudinaryUrl(suggestion.imageUrl, 50)}
             alt={suggestion.name}
+            loading="lazy"
+            width={50}
+            height={50}
           />
           <div className="suggestion-details">
             <span className='name'>{BoldName(suggestion, query)}</span>
@@ -260,246 +258,201 @@ class Navigation extends React.PureComponent {
         </div>
       </Link>
     );
-  }
+  };
 
-  render() {
-    const {
-      history,
-      authenticated,
-      user,
-      cartItems,
-      brands,
-      categories,
-      signOut,
-      isMenuOpen,
-      isCartOpen,
-      isBrandOpen,
-      toggleCart,
-      toggleMenu,
-      searchValue,
-      suggestions,
-      onSearch,
-      onSuggestionsFetchRequested,
-      onSuggestionsClearRequested
-    } = this.props;
+  const inputProps = {
+    placeholder: 'Search Products...',
+    value: searchValue,
+    onChange: (_, { newValue }) => {
+      dispatch(actions.onSearch(newValue));
+    }
+  };
 
-    const { scrolled, navHidden } = this.state;
+  const headerClasses = [
+    'header',
+    'fixed-mobile-header',
+    scrolled ? 'scrolled' : '',
+    navHidden ? 'nav-hidden' : '',
+  ].filter(Boolean).join(' ');
 
-    const inputProps = {
-      placeholder: 'Search Products...',
-      value: searchValue,
-      onChange: (_, { newValue }) => {
-        onSearch(newValue);
-      }
-    };
+  return (
+    <>
+      <header className={headerClasses}>
+        <AnnouncementBar show={showAnnouncement} onDismiss={dismissAnnouncement} />
 
-    const headerClasses = [
-      'header',
-      'fixed-mobile-header',
-      scrolled ? 'scrolled' : '',
-      navHidden ? 'nav-hidden' : '',
-    ].filter(Boolean).join(' ');
+        <div className='main-nav-wrapper'>
+          <Container>
+            <div className='main-nav-inner d-flex align-items-center justify-content-between'>
+              {/* Left: Logo + Mobile Hamburger */}
+              <div className='nav-left d-flex align-items-center'>
+                <button
+                  className={`mobile-hamburger d-lg-none ${isMenuOpen ? 'open' : ''}`}
+                  onClick={() => {
+                    dispatch(actions.fetchStoreCategories());
+                    dispatch(actions.toggleMenu());
+                  }}
+                  aria-label='Toggle menu'
+                >
+                  <span className='hamburger-line'></span>
+                  <span className='hamburger-line'></span>
+                  <span className='hamburger-line'></span>
+                </button>
 
-    return (
-      <>
-        <header className={headerClasses}>
-          {/* Tier 1: Announcement Bar (gold accent) */}
-          {this.state.showAnnouncement && (
-            <div className='announcement-bar'>
-              <div className='announcement-ticker'>
-                <span>Free Delivery on Orders Above ₹999  ✦  Use Code CARTZA10 for 10% Off  ✦  New Arrivals Every Monday</span>
+                <Link to='/' className='brand-link' data-cursor="link">
+                  <span className='logo-text'>CARTZA</span>
+                </Link>
               </div>
-              <button className='announcement-close' onClick={this.dismissAnnouncement} aria-label='Dismiss announcement'>
-                <X size={14} strokeWidth={1.2} />
-              </button>
-            </div>
-          )}
 
-          {/* Tier 2: Main Nav */}
-          <div className='main-nav-wrapper'>
-            <Container>
-              <div className='main-nav-inner d-flex align-items-center justify-content-between'>
-                {/* Left: Logo + Mobile Hamburger */}
-                <div className='nav-left d-flex align-items-center'>
-                  {/* Mobile Hamburger menu */}
-                  <button
-                    className={`mobile-hamburger d-lg-none ${isMenuOpen ? 'open' : ''}`}
-                    onClick={() => this.toggleMenu()}
-                    aria-label='Toggle menu'
-                  >
-                    <span className='hamburger-line'></span>
-                    <span className='hamburger-line'></span>
-                    <span className='hamburger-line'></span>
-                  </button>
-
-                  <Link to='/' className='brand-link' data-cursor="link">
-                    <span className='logo-text'>CARTZA</span>
-                  </Link>
-                </div>
-
-                {/* Center: Category Nav Links (Desktop) */}
-                <nav className='nav-links-center'>
-                  {categories && categories.slice(0, 3).map((cat, index) => (
-                    <NavLink
-                      key={index}
-                      to={`/shop/category/${cat.slug}`}
-                      className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
-                      data-cursor="link"
-                    >
-                      {cat.name}
-                    </NavLink>
-                  ))}
+              {/* Center: Category Nav Links (Desktop) */}
+              <nav className='nav-links-center'>
+                {categories && categories.slice(0, 3).map((cat, index) => (
                   <NavLink
-                    to='/brands'
+                    key={index}
+                    to={`/shop/category/${cat.slug}`}
                     className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
                     data-cursor="link"
                   >
-                    Brands
+                    {cat.name}
                   </NavLink>
-                </nav>
+                ))}
+                <NavLink
+                  to='/brands'
+                  className={({ isActive }) => `nav-link-item${isActive ? ' active' : ''}`}
+                  data-cursor="link"
+                >
+                  Brands
+                </NavLink>
+              </nav>
 
-                {/* Right Controls & Icons */}
-                <div className='nav-right d-flex align-items-center'>
-                  <div className='nav-icon-row d-flex align-items-center'>
-                    {/* Search Icon for Mobile */}
-                    <button className='nav-icon-btn d-lg-none mobile-search-trigger' onClick={() => this.toggleMobileSearch()} aria-label='Search' data-cursor="link">
-                      {this.state.isMobileSearchOpen ? <X size={18} strokeWidth={1.2} /> : <Search size={18} strokeWidth={1.2} />}
-                    </button>
+              {/* Right Controls & Icons */}
+              <div className='nav-right d-flex align-items-center'>
+                <div className='nav-icon-row d-flex align-items-center'>
+                  <button className='nav-icon-btn d-lg-none mobile-search-trigger' onClick={() => setIsMobileSearchOpen(prev => !prev)} aria-label='Search' data-cursor="link">
+                    {isMobileSearchOpen ? <X size={18} strokeWidth={1.2} /> : <Search size={18} strokeWidth={1.2} />}
+                  </button>
 
-                    {/* Desktop Search */}
-                    {!this.state.isMobile && (
-                      <div className='d-none d-lg-block'>
-                        <div className='search-input-wrapper' style={{ width: 260 }}>
-                          <span className='search-icon-left'>
-                            <Search size={16} strokeWidth={1.2} />
-                          </span>
-                          <Autosuggest
-                            suggestions={suggestions}
-                            onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                            onSuggestionsClearRequested={onSuggestionsClearRequested}
-                            getSuggestionValue={this.getSuggestionValue}
-                            renderSuggestion={this.renderSuggestion}
-                            inputProps={inputProps}
-                            onSuggestionSelected={(_, item) => {
-                              history.push(`/product/${item.suggestion.slug}`);
-                            }}
-                          />
-                          {searchValue && (
-                            <button className='search-clear-btn' onClick={() => onSearch('')} aria-label='Clear search'>
-                              <X size={14} strokeWidth={1.2} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Wishlist Icon */}
-                    <Link to='/wishlist' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist' data-cursor="link">
-                      <Heart size={18} strokeWidth={1.2} />
-                    </Link>
-
-                    {/* Account / User Menu Dropdown */}
-                    <Dropdown isOpen={this.state.isDropdownOpen} toggle={this.toggleDropdown} className='account-dropdown-nav'>
-                      <DropdownToggle className='nav-icon-btn d-flex align-items-center' tag="button" aria-label='Account menu' data-cursor="link">
-                        <User size={18} strokeWidth={1.2} />
-                      </DropdownToggle>
-                      <DropdownMenu right>
-                        {authenticated ? (
-                          <>
-                            <div className='dropdown-user-greeting px-3 py-2'>
-                              <strong>Hello, {user.firstName || 'User'}</strong>
-                            </div>
-                            <DropdownItem divider />
-                            <DropdownItem onClick={() => history.push('/dashboard')}>Dashboard</DropdownItem>
-                            <DropdownItem onClick={signOut}>Sign Out</DropdownItem>
-                          </>
-                        ) : (
-                          <>
-                            <DropdownItem onClick={() => history.push('/login')}>Login</DropdownItem>
-                            <DropdownItem onClick={() => history.push('/register')}>Sign Up</DropdownItem>
-                          </>
+                  {/* Desktop Search */}
+                  {!isMobile && (
+                    <div className='d-none d-lg-block'>
+                      <div className='search-input-wrapper' style={{ width: 260 }}>
+                        <span className='search-icon-left'>
+                          <Search size={16} strokeWidth={1.2} />
+                        </span>
+                        <Autosuggest
+                          suggestions={suggestions}
+                          onSuggestionsFetchRequested={(val) => dispatch(actions.onSuggestionsFetchRequested(val))}
+                          onSuggestionsClearRequested={() => dispatch(actions.onSuggestionsClearRequested())}
+                          getSuggestionValue={getSuggestionValue}
+                          renderSuggestion={renderSuggestion}
+                          inputProps={inputProps}
+                          onSuggestionSelected={(_, item) => {
+                            navigate(`/product/${item.suggestion.slug}`);
+                          }}
+                        />
+                        {searchValue && (
+                          <button className='search-clear-btn' onClick={() => dispatch(actions.onSearch(''))} aria-label='Clear search'>
+                            <X size={14} strokeWidth={1.2} />
+                          </button>
                         )}
-                      </DropdownMenu>
-                    </Dropdown>
+                      </div>
+                    </div>
+                  )}
 
-                    {/* Cart Icon */}
-                    <CartIcon cartItems={cartItems} onClick={toggleCart} className='nav-cart-icon-btn' />
-                  </div>
+                  {/* Wishlist Icon */}
+                  <Link to='/wishlist' className='nav-icon-link d-none d-md-flex' aria-label='Wishlist' data-cursor="link">
+                    <Heart size={18} strokeWidth={1.2} />
+                  </Link>
+
+                  {/* Theme Toggle Button */}
+                  <button 
+                    onClick={() => setTheme(prev => prev === 'light' ? 'dark' : 'light')} 
+                    className='nav-icon-btn d-flex align-items-center'
+                    aria-label='Toggle Dark Mode'
+                    type='button'
+                    style={{ border: 'none', background: 'transparent', cursor: 'pointer' }}
+                  >
+                    {theme === 'light' ? <Moon size={18} strokeWidth={1.2} /> : <Sun size={18} strokeWidth={1.2} />}
+                  </button>
+
+                  {/* Account / User Menu Dropdown */}
+                  <Dropdown isOpen={isDropdownOpen} toggle={() => setIsDropdownOpen(prev => !prev)} className='account-dropdown-nav'>
+                    <DropdownToggle className='nav-icon-btn d-flex align-items-center' tag="button" aria-label='Account menu' data-cursor="link">
+                      <User size={18} strokeWidth={1.2} />
+                    </DropdownToggle>
+                    <DropdownMenu right>
+                      {authenticated ? (
+                        <>
+                          <div className='dropdown-user-greeting px-3 py-2'>
+                            <strong>Hello, {user.firstName || 'User'}</strong>
+                          </div>
+                          <DropdownItem divider />
+                          <DropdownItem onClick={() => navigate('/dashboard')}>Dashboard</DropdownItem>
+                          <DropdownItem onClick={() => dispatch(actions.signOut())}>Sign Out</DropdownItem>
+                        </>
+                      ) : (
+                        <>
+                          <DropdownItem onClick={() => navigate('/login')}>Login</DropdownItem>
+                          <DropdownItem onClick={() => navigate('/register')}>Sign Up</DropdownItem>
+                        </>
+                      )}
+                    </DropdownMenu>
+                  </Dropdown>
+
+                  {/* Cart Icon */}
+                  <CartIcon cartItems={cartItems} onClick={() => dispatch(actions.toggleCart())} className='nav-cart-icon-btn' />
                 </div>
               </div>
+            </div>
 
-              {/* Mobile-only Search Bar */}
-              {this.state.isMobile && this.state.isMobileSearchOpen && (
-                <div className='mobile-search-bar d-lg-none py-2'>
-                  <div className='search-input-wrapper'>
-                    <span className='search-icon-left'>
-                      <Search size={16} strokeWidth={1.2} />
-                    </span>
-                    <Autosuggest
-                      suggestions={suggestions}
-                      onSuggestionsFetchRequested={onSuggestionsFetchRequested}
-                      onSuggestionsClearRequested={onSuggestionsClearRequested}
-                      getSuggestionValue={this.getSuggestionValue}
-                      renderSuggestion={this.renderSuggestion}
-                      inputProps={{ ...inputProps, placeholder: 'Search...' }}
-                      onSuggestionSelected={(_, item) => {
-                        history.push(`/product/${item.suggestion.slug}`);
-                      }}
-                    />
-                  </div>
+            {/* Mobile-only Search Bar */}
+            {isMobile && isMobileSearchOpen && (
+              <div className='mobile-search-bar d-lg-none py-2'>
+                <div className='search-input-wrapper'>
+                  <span className='search-icon-left'>
+                    <Search size={16} strokeWidth={1.2} />
+                  </span>
+                  <Autosuggest
+                    suggestions={suggestions}
+                    onSuggestionsFetchRequested={(val) => dispatch(actions.onSuggestionsFetchRequested(val))}
+                    onSuggestionsClearRequested={() => dispatch(actions.onSuggestionsClearRequested())}
+                    getSuggestionValue={getSuggestionValue}
+                    renderSuggestion={renderSuggestion}
+                    inputProps={{ ...inputProps, placeholder: 'Search...' }}
+                    onSuggestionSelected={(_, item) => {
+                      navigate(`/product/${item.suggestion.slug}`);
+                    }}
+                  />
                 </div>
-              )}
-            </Container>
-          </div>
-        </header>
-
-        {/* hidden cart drawer */}
-        <div
-          className={isCartOpen ? 'mini-cart-open' : 'hidden-mini-cart'}
-          aria-hidden={`${isCartOpen ? false : true}`}
-        >
-          <div className='mini-cart'>
-            <Cart />
-          </div>
-          <div
-            className={isCartOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'}
-            onClick={toggleCart}
-          />
+              </div>
+            )}
+          </Container>
         </div>
+      </header>
 
-        {/* Full-screen Overlay Menu for Mobile */}
-        <div
-          className={`mobile-full-screen-menu ${isMenuOpen ? 'open' : ''}`}
-          aria-hidden={`${isMenuOpen ? false : true}`}
-        >
-          <div className='menu-header-bar d-flex align-items-center justify-content-between px-4 py-3'>
-            <span className='logo-text text-white'>CARTZA</span>
-            <button className='menu-close-btn' onClick={() => this.toggleMenu()} aria-label='Close menu'>
-              <X size={24} strokeWidth={1.2} className="text-white" />
-            </button>
-          </div>
-          <div className='menu-body-overlay'>
-            <Menu />
-          </div>
+      {/* hidden cart drawer */}
+      <div
+        className={isCartOpen ? 'mini-cart-open' : 'hidden-mini-cart'}
+        aria-hidden={!isCartOpen}
+      >
+        <div className='mini-cart'>
+          <Cart />
         </div>
-      </>
-    );
-  }
-}
+        <div
+          className={isCartOpen ? 'drawer-backdrop dark-overflow' : 'drawer-backdrop'}
+          onClick={() => dispatch(actions.toggleCart())}
+        />
+      </div>
 
-const mapStateToProps = state => {
-  return {
-    isMenuOpen: state.navigation.isMenuOpen,
-    isCartOpen: state.navigation.isCartOpen,
-    isBrandOpen: state.navigation.isBrandOpen,
-    cartItems: state.cart.cartItems,
-    brands: state.brand.storeBrands,
-    categories: state.category.storeCategories,
-    authenticated: state.authentication.authenticated,
-    user: state.account.user,
-    searchValue: state.navigation.searchValue,
-    suggestions: state.navigation.searchSuggestions
-  };
+      {/* Full-screen Overlay Menu for Mobile */}
+      <MobileMenu
+        isOpen={isMenuOpen}
+        onClose={() => {
+          dispatch(actions.fetchStoreCategories());
+          dispatch(actions.toggleMenu());
+        }}
+      />
+    </>
+  );
 };
 
-export default connect(mapStateToProps, actions)(withRouter(Navigation));
+export default Navigation;

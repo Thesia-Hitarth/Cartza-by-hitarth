@@ -16,8 +16,16 @@ import Checkbox from '../../components/Common/Checkbox';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import SignupProvider from '../../components/Common/SignupProvider';
 import Button from '../../components/Common/Button';
+import Captcha from '../../components/Common/Captcha';
 
 class Signup extends React.PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      captchaToken: null
+    };
+  }
+
   componentDidMount() {
     document.title = 'Sign Up | CARTZA';
   }
@@ -39,7 +47,7 @@ class Signup extends React.PureComponent {
 
     const handleSubmit = event => {
       event.preventDefault();
-      signUp();
+      signUp(this.state.captchaToken);
     };
 
     return (
@@ -165,6 +173,9 @@ class Signup extends React.PureComponent {
                   />
                 </div>
 
+                {/* CAPTCHA Widget */}
+                <Captcha onChange={token => this.setState({ captchaToken: token })} />
+
                 <div className='auth-action-btn-row d-flex flex-column gap-3 mt-4'>
                   <Button
                     type='submit'
@@ -172,6 +183,7 @@ class Signup extends React.PureComponent {
                     text='Sign Up'
                     className='btn-auth-submit'
                     loading={isSubmitting}
+                    disabled={!this.state.captchaToken}
                   />
                   
                   <Link

@@ -644,6 +644,61 @@ router.delete(
   }
 );
 
+router.get('/related/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    if (!Mongoose.Types.ObjectId.isValid(productId)) {
+      return res.status(400).json({ error: 'Invalid product ID format.' });
+    }
+
+    const currentProduct = await Product.findOne({ _id: productId, isActive: true });
+    if (!currentProduct) {
+      return res.status(404).json({ message: 'No product found.' });
+    }
+
+    const relatedQuery = {
+      _id: { $ne: currentProduct._id },
+      isActive: true,
+      $or: [
+        { brand: currentProduct.brand },
+        { category: currentProduct.category }
+      ]
+    };
+
+    const relatedProducts = await Product.find(relatedQuery)
+      .limit(4)
+      .populate({
+        path: 'brand',
+        select: 'name slug isActive'
+      })
+      .exec();
+
+    if (relatedProducts.length < 4) {
+      const needed = 4 - relatedProducts.length;
+      const excludeIds = [currentProduct._id, ...relatedProducts.map(p => p._id)];
+      const fallbackProducts = await Product.find({
+        _id: { $nin: excludeIds },
+        isActive: true
+      })
+        .limit(needed)
+        .populate({
+          path: 'brand',
+          select: 'name slug isActive'
+        })
+        .exec();
+      relatedProducts.push(...fallbackProducts);
+    }
+
+    res.status(200).json({
+      products: relatedProducts
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: 'Your request could not be processed. Please try again.'
+    });
+  }
+});
+
 router.use((err, req, res, next) => {
   if (err.code === 'LIMIT_FILE_SIZE') {
     return res.status(400).json({ error: 'File size must not exceed 5MB.' });

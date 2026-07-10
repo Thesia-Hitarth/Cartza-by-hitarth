@@ -14,6 +14,7 @@ import Application from './containers/Application';
 import ErrorBoundary from './components/Common/ErrorBoundary';
 import ScrollToTop from './scrollToTop';
 import axios from 'axios';
+import * as Sentry from '@sentry/react';
 import { signOut } from './containers/Login/actions';
 
 
@@ -22,8 +23,26 @@ axios.defaults.withCredentials = true;
 axios.interceptors.response.use(
   response => response,
   error => {
-    if (error.response && error.response.status === 401) {
-      store.dispatch(signOut());
+    if (error.response) {
+      if (error.response.status === 401) {
+        store.dispatch(signOut());
+      } else if (error.response.status >= 500) {
+        Sentry.captureException(new Error(`API Error ${error.response.status}: ${error.config?.url || 'Unknown'}`), {
+          extra: {
+            status: error.response.status,
+            data: error.response.data,
+            url: error.config?.url,
+            method: error.config?.method
+          }
+        });
+      }
+    } else {
+      Sentry.captureException(new Error(`API Network Failure: ${error.config?.url || 'Unknown URL'}`), {
+        extra: {
+          error: error.message,
+          config: error.config
+        }
+      });
     }
     return Promise.reject(error);
   }
@@ -31,15 +50,6 @@ axios.interceptors.response.use(
 
 // Import application sass styles
 import './styles/style.scss';
-
-// Import Font Awesome Icons Set
-import 'font-awesome/css/font-awesome.min.css';
-
-// Import Simple Line Icons Set
-import 'simple-line-icons/css/simple-line-icons.css';
-
-// react-bootstrap-table2 styles
-import 'react-bootstrap-table-next/dist/react-bootstrap-table2.min.css';
 
 // rc-slider style
 import 'rc-slider/assets/index.css';

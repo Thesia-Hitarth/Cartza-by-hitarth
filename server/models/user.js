@@ -66,6 +66,7 @@ const UserSchema = new Schema({
   resetPasswordExpires: { type: Date, select: false },
   inviteToken: { type: String, select: false },
   inviteTokenExpires: { type: Date, select: false },
+  razorpayCustomerId: { type: String, default: null },
   updated: Date,
   created: {
     type: Date,

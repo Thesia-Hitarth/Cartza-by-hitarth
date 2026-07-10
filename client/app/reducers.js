@@ -22,16 +22,16 @@ import dashboardReducer from './containers/Dashboard/reducer';
 import accountReducer from './containers/Account/reducer';
 import addressReducer from './containers/Address/reducer';
 import resetPasswordReducer from './containers/ResetPassword/reducer';
-import usersReducer from './containers/Users/reducer';
-import productReducer from './containers/Product/reducer';
-import categoryReducer from './containers/Category/reducer';
-import brandReducer from './containers/Brand/reducer';
+import usersReducer from './containers/Admin/Users/reducer';
+import productReducer from './containers/Admin/Product/reducer';
+import categoryReducer from './containers/Admin/Category/reducer';
+import brandReducer from './containers/Admin/Brand/reducer';
 import navigationMenuReducer from './containers/NavigationMenu/reducer';
 import shopReducer from './containers/Shop/reducer';
-import merchantReducer from './containers/Merchant/reducer';
+import merchantReducer from './containers/Admin/Merchant/reducer';
 import contactReducer from './containers/Contact/reducer';
 import orderReducer from './containers/Order/reducer';
-import reviewReducer from './containers/Review/reducer';
+import reviewReducer from './containers/Admin/Review/reducer';
 import wishListReducer from './containers/WishList/reducer';
 
 const createReducer = history =>

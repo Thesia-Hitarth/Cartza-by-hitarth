@@ -15,13 +15,13 @@ import Page404 from '../../Common/Page404';
 import Account from '../../../containers/Account';
 import AccountSecurity from '../../../containers/AccountSecurity';
 import Order from '../../../containers/Order';
-import Users from '../../../containers/Users';
-import Category from '../../../containers/Category';
-import Product from '../../../containers/Product';
-import Brand from '../../../containers/Brand';
-import Merchant from '../../../containers/Merchant';
-import Review from '../../../containers/Review';
-import Inquiries from '../../../containers/Inquiries';
+import Users from '../../../containers/Admin/Users';
+import Category from '../../../containers/Admin/Category';
+import Product from '../../../containers/Admin/Product';
+import Brand from '../../../containers/Admin/Brand';
+import Merchant from '../../../containers/Admin/Merchant';
+import Review from '../../../containers/Admin/Review';
+import Inquiries from '../../../containers/Admin/Inquiries';
 
 const Admin = props => {
   return (
