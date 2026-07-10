@@ -13,8 +13,11 @@ module.exports = function validateEnv() {
     if (!process.env.UPSTASH_REDIS_REST_TOKEN) {
       missing.push('UPSTASH_REDIS_REST_TOKEN');
     }
-    if (!process.env.TURNSTILE_SECRET_KEY && !process.env.HCAPTCHA_SECRET_KEY) {
-      missing.push('TURNSTILE_SECRET_KEY or HCAPTCHA_SECRET_KEY');
+    const siteKey = process.env.TURNSTILE_SITE_KEY || process.env.HCAPTCHA_SITE_KEY;
+    if (siteKey) {
+      if (!process.env.TURNSTILE_SECRET_KEY && !process.env.HCAPTCHA_SECRET_KEY) {
+        missing.push('TURNSTILE_SECRET_KEY or HCAPTCHA_SECRET_KEY');
+      }
     }
   }
 
