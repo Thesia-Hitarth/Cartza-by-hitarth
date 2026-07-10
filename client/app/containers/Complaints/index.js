@@ -8,7 +8,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Row, Col } from 'reactstrap';
 
-import SubPage from '../../components/Manager/SubPage';
+import SubPage from '../../components/Admin/SubPage';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import NotFound from '../../components/Common/NotFound';
 import { API_URL } from '../../constants';

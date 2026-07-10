@@ -22,6 +22,7 @@ import { clearCart } from '../Cart/actions';
 import { clearAccount } from '../Account/actions';
 import { allFieldsValidation } from '../../utils/validation';
 import { API_URL } from '../../constants';
+import { setStorageItem, removeStorageItem } from '../../utils/storage';
 
 export const loginChange = (name, value) => {
   let formData = {};
@@ -71,7 +72,7 @@ export const login = (captchaToken) => {
       };
 
       try {
-        localStorage.setItem('logged_in', 'true');
+        setStorageItem('logged_in', 'true');
       } catch (e) {
         console.error('localStorage write blocked', e);
       }
@@ -110,7 +111,7 @@ export const signOut = () => {
     dispatch(push('/login'));
 
     try {
-      localStorage.removeItem('logged_in');
+      removeStorageItem('logged_in');
     } catch (e) {
       console.error('localStorage remove blocked', e);
     }

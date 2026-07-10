@@ -11,8 +11,8 @@ import { connect } from 'react-redux';
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
 
-import EditAddress from '../../components/Manager/EditAddress';
-import SubPage from '../../components/Manager/SubPage';
+import EditAddress from '../../components/Account/EditAddress';
+import SubPage from '../../components/Admin/SubPage';
 import NotFound from '../../components/Common/NotFound';
 
 class Edit extends React.PureComponent {

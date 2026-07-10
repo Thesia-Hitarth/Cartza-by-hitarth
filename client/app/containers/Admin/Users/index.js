@@ -10,10 +10,10 @@ import { connect } from 'react-redux';
 
 import actions from '../../../actions';
 
-import UserList from '../../../components/Manager/UserList';
-import UserSearch from '../../../components/Manager/UserSearch';
-import SubPage from '../../../components/Manager/SubPage';
-import SearchResultMeta from '../../../components/Manager/SearchResultMeta';
+import UserList from '../../../components/Admin/UserList';
+import UserSearch from '../../../components/Admin/UserSearch';
+import SubPage from '../../../components/Admin/SubPage';
+import SearchResultMeta from '../../../components/Admin/SearchResultMeta';
 import NotFound from '../../../components/Common/NotFound';
 import LoadingIndicator from '../../../components/Common/LoadingIndicator';
 import Pagination from '../../../components/Common/Pagination';

@@ -4,14 +4,13 @@ import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 
 import App from './app';
-import './i18n';
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     integrations: [
-      new Sentry.BrowserTracing(),
-      new Sentry.Replay()
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration()
     ],
     tracesSampleRate: 0.1,
     replaysSessionSampleRate: 0.1,

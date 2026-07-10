@@ -29,13 +29,14 @@ import AnnouncementBar from '../../components/Common/Navigation/AnnouncementBar'
 import MobileMenu from '../../components/Common/Navigation/MobileMenu';
 import { getCloudinaryUrl } from '../../utils/cloudinary';
 import { getStorageItem, setStorageItem } from '../../utils/storage';
+import { useScrollDirection } from '../../hooks/useScrollDirection';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useAnnouncementBar } from '../../hooks/useAnnouncementBar';
 
 const Navigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-
-  const isHome = location.pathname === '/';
 
   // Redux selectors
   const isMenuOpen = useSelector(state => state.navigation.isMenuOpen);
@@ -47,19 +48,15 @@ const Navigation = () => {
   const searchValue = useSelector(state => state.navigation.searchValue);
   const suggestions = useSelector(state => state.navigation.searchSuggestions);
 
+  // Custom hooks
+  const { scrolled, navHidden } = useScrollDirection();
+  const { showAnnouncement, dismissAnnouncement } = useAnnouncementBar();
+  useFocusTrap(isCartOpen, '.mini-cart-open');
+  useFocusTrap(isMenuOpen, '.mobile-full-screen-menu');
+
   // Local state
-  const [showAnnouncement, setShowAnnouncement] = useState(() => {
-    const ANNOUNCEMENT_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
-    const dismissedAt = typeof window !== 'undefined'
-      ? Number(getStorageItem('cartza_announcement_dismissed_at') || 0)
-      : 0;
-    const announcementDismissed = dismissedAt > 0 && (Date.now() - dismissedAt) < ANNOUNCEMENT_TTL_MS;
-    return !announcementDismissed;
-  });
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(!isHome);
-  const [navHidden, setNavHidden] = useState(false);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 992 : false);
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -79,7 +76,6 @@ const Navigation = () => {
     setStorageItem('theme', theme);
   }, [theme]);
 
-  const lastScrollY = useRef(0);
   const cartTrigger = useRef(null);
   const menuTrigger = useRef(null);
 
@@ -88,32 +84,6 @@ const Navigation = () => {
     dispatch(actions.fetchStoreBrands());
     dispatch(actions.fetchStoreCategories());
   }, [dispatch]);
-
-  // Scroll handler
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const delta = currentScrollY - lastScrollY.current;
-
-      const isScrolled = location.pathname !== '/' ? true : currentScrollY > 80;
-
-      let nextNavHidden = navHidden;
-      if (delta > 8 && currentScrollY > 200) {
-        nextNavHidden = true;
-      } else if (delta < -3) {
-        nextNavHidden = false;
-      }
-
-      setScrolled(isScrolled);
-      setNavHidden(nextNavHidden);
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    // Sync immediately
-    handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [location.pathname, navHidden]);
 
   // Resize handler
   useEffect(() => {
@@ -124,55 +94,6 @@ const Navigation = () => {
     window.addEventListener('resize', handleResize, { passive: true });
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
-  // Route change scroll reset
-  useEffect(() => {
-    const nextScrolled = location.pathname !== '/' ? true : window.scrollY > 80;
-    setScrolled(nextScrolled);
-    window.scrollTo(0, 0);
-  }, [location.pathname]);
-
-  // Focus trap accessibility
-  useEffect(() => {
-    const handleFocusTrap = (e) => {
-      if (!isCartOpen && !isMenuOpen) return;
-      if (e.key !== 'Tab') return;
-
-      let container = null;
-      if (isCartOpen) {
-        container = document.querySelector('.mini-cart-open');
-      } else if (isMenuOpen) {
-        container = document.querySelector('.mobile-full-screen-menu');
-      }
-      if (!container) return;
-
-      const focusables = container.querySelectorAll(
-        'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
-      if (focusables.length === 0) {
-        e.preventDefault();
-        return;
-      }
-
-      const firstElement = focusables[0];
-      const lastElement = focusables[focusables.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          lastElement.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement.focus();
-          e.preventDefault();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleFocusTrap);
-    return () => window.removeEventListener('keydown', handleFocusTrap);
-  }, [isCartOpen, isMenuOpen]);
 
   // Handle body scroll locking on cart open
   useEffect(() => {
@@ -211,11 +132,6 @@ const Navigation = () => {
       }
     }
   }, [isMenuOpen]);
-
-  const dismissAnnouncement = () => {
-    setShowAnnouncement(false);
-    setStorageItem('cartza_announcement_dismissed_at', String(Date.now()));
-  };
 
   const getSuggestionValue = (suggestion) => suggestion.name;
 

@@ -11,8 +11,8 @@ import { connect } from 'react-redux';
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
 
-import AddAddress from '../../components/Manager/AddAddress';
-import SubPage from '../../components/Manager/SubPage';
+import AddAddress from '../../components/Account/AddAddress';
+import SubPage from '../../components/Admin/SubPage';
 
 class Add extends React.PureComponent {
   render() {

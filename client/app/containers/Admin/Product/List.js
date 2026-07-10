@@ -11,8 +11,8 @@ import { connect } from 'react-redux';
 import actions from '../../../actions';
 import { withRouter } from '../../../utils/withRouter';
 
-import ProductList from '../../../components/Manager/ProductList';
-import SubPage from '../../../components/Manager/SubPage';
+import ProductList from '../../../components/Admin/ProductList';
+import SubPage from '../../../components/Admin/SubPage';
 import LoadingIndicator from '../../../components/Common/LoadingIndicator';
 import NotFound from '../../../components/Common/NotFound';
 import Pagination from '../../../components/Common/Pagination';

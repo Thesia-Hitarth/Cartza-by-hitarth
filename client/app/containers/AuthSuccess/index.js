@@ -15,6 +15,7 @@ import { API_URL } from '../../constants';
 import actions from '../../actions';
 import setToken from '../../utils/token';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
+import { setStorageItem } from '../../utils/storage';
 
 class AuthSuccess extends React.PureComponent {
   async componentDidMount() {
@@ -24,7 +25,7 @@ class AuthSuccess extends React.PureComponent {
       });
       if (response.data.success) {
         try {
-          localStorage.setItem('logged_in', 'true');
+          setStorageItem('logged_in', 'true');
         } catch (e) {
           console.error('localStorage write blocked', e);
         }

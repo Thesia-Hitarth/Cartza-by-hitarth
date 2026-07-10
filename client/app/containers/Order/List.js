@@ -12,10 +12,10 @@ import actions from '../../actions';
 import { ROLES } from '../../constants';
 import { withRouter } from '../../utils/withRouter';
 
-import SubPage from '../../components/Manager/SubPage';
-import OrderList from '../../components/Manager/OrderList';
-import OrderSearch from '../../components/Manager/OrderSearch';
-import SearchResultMeta from '../../components/Manager/SearchResultMeta';
+import SubPage from '../../components/Admin/SubPage';
+import OrderList from '../../components/Admin/OrderList';
+import OrderSearch from '../../components/Admin/OrderSearch';
+import SearchResultMeta from '../../components/Admin/SearchResultMeta';
 import NotFound from '../../components/Common/NotFound';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import Pagination from '../../components/Common/Pagination';

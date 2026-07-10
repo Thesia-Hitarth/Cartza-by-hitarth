@@ -1,11 +1,3 @@
-/**
- *
- * actions.js
- * actions configuration
- */
-
-import { bindActionCreators } from 'redux';
-
 import * as application from './containers/Application/actions';
 import * as authentication from './containers/Authentication/actions';
 import * as homepage from './containers/Homepage/actions';
@@ -31,34 +23,31 @@ import * as order from './containers/Order/actions';
 import * as review from './containers/Admin/Review/actions';
 import * as wishlist from './containers/WishList/actions';
 
-export default function mapDispatchToProps(dispatch) {
-  return bindActionCreators(
-    {
-      ...application,
-      ...authentication,
-      ...homepage,
-      ...signup,
-      ...login,
-      ...forgotPassword,
-      ...navigation,
-      ...cart,
-      ...newsletter,
-      ...dashboard,
-      ...account,
-      ...address,
-      ...resetPassword,
-      ...users,
-      ...product,
-      ...category,
-      ...brand,
-      ...menu,
-      ...shop,
-      ...merchant,
-      ...contact,
-      ...order,
-      ...review,
-      ...wishlist
-    },
-    dispatch
-  );
-}
+const actions = {
+  ...application,
+  ...authentication,
+  ...homepage,
+  ...signup,
+  ...login,
+  ...forgotPassword,
+  ...navigation,
+  ...cart,
+  ...newsletter,
+  ...dashboard,
+  ...account,
+  ...address,
+  ...resetPassword,
+  ...users,
+  ...product,
+  ...category,
+  ...brand,
+  ...menu,
+  ...shop,
+  ...merchant,
+  ...contact,
+  ...order,
+  ...review,
+  ...wishlist
+};
+
+export default actions;

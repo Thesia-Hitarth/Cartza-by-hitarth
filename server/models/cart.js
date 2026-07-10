@@ -45,6 +45,10 @@ const CartItemSchema = new Schema({
       CART_ITEM_STATUS.Delivered,
       CART_ITEM_STATUS.Cancelled
     ]
+  },
+  taxable: {
+    type: Boolean,
+    default: false
   }
 });
 

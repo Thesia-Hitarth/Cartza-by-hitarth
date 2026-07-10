@@ -48,8 +48,8 @@ app.use(
         fontSrc: ["'self'", "fonts.gstatic.com", "data:", "https://client.crisp.chat"],
         imgSrc: ["'self'", "data:", "res.cloudinary.com", "https://image.crisp.chat", "https://client.crisp.chat"],
         scriptSrc: process.env.NODE_ENV === 'production'
-          ? ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com", "https://client.crisp.chat"]
-          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com", "https://client.crisp.chat"],
+          ? ["'self'", "'unsafe-inline'", "https://checkout.razorpay.com", "https://client.crisp.chat", "https://storage.googleapis.com"]
+          : ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://checkout.razorpay.com", "https://client.crisp.chat", "https://storage.googleapis.com"],
         styleSrc: ["'self'", "'unsafe-inline'", "fonts.googleapis.com", "https://client.crisp.chat"],
         frameSrc: ["'self'", "https://game.crisp.chat", "https://challenges.cloudflare.com", "https://hcaptcha.com"],
         mediaSrc: ["'self'", "https://client.crisp.chat"]

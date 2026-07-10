@@ -206,7 +206,7 @@ router.put('/update-quantity/:cartId', auth, async (req, res) => {
       }
     }
 
-    const isTaxable = productItem.totalTax > 0 || (productItem.priceWithTax > productItem.totalPrice);
+    const isTaxable = productItem.taxable !== undefined ? productItem.taxable : dbProduct.taxable;
 
     productItem.quantity = parsedQty;
     productItem.totalPrice = parseFloat(Number((productItem.purchasePrice * parsedQty).toFixed(2)));
@@ -308,7 +308,7 @@ router.get('/validate/:cartId', auth, async (req, res) => {
       }
 
       // Re-calculate prices and taxes
-      const isTaxable = item.totalTax > 0 || (item.priceWithTax > item.totalPrice);
+      const isTaxable = item.taxable !== undefined ? item.taxable : dbProduct.taxable;
       item.totalPrice = parseFloat(Number((item.purchasePrice * item.quantity).toFixed(2)));
 
       if (isTaxable) {

@@ -12,10 +12,10 @@ import actions from '../../../actions';
 import { ROLES } from '../../../constants';
 import { withRouter } from '../../../utils/withRouter';
 
-import SubPage from '../../../components/Manager/SubPage';
-import MerchantList from '../../../components/Manager/MerchantList';
-import MerchantSearch from '../../../components/Manager/MerchantSearch';
-import SearchResultMeta from '../../../components/Manager/SearchResultMeta';
+import SubPage from '../../../components/Admin/SubPage';
+import MerchantList from '../../../components/Admin/MerchantList';
+import MerchantSearch from '../../../components/Admin/MerchantSearch';
+import SearchResultMeta from '../../../components/Admin/SearchResultMeta';
 import LoadingIndicator from '../../../components/Common/LoadingIndicator';
 import NotFound from '../../../components/Common/NotFound';
 import Pagination from '../../../components/Common/Pagination';

@@ -9,8 +9,8 @@ import { connect } from 'react-redux';
 
 import actions from '../../actions';
 
-import AccountDetails from '../../components/Manager/AccountDetails';
-import SubPage from '../../components/Manager/SubPage';
+import AccountDetails from '../../components/Account/AccountDetails';
+import SubPage from '../../components/Admin/SubPage';
 
 class Account extends React.PureComponent {
   componentDidMount() {

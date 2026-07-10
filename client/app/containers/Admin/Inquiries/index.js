@@ -9,7 +9,7 @@ import axios from 'axios';
 import { Row, Col, Container } from 'reactstrap';
 import { success, error } from 'react-notification-system-redux';
 
-import SubPage from '../../../components/Manager/SubPage';
+import SubPage from '../../../components/Admin/SubPage';
 import Input from '../../../components/Common/Input';
 import Badge from '../../../components/Common/Badge';
 import Button from '../../../components/Common/Button';

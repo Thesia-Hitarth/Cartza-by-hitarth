@@ -9,9 +9,9 @@ import { connect } from 'react-redux';
 
 import actions from '../../../actions';
 
-import SubPage from '../../../components/Manager/SubPage';
-import ReviewList from '../../../components/Manager/ReviewList';
-import SearchResultMeta from '../../../components/Manager/SearchResultMeta';
+import SubPage from '../../../components/Admin/SubPage';
+import ReviewList from '../../../components/Admin/ReviewList';
+import SearchResultMeta from '../../../components/Admin/SearchResultMeta';
 import LoadingIndicator from '../../../components/Common/LoadingIndicator';
 import NotFound from '../../../components/Common/NotFound';
 import Pagination from '../../../components/Common/Pagination';

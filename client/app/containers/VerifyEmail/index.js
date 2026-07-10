@@ -6,6 +6,7 @@ import axios from 'axios';
 import { API_URL } from '../../constants';
 import actions from '../../actions';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
+import { getStorageItem } from '../../utils/storage';
 
 class VerifyEmail extends React.PureComponent {
   constructor(props) {
@@ -37,7 +38,7 @@ class VerifyEmail extends React.PureComponent {
       });
       let loggedIn = false;
       try {
-        loggedIn = localStorage.getItem('logged_in') === 'true';
+        loggedIn = getStorageItem('logged_in') === 'true';
       } catch (e) {
         console.error('localStorage read blocked', e);
       }

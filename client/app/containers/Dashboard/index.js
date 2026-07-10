@@ -12,10 +12,10 @@ import actions from '../../actions';
 import { ROLES } from '../../constants';
 import dashboardLinks from './links.json';
 import { isDisabledMerchantAccount } from '../../utils/app';
-import Admin from '../../components/Manager/Dashboard/Admin';
-import Merchant from '../../components/Manager/Dashboard/Merchant';
-import Customer from '../../components/Manager/Dashboard/Customer';
-import DisabledMerchantAccount from '../../components/Manager/DisabledAccount/Merchant';
+import Admin from '../../components/Admin/Dashboard/Admin';
+import Merchant from '../../components/Admin/Dashboard/Merchant';
+import Customer from '../../components/Admin/Dashboard/Customer';
+import DisabledMerchantAccount from '../../components/Admin/DisabledAccount/Merchant';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 
 class Dashboard extends React.PureComponent {

@@ -21,6 +21,7 @@ import setToken from '../../utils/token';
 import handleError from '../../utils/error';
 import { allFieldsValidation } from '../../utils/validation';
 import { API_URL } from '../../constants';
+import { setStorageItem } from '../../utils/storage';
 
 export const signupChange = (name, value) => {
   let formData = {};
@@ -88,7 +89,7 @@ export const signUp = (captchaToken) => {
       };
 
       try {
-        localStorage.setItem('logged_in', 'true');
+        setStorageItem('logged_in', 'true');
       } catch (e) {
         console.error('localStorage write blocked', e);
       }

@@ -41,33 +41,39 @@ export const onSearch = v => {
   };
 };
 
+import debounce from 'lodash/debounce';
+
 let searchAbortController = null;
+
+const debouncedFetch = debounce(async (inputValue, dispatch) => {
+  try {
+    if (searchAbortController) {
+      searchAbortController.abort();
+    }
+    searchAbortController = new AbortController();
+
+    const response = await axios.get(
+      `${API_URL}/product/list/search/${inputValue}`,
+      { signal: searchAbortController.signal }
+    );
+    dispatch({
+      type: SUGGESTIONS_FETCH_REQUEST,
+      payload: response.data.products
+    });
+  } catch (error) {
+    if (axios.isCancel(error)) {
+      return;
+    }
+    handleError(error, dispatch);
+  }
+}, 300);
 
 export const onSuggestionsFetchRequested = value => {
   const inputValue = value.value.trim().toLowerCase();
 
-  return async (dispatch, getState) => {
-    try {
-      if (inputValue && inputValue.length % 3 === 0) {
-        if (searchAbortController) {
-          searchAbortController.abort();
-        }
-        searchAbortController = new AbortController();
-
-        const response = await axios.get(
-          `${API_URL}/product/list/search/${inputValue}`,
-          { signal: searchAbortController.signal }
-        );
-        dispatch({
-          type: SUGGESTIONS_FETCH_REQUEST,
-          payload: response.data.products
-        });
-      }
-    } catch (error) {
-      if (axios.isCancel(error)) {
-        return;
-      }
-      handleError(error, dispatch);
+  return (dispatch) => {
+    if (inputValue) {
+      debouncedFetch(inputValue, dispatch);
     }
   };
 };

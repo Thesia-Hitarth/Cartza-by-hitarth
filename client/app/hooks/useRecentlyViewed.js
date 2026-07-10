@@ -1,9 +1,10 @@
 import { useState, useCallback } from 'react';
+import { getStorageItem, setStorageItem } from '../utils/storage';
 
 export const useRecentlyViewed = () => {
   const [recentlyViewed, setRecentlyViewed] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('cartza_recently_viewed') || '[]');
+      return JSON.parse(getStorageItem('cartza_recently_viewed') || '[]');
     } catch (e) {
       console.error('Failed to load recently viewed products', e);
       return [];
@@ -16,7 +17,7 @@ export const useRecentlyViewed = () => {
       const filtered = prev.filter(p => p._id !== product._id);
       const updated = [product, ...filtered].slice(0, 4);
       try {
-        localStorage.setItem('cartza_recently_viewed', JSON.stringify(updated));
+        setStorageItem('cartza_recently_viewed', JSON.stringify(updated));
       } catch (e) {
         console.error('Failed to save recently viewed products', e);
       }

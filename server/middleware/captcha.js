@@ -26,7 +26,7 @@ const validateCaptcha = async (req, res, next) => {
 
     const response = await axios.post(
       verifyUrl,
-      `secret=${secretKey}&response=${token}`,
+      `secret=${encodeURIComponent(secretKey)}&response=${encodeURIComponent(token)}`,
       { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
     );
 

@@ -12,7 +12,7 @@ import { Row, Col } from 'reactstrap';
 import actions from '../../actions';
 
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
-import AddMerchant from '../../components/Manager/AddMerchant';
+import AddMerchant from '../../components/Admin/AddMerchant';
 
 class Sell extends React.PureComponent {
   componentDidMount() {

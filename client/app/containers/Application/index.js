@@ -20,16 +20,18 @@ import Notification from '../Notification';
 
 import Footer from '../../components/Common/Footer';
 import Page404 from '../../components/Common/Page404';
-import CustomCursor from '../../components/ui/CustomCursor';
+import CustomCursor from '../../components/Common/CustomCursor';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 import PageSkeleton from '../../components/Common/PageSkeleton';
 import { CART_ITEMS } from '../../constants';
+import { getStorageItem } from '../../utils/storage';
+
+import HomePage from '../Homepage';
 
 // Lazy loaded routes
 const Login = React.lazy(() => import('../Login'));
 const Signup = React.lazy(() => import('../Signup'));
 const MerchantSignup = React.lazy(() => import('../MerchantSignup'));
-const HomePage = React.lazy(() => import('../Homepage'));
 const Dashboard = React.lazy(() => import('../Dashboard'));
 const ForgotPassword = React.lazy(() => import('../ForgotPassword'));
 const ResetPassword = React.lazy(() => import('../ResetPassword'));
@@ -59,7 +61,7 @@ class Application extends React.PureComponent {
     super(props);
     let loggedIn = false;
     try {
-      loggedIn = localStorage.getItem('logged_in') === 'true';
+      loggedIn = getStorageItem('logged_in') === 'true';
     } catch (e) {
       console.error('localStorage read blocked', e);
     }
@@ -72,7 +74,7 @@ class Application extends React.PureComponent {
   async componentDidMount() {
     let loggedIn = false;
     try {
-      loggedIn = localStorage.getItem('logged_in') === 'true';
+      loggedIn = getStorageItem('logged_in') === 'true';
     } catch (e) {
       console.error('localStorage read blocked', e);
     }
@@ -183,7 +185,7 @@ class Application extends React.PureComponent {
           {this.state.isCheckingAuth ? (
             <div className='wrapper'><LoadingIndicator /></div>
           ) : (
-            <AnimatePresence exitBeforeEnter mode="wait">
+            <AnimatePresence exitBeforeEnter>
               <motion.div
                 key={location.pathname}
                 variants={pageVariants}

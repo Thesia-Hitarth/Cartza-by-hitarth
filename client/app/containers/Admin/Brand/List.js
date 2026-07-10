@@ -12,8 +12,8 @@ import actions from '../../../actions';
 import { ROLES } from '../../../constants';
 import { withRouter } from '../../../utils/withRouter';
 
-import BrandList from '../../../components/Manager/BrandList';
-import SubPage from '../../../components/Manager/SubPage';
+import BrandList from '../../../components/Admin/BrandList';
+import SubPage from '../../../components/Admin/SubPage';
 import LoadingIndicator from '../../../components/Common/LoadingIndicator';
 import NotFound from '../../../components/Common/NotFound';
 

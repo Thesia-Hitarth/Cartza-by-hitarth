@@ -23,6 +23,7 @@ import { clearCart, getCartId, revalidateCart } from '../Cart/actions';
 import { toggleCart } from '../Navigation/actions';
 import handleError from '../../utils/error';
 import { API_URL, CART_ID } from '../../constants';
+import { getStorageItem, setStorageItem, removeStorageItem } from '../../utils/storage';
 
 export const updateOrderStatus = value => {
   return {
@@ -201,7 +202,7 @@ export const addOrder = (addressId) => {
     try {
       let cartId = null;
       try {
-        cartId = localStorage.getItem(CART_ID);
+        cartId = getStorageItem(CART_ID);
       } catch (e) {
         console.error('localStorage access denied', e);
       }
@@ -222,7 +223,7 @@ export const addOrder = (addressId) => {
     } catch (error) {
       if (error.response && error.response.status === 404) {
         try {
-          localStorage.removeItem(CART_ID);
+          removeStorageItem(CART_ID);
         } catch (e) {
           console.error('localStorage access denied', e);
         }
@@ -236,7 +237,7 @@ export const placeOrder = (addressId) => {
   return async (dispatch, getState) => {
     let loggedIn = false;
     try {
-      loggedIn = localStorage.getItem('logged_in') === 'true';
+      loggedIn = getStorageItem('logged_in') === 'true';
     } catch (e) {
       console.error('localStorage access denied', e);
     }
@@ -276,7 +277,7 @@ export const placeGuestOrder = (guestDetails) => {
       await dispatch(getCartId());
       let cartId = null;
       try {
-        cartId = localStorage.getItem(CART_ID);
+        cartId = getStorageItem(CART_ID);
       } catch (e) {
         console.error('localStorage access denied', e);
       }

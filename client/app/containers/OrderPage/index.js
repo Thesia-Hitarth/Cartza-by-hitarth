@@ -11,7 +11,7 @@ import { connect } from 'react-redux';
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
 
-import OrderDetails from '../../components/Manager/OrderDetails';
+import OrderDetails from '../../components/Admin/OrderDetails';
 import NotFound from '../../components/Common/NotFound';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 

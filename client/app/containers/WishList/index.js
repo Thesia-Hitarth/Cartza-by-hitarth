@@ -11,7 +11,7 @@ import { Heart } from 'lucide-react/dist/cjs/lucide-react.cjs';
 
 import actions from '../../actions';
 import Button from '../../components/Common/Button';
-import WishList from '../../components/Manager/WishList';
+import WishList from '../../components/Account/WishList';
 import LoadingIndicator from '../../components/Common/LoadingIndicator';
 
 class Wishlist extends React.PureComponent {

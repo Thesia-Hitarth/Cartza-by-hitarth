@@ -9,7 +9,7 @@ import { connect } from 'react-redux';
 
 import actions from '../../actions';
 
-import SubPage from '../../components/Manager/SubPage';
+import SubPage from '../../components/Admin/SubPage';
 import ResetPasswordForm from '../../components/Common/ResetPasswordForm';
 
 class AccountSecurity extends React.PureComponent {

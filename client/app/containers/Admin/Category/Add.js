@@ -11,8 +11,8 @@ import { connect } from 'react-redux';
 import actions from '../../../actions';
 import { withRouter } from '../../../utils/withRouter';
 
-import AddCategory from '../../../components/Manager/AddCategory';
-import SubPage from '../../../components/Manager/SubPage';
+import AddCategory from '../../../components/Admin/AddCategory';
+import SubPage from '../../../components/Admin/SubPage';
 
 class Add extends React.PureComponent {
   componentDidMount() {

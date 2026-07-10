@@ -15,15 +15,18 @@
     <meta http-equiv='pragma' content='no-cache'>
     <!-- Crisp Live Chat Widget Scaffolding -->
     <script type="text/javascript">
-      window.$crisp = [];
-      window.CRISP_WEBSITE_ID = "placeholder-id-crisp";
-      (function () {
-        var d = document;
-        var s = d.createElement("script");
-        s.src = "https://client.crisp.chat/l.js";
-        s.async = 1;
-        d.getElementsByTagName("head")[0].appendChild(s);
-      })();
+      var crispId = "placeholder-id-crisp";
+      if (crispId && crispId !== "placeholder-id-crisp") {
+        window.$crisp = [];
+        window.CRISP_WEBSITE_ID = crispId;
+        (function () {
+          var d = document;
+          var s = d.createElement("script");
+          s.src = "https://client.crisp.chat/l.js";
+          s.async = 1;
+          d.getElementsByTagName("head")[0].appendChild(s);
+        })();
+      }
     </script>
   </head>
   <body>

@@ -11,8 +11,8 @@ import { connect } from 'react-redux';
 import actions from '../../actions';
 import { withRouter } from '../../utils/withRouter';
 
-import AddressList from '../../components/Manager/AddressList';
-import SubPage from '../../components/Manager/SubPage';
+import AddressList from '../../components/Account/AddressList';
+import SubPage from '../../components/Admin/SubPage';
 import NotFound from '../../components/Common/NotFound';
 
 class List extends React.PureComponent {

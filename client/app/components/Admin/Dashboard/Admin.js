@@ -9,7 +9,7 @@ import React from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Row, Col } from 'reactstrap';
 
-import AccountMenu from '../AccountMenu';
+import AccountMenu from '../../Account/AccountMenu';
 import Page404 from '../../Common/Page404';
 
 import Account from '../../../containers/Account';

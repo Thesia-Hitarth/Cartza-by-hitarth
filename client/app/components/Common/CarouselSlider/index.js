@@ -9,20 +9,18 @@ import React from 'react';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 
-const CarouselSlider = props => {
-  const {
-    swipeable,
-    draggable,
-    showDots,
-    infinite,
-    autoPlay,
-    keyBoardControl,
-    autoPlaySpeed,
-    ssr,
-    responsive,
-    children
-  } = props;
-
+const CarouselSlider = ({
+  swipeable = false,
+  draggable = false,
+  showDots = false,
+  infinite = true,
+  autoPlay = false,
+  keyBoardControl = true,
+  autoPlaySpeed = 2000,
+  ssr = false,
+  responsive,
+  children
+}) => {
   return (
     <Carousel
       swipeable={swipeable}
@@ -42,17 +40,6 @@ const CarouselSlider = props => {
       {children}
     </Carousel>
   );
-};
-
-CarouselSlider.defaultProps = {
-  swipeable: false,
-  draggable: false,
-  showDots: false,
-  infinite: true,
-  autoPlay: false,
-  keyBoardControl: true,
-  ssr: false,
-  autoPlaySpeed: 2000
 };
 
 export default CarouselSlider;
